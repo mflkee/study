@@ -1,0 +1,23 @@
+---
+title: Example
+format: html
+---
+
+# Hello World
+
+```{python}
+def hello():
+    print("Hello World")
+```
+
+```{python}
+hello()
+```
+
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np 
+x = np.random.random(58)
+plt.plot(x)
+```
+
