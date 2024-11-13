@@ -1,11 +1,11 @@
 def input_positive_integer(prompt, min_value):
     """
     Вводит положительное целое число с проверкой на корректность.
-    
+
     Args:
         prompt (str): Сообщение для пользователя.
         min_value (int): Минимально допустимое значение.
-    
+
     Returns:
         int: Введенное пользователем целое число (не менее min_value).
     """
@@ -23,7 +23,7 @@ def input_positive_integer(prompt, min_value):
 def hanoi_tower(num_disks, from_rod, to_rod, aux_rod, steps):
     """
     Решает задачу Ханойской башни для заданного количества дисков.
-    
+
     Args:
         num_disks (int): Количество дисков.
         from_rod (str): Имя исходного стержня.
@@ -40,24 +40,25 @@ def hanoi_tower(num_disks, from_rod, to_rod, aux_rod, steps):
 
 
 def main():
-    num_disks = input_positive_integer("Введите количество дисков (не менее 1): ", min_value=1)
+    num_disks = input_positive_integer(
+        "Введите количество дисков (не менее 1): ", min_value=1
+    )
     rods = ["Стержень 1", "Стержень 2", "Стержень 3"]  # Фиксированные стержни
-    
+
     steps = []
     hanoi_tower(num_disks, rods[0], rods[2], rods[1], steps)
-    
+
     # Вывод решения в консоль
     for step in steps:
         print(step)
 
     print(f"Решение за {len(steps)} ходов:")
 
-    
     # Запись решения в файл
     with open("решение.txt", "w", encoding="utf-8") as file:
         file.write(f"Решение за {len(steps)} ходов:\n")
         file.write("\n".join(steps))
-    
+
     print("Решение записано в файл 'решение.txt'.")
 
 

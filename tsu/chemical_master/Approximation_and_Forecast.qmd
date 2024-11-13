@@ -1,0 +1,30 @@
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.optimize import curve_fit
+
+# Данные
+conditions_encoded = np.array([0, 1, 2])  # Без OA, С OA, С OA + C2H5OH
+particle_sizes = np.array([1500, 650, 500])  # нм
+
+# Функция аппроксимации (полином 2-й степени)
+def func(x, a, b, c):
+    return a * x**2 + b * x + c
+
+# Аппроксимация
+popt, pcov = curve_fit(func, conditions_encoded, particle_sizes)
+
+# Прогноз минимального размера частицы
+min_particle_size = func(3, *popt)  # Прогноз для условий "С OA + C2H5OH"
+print(f'Прогноз минимального размера частицы: {min_particle_size} нм')
+
+# График аппроксимации
+conditions_pred = np.linspace(0, 3, 100)
+plt.plot(conditions_encoded, particle_sizes, 'o', label='Данные')
+plt.plot(conditions_pred, func(conditions_pred, *popt), label='Аппроксимация')
+plt.xlabel('Условия Синтеза (кодированное)')
+plt.ylabel('Размер Частиц, нм')
+plt.title('Аппроксимация Размера Частиц')
+plt.legend()
+plt.show()
+```

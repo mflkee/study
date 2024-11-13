@@ -1,0 +1,15 @@
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Данные
+conditions = ['Без OA', 'С OA', 'С OA + C2H5OH']
+particle_sizes = [1500, 650, 500]  # нм
+
+# График
+plt.bar(conditions, particle_sizes)
+plt.xlabel('Условия Синтеза')
+plt.ylabel('Размер Частиц, нм')
+plt.title('Зависимость Размера Частиц от Использования Олеиновой Кислоты')
+plt.show()
+```

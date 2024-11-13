@@ -1,0 +1,39 @@
+{
+  "cells": [
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import numpy as np\n",
+        "import matplotlib.pyplot as plt\n",
+        "\n",
+        "# Данные (упрощенный пример, см. реальные данные СЭМ/РЭМ/ТЭМ)\n",
+        "particle_sizes_without_oa = np.random.normal(1500, 200, 1000)  # нм\n",
+        "particle_sizes_with_oa = np.random.normal(650, 100, 1000)  # нм\n",
+        "particle_sizes_with_oa_c2h5oh = np.random.normal(500, 50, 1000)  # нм\n",
+        "\n",
+        "# Гистограммы\n",
+        "plt.hist([particle_sizes_without_oa, particle_sizes_with_oa, particle_sizes_with_oa_c2h5oh],\n",
+        "         bins=30, alpha=0.7, label=['Без OA', 'С OA', 'С OA + C2H5OH'])\n",
+        "plt.xlabel('Размер Частиц, нм')\n",
+        "plt.ylabel('Частота')\n",
+        "plt.title('Частота Распределения Частиц')\n",
+        "plt.legend()\n",
+        "plt.show()"
+      ],
+      "id": "b3a1ed68",
+      "execution_count": null,
+      "outputs": []
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)",
+      "path": "/home/mflkee/study/tsu/chemical_master/venv/share/jupyter/kernels/python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}

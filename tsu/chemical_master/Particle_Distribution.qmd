@@ -1,0 +1,18 @@
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Данные (упрощенный пример, см. реальные данные СЭМ/РЭМ/ТЭМ)
+particle_sizes_without_oa = np.random.normal(1500, 200, 1000)  # нм
+particle_sizes_with_oa = np.random.normal(650, 100, 1000)  # нм
+particle_sizes_with_oa_c2h5oh = np.random.normal(500, 50, 1000)  # нм
+
+# Гистограммы
+plt.hist([particle_sizes_without_oa, particle_sizes_with_oa, particle_sizes_with_oa_c2h5oh],
+         bins=30, alpha=0.7, label=['Без OA', 'С OA', 'С OA + C2H5OH'])
+plt.xlabel('Размер Частиц, нм')
+plt.ylabel('Частота')
+plt.title('Частота Распределения Частиц')
+plt.legend()
+plt.show()
+```

@@ -1,0 +1,20 @@
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Данные (упрощенный пример, см. статью для реальных данных)
+wavelengths = np.arange(200, 501, 10)  # нм
+intensities_without_oa = np.random.rand(len(wavelengths)) * 10
+intensities_with_oa = np.random.rand(len(wavelengths)) * 15
+intensities_with_oa_c2h5oh = np.random.rand(len(wavelengths)) * 20
+
+# График
+plt.plot(wavelengths, intensities_without_oa, label='Без OA')
+plt.plot(wavelengths, intensities_with_oa, label='С OA')
+plt.plot(wavelengths, intensities_with_oa_c2h5oh, label='С OA + C2H5OH')
+plt.xlabel('Длина Волны, нм')
+plt.ylabel('Интенсивность Фотолюминесценции')
+plt.title('Фотолюминесцентные Спектры β-NaYF4:Eu3+')
+plt.legend()
+plt.show()
+```
