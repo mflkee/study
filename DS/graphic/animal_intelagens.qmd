@@ -1,0 +1,37 @@
+```{python}
+import matplotlib.pyplot as plt
+
+# Данные о животных: количество нейронов (в миллиардах) и уровень интеллекта (оценочный балл)
+# Примерные данные взяты из доступных источников и исследований
+animals = {
+    "Humans": {"neurons": 16, "intelligence": 10},
+    "Chimpanzees": {"neurons": 6.5, "intelligence": 8.5},
+    "Dolphins": {"neurons": 5.8, "intelligence": 8},
+    "Elephants": {"neurons": 5.6, "intelligence": 7.5},
+    "Crows & Parrots": {"neurons": 1.5, "intelligence": 7},
+    "Dogs": {"neurons": 0.53, "intelligence": 6},
+    "Cats": {"neurons": 0.3, "intelligence": 5.5},
+    "Pigs": {"neurons": 0.3, "intelligence": 5}
+}
+
+# Извлечение данных для построения графика
+animal_names = list(animals.keys())
+neuron_counts = [animals[animal]["neurons"] for animal in animal_names]
+intelligence_levels = [animals[animal]["intelligence"] for animal in animal_names]
+
+# Построение графика
+plt.figure(figsize=(10, 6))
+plt.scatter(neuron_counts, intelligence_levels, color='blue', s=100)
+
+# Подписи на графике для каждой точки
+for i, name in enumerate(animal_names):
+    plt.text(neuron_counts[i] + 0.05, intelligence_levels[i], name, fontsize=9)
+
+# Настройки графика
+plt.title("Корреляция между количеством нейронов и уровнем интеллекта у разных животных")
+plt.xlabel("Количество нейронов в коре (млрд)")
+plt.ylabel("Уровень интеллекта (оценочный балл)")
+plt.grid(True)
+plt.show()
+
+```

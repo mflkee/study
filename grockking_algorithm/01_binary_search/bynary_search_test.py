@@ -1,19 +1,18 @@
-my_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+my_list = list(range(2, 31, 2))
+print(my_list)
 
 
 def binary_search(list, item):
     low = 0
     hight = len(list) - 1
-
     while low <= hight:
         mid = (low + hight) // 2
-        if list[mid] == item:
+        if item == list[mid]:
             return mid
-        if list[mid] > item:
-            hight = mid - 1
-        else:
+        if item > list[mid]:
             low = mid + 1
-    return print("Нет такого")
+        else:
+            hight = mid - 1
 
 
-print(binary_search(my_list, 16))
+print(binary_search(my_list, 8))
