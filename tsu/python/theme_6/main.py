@@ -1,3 +1,5 @@
+import json
+
 # Открываем входной файл 'visit_log.csv' для чтения и выходной файл 'funnel.csv' для записи
 with open('visit_log.csv', 'r') as infile, open('funnel.csv', 'w') as outfile:
     # Записываем заголовок в выходной файл
@@ -5,10 +7,15 @@ with open('visit_log.csv', 'r') as infile, open('funnel.csv', 'w') as outfile:
     
     # Обрабатываем каждую строку во входном файле
     for line in infile:
-        # Разделяем строку на компоненты по запятой
-        user_id, source, category = line.strip().split(',')
+        # Преобразуем строку из формата JSON в словарь
+        record = json.loads(line)
         
-        # Проверяем, была ли совершена покупка (предполагаем, что наличие категории указывает на покупку)
-        if category != '':  # Здесь можно заменить условие на более точное, если известно
+        # Извлекаем user_id и category
+        user_id = record.get('user_id')
+        category = record.get('category')
+        
+        # Проверяем, что категория не 'не определена'
+        if category and category != 'не определена':
             # Записываем строку в выходной файл
-            outfile.write(f'{user_id},{source},{category}\n')
+            # Предположим, что source не определен в данных, поэтому указываем 'other'
+            outfile.write(f'{user_id},other,{category}\n')

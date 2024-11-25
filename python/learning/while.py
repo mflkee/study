@@ -1,6 +1,6 @@
 # value = 5
 # while value < 10000000:
-#     value = value * value 
+#     value = value * value
 #     print("Счетчик:", value)
 #
 #
