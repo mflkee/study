@@ -31,14 +31,14 @@ async def items() -> List[Post]:
     return [Post(**post) for post in posts]
 
 
-@app.get("/items/{id}")
-async def items(id: int) -> Post:
-    for post in posts:
-        if post["id"] == id:
-            return Post(**post)
-
-    raise HTTPException(status_code=404, detail="post not found")
-
+# @app.get("/items/{id}")
+# async def items(id: int) -> Post:
+#     for post in posts:
+#         if post["id"] == id:
+#             return Post(**post)
+#
+#     raise HTTPException(status_code=404, detail="post not found")
+#
 
 @app.get("/search/")
 async def search(post_id: Optional[int] = None) -> Dict[str, Optional[Post]]:
