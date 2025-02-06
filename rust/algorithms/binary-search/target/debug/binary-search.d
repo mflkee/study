@@ -1,1 +1,1 @@
-/home/mflkee/rust_learning/algorithms/binary-search/target/debug/binary-search: /home/mflkee/rust_learning/algorithms/binary-search/src/main.rs
+/home/mflkee/study/rust/algorithms/binary-search/target/debug/binary-search: /home/mflkee/study/rust/algorithms/binary-search/src/main.rs

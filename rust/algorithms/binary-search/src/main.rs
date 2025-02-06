@@ -18,7 +18,7 @@ fn binary_search(arr: &[i32], target: i32) -> Option<usize> {
 
 fn main() {
     let arr = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    let target = 1;
+    let target = 4;
 
     if let Some(index) = binary_search(&arr, target) {
         println!("Element {} found at index {}", target, index);
