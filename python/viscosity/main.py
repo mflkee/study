@@ -8,20 +8,31 @@ class ViscosityMeter:
         self.name = name
         self.measurements = []
         self.average_viscosity = None
+        self.density = 1.0  # Значение по умолчанию
+
+    def set_density(self, density):
+        try:
+            self.density = float(density)
+            return True
+        except ValueError:
+            return False
 
     def add_measurement(self, measurement):
         try:
             measurement = float(measurement)
+            if measurement <= 0:
+                return False
             self.measurements.append(measurement)
+            return True
         except ValueError:
             return False
-        return True
 
     def calculate_average_viscosity(self):
-        if self.measurements:
-            self.average_viscosity = sum(self.measurements) / len(self.measurements)
-        else:
-            self.average_viscosity = None
+        if len(self.measurements) >= 3:
+            avg = sum(self.measurements[-3:]) / 3
+            self.average_viscosity = avg * self.density  # Конвертация в сантипуазы
+            return True
+        return False
 
     def calculate_absolute_error(self):
         if self.average_viscosity is None:
@@ -32,8 +43,7 @@ class ViscosityMeter:
             return 0.05 * v + 0.30
         elif 10 <= v <= 100:
             return 0.04 * v + 1.33
-        else:
-            return None
+        return None
 
 
 class Areometer:
@@ -41,123 +51,155 @@ class Areometer:
         self.viscosity = viscosity_meter.average_viscosity
         self.temperature_above_15 = False
 
-    def set_temperature_above_15(self, above_15):
-        self.temperature_above_15 = above_15
-
     def calculate_absolute_error(self):
         if self.viscosity is None:
             return None
-
         if self.temperature_above_15:
             return 0.0178 * self.viscosity
-        else:
-            return 0.0283 * self.viscosity
+        return 0.0283 * self.viscosity
 
 
 class ViscosityCalculatorApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Калькулятор вязкости и погрешностей")
+        self.areometer_tabs = {}
 
         self.vt531 = ViscosityMeter("VT531")
         self.vt532 = ViscosityMeter("VT532")
 
         self.create_widgets()
+        self.setup_style()
+
+    def setup_style(self):
+        style = ttk.Style()
+        style.configure("Error.TEntry", foreground="red")
 
     def create_widgets(self):
-        # Создаем вкладки
         self.notebook = ttk.Notebook(self.root)
         self.notebook.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
 
-        self.tab1 = ttk.Frame(self.notebook)
-        self.tab2 = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab1, text="VT531")
-        self.notebook.add(self.tab2, text="VT532")
+        self.create_viscosity_tab(self.vt531)
+        self.create_viscosity_tab(self.vt532)
 
-        self.create_tab(self.tab1, self.vt531)
-        self.create_tab(self.tab2, self.vt532)
-
-    def create_tab(self, tab, viscosity_meter):
-        self.entries = []
-        self.labels = []
-
-        for i in range(3):
-            label = ttk.Label(tab, text=f"Замер {i+1}:")
-            label.grid(row=i, column=0, padx=5, pady=5, sticky=tk.W)
-            self.labels.append(label)
-
-            entry = ttk.Entry(tab)
-            entry.grid(row=i, column=1, padx=5, pady=5)
-            self.entries.append(entry)
-
-        calculate_button = ttk.Button(
-            tab, text="Рассчитать", command=lambda: self.calculate(viscosity_meter)
-        )
-        calculate_button.grid(row=3, column=0, columnspan=2, pady=10)
-
-    def calculate(self, viscosity_meter):
-        measurements = []
-        for entry in self.entries:
-            measurement = entry.get().strip()
-            if not viscosity_meter.add_measurement(measurement):
-                messagebox.showerror("Ошибка", "Пожалуйста, введите число.")
-                return
-            measurements.append(float(measurement))
-
-        viscosity_meter.calculate_average_viscosity()
-        avg_viscosity = viscosity_meter.average_viscosity
-        abs_error = viscosity_meter.calculate_absolute_error()
-
-        if avg_viscosity is not None:
-            messagebox.showinfo(
-                "Результат",
-                f"Средняя вязкость: {avg_viscosity:.2f}\nАбсолютная погрешность: {abs_error:.2f}",
-            )
-        else:
-            messagebox.showerror("Ошибка", "Не удалось рассчитать среднюю вязкость.")
-
-        self.create_areometer_tab(viscosity_meter)
-
-    def create_areometer_tab(self, viscosity_meter):
-        tab_name = viscosity_meter.name + " Ареометр"
+    def create_viscosity_tab(self, meter):
         tab = ttk.Frame(self.notebook)
-        self.notebook.add(tab, text=tab_name)
+        self.notebook.add(tab, text=meter.name)
 
-        label = ttk.Label(tab, text="Температура в лаборатории больше 15°C?")
-        label.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
+        entries = []
+        for i in range(3):
+            frame = ttk.Frame(tab)
+            frame.pack(pady=5, fill=tk.X)
 
-        self.temp_var = tk.BooleanVar()
-        temp_radio1 = ttk.Radiobutton(
-            tab, text="Да", variable=self.temp_var, value=True
+            label = ttk.Label(frame, text=f"Замер {i+1} (сСт):", width=15)
+            label.pack(side=tk.LEFT, padx=5)
+
+            entry = ttk.Entry(frame)
+            entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+            entries.append(entry)
+
+        density_frame = ttk.Frame(tab)
+        density_frame.pack(pady=5, fill=tk.X)
+
+        ttk.Label(density_frame, text="Плотность (г/см³):", width=15).pack(
+            side=tk.LEFT, padx=5
         )
-        temp_radio1.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
-        temp_radio2 = ttk.Radiobutton(
-            tab, text="Нет", variable=self.temp_var, value=False
-        )
-        temp_radio2.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
+        density_entry = ttk.Entry(density_frame)
+        density_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        calculate_button = ttk.Button(
-            tab,
-            text="Рассчитать погрешность ареометра",
-            command=lambda: self.calculate_areometer(viscosity_meter),
-        )
-        calculate_button.grid(row=3, column=0, pady=10)
+        btn_frame = ttk.Frame(tab)
+        btn_frame.pack(pady=10)
 
-    def calculate_areometer(self, viscosity_meter):
-        areometer = Areometer(viscosity_meter)
-        areometer.set_temperature_above_15(self.temp_var.get())
-        abs_error = areometer.calculate_absolute_error()
+        ttk.Button(
+            btn_frame,
+            text="Рассчитать",
+            command=lambda: self.calculate(meter, entries, density_entry),
+        ).pack(side=tk.LEFT, padx=5)
 
-        if abs_error is not None:
-            temp_str = "больше 15°C" if self.temp_var.get() else "не больше 15°C"
-            messagebox.showinfo(
-                "Результат",
-                f"Абсолютная погрешность ареометра при температуре {temp_str}: {abs_error:.2f}",
+        ttk.Button(
+            btn_frame,
+            text="Очистить",
+            command=lambda: self.clear_fields(entries, density_entry),
+        ).pack(side=tk.LEFT)
+
+    def clear_fields(self, entries, density_entry):
+        for entry in entries:
+            entry.delete(0, tk.END)
+            entry.configure(style="TEntry")
+        density_entry.delete(0, tk.END)
+        density_entry.configure(style="TEntry")
+
+    def validate_entry(self, entry):
+        value = entry.get()
+        if not value.replace(".", "", 1).isdigit() or float(value) <= 0:
+            entry.configure(style="Error.TEntry")
+            return False
+        entry.configure(style="TEntry")
+        return True
+
+    def calculate(self, meter, entries, density_entry):
+        measurements = []
+        valid = True
+
+        if not self.validate_entry(density_entry) or not meter.set_density(
+            density_entry.get()
+        ):
+            valid = False
+
+        for entry in entries:
+            if not self.validate_entry(entry):
+                valid = False
+            else:
+                if not meter.add_measurement(entry.get()):
+                    valid = False
+
+        if not valid:
+            messagebox.showerror("Ошибка", "Проверьте правильность ввода данных")
+            return
+
+        if meter.calculate_average_viscosity():
+            abs_error = meter.calculate_absolute_error()
+            msg = (
+                f"Средняя вязкость: {meter.average_viscosity:.2f} сП\n"
+                f"Абс. погрешность: {abs_error:.2f} сП"
             )
+            messagebox.showinfo("Результат", msg)
+            self.create_areometer_tab(meter)
         else:
-            messagebox.showerror(
-                "Ошибка", "Не удалось рассчитать абсолютную погрешность ареометра."
-            )
+            messagebox.showerror("Ошибка", "Недостаточно измерений")
+
+    def create_areometer_tab(self, meter):
+        if meter.name in self.areometer_tabs:
+            self.notebook.select(self.areometer_tabs[meter.name])
+            return
+
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text=f"{meter.name} Ареометр")
+        self.areometer_tabs[meter.name] = tab
+
+        temp_var = tk.BooleanVar()
+
+        ttk.Label(tab, text="Температурные условия:").pack(pady=5)
+        ttk.Radiobutton(tab, text=">15°C", variable=temp_var, value=True).pack()
+        ttk.Radiobutton(tab, text="≤15°C", variable=temp_var, value=False).pack()
+
+        ttk.Button(
+            tab,
+            text="Рассчитать погрешность",
+            command=lambda: self.show_areometer_error(meter, temp_var.get()),
+        ).pack(pady=10)
+
+    def show_areometer_error(self, meter, temp_above_15):
+        areometer = Areometer(meter)
+        areometer.temperature_above_15 = temp_above_15
+        error = areometer.calculate_absolute_error()
+
+        if error:
+            temp_str = ">15°C" if temp_above_15 else "≤15°C"
+            msg = f"Погрешность ареометра ({temp_str}): {error:.2f} сП"
+            messagebox.showinfo("Результат", msg)
+        else:
+            messagebox.showerror("Ошибка", "Невозможно рассчитать погрешность")
 
 
 if __name__ == "__main__":
