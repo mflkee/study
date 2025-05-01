@@ -1,0 +1,4 @@
+@startuml
+!include /home/mflkee/.config/plantuml/dracula.puml
+class Persona
+@enduml

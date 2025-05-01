@@ -27,15 +27,3 @@ def merge_sort(list):
 
 sorted_list = merge_sort(input_list)
 print(sorted_list)
-
-
-
-
-
-
-
-
-
-
-
-    
