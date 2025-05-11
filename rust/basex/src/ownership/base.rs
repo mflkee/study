@@ -1,9 +1,11 @@
 use std::io;
 
 pub fn ownership_base() {
-    // let mut user_data = String::new();
-    // io::stdin().read_line(&mut user_data).expect("Fail to read information");
-    // println!("Result: {}", user_data);
+    let mut user_data = String::new();
+    io::stdin()
+        .read_line(&mut user_data)
+        .expect("Fail to read information");
+    println!("Result: {}", user_data);
 
     let mut num1 = String::new();
     let mut num2 = String::new();

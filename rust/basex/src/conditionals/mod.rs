@@ -1,10 +1,12 @@
 pub mod operators;
-pub mod ternary;
-pub mod op_match;
+pub mod if_expressions;
+pub mod match_operator;
+pub mod if_else;
 
 pub fn start(){
     operators::operators();
-    ternary::op_ternary();
-    op_match::op_match();
+    if_expressions::if_expressions();
+    match_operator::match_operator();
+    if_else::if_else();
 }
 
