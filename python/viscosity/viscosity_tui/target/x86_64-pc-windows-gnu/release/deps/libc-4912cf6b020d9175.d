@@ -1,0 +1,11 @@
+/home/mflkee/study/python/viscosity/viscosity_tui/target/x86_64-pc-windows-gnu/release/deps/liblibc-4912cf6b020d9175.rmeta: /home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/lib.rs /home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/macros.rs /home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/primitives.rs /home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/windows/mod.rs /home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/windows/gnu/mod.rs
+
+/home/mflkee/study/python/viscosity/viscosity_tui/target/x86_64-pc-windows-gnu/release/deps/liblibc-4912cf6b020d9175.rlib: /home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/lib.rs /home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/macros.rs /home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/primitives.rs /home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/windows/mod.rs /home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/windows/gnu/mod.rs
+
+/home/mflkee/study/python/viscosity/viscosity_tui/target/x86_64-pc-windows-gnu/release/deps/libc-4912cf6b020d9175.d: /home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/lib.rs /home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/macros.rs /home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/primitives.rs /home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/windows/mod.rs /home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/windows/gnu/mod.rs
+
+/home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/lib.rs:
+/home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/macros.rs:
+/home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/primitives.rs:
+/home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/windows/mod.rs:
+/home/mflkee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libc-0.2.172/src/windows/gnu/mod.rs:

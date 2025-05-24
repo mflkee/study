@@ -1,0 +1,28 @@
+# Формат:
+# Clothing: Clothing,sku,name,size,color,price,stock
+# Electronics: Electronics,sku,name,model,manufacturer,price,stock
+# Book: Book,sku,author,title,price,publisher,stock
+
+Clothing,CLO001,T-Shirt,S,White,19.99,100
+Clothing,CLO002,T-Shirt,M,Black,19.99,80
+Clothing,CLO003,Jeans,32,Blue,49.50,60
+Clothing,CLO004,Jeans,34,Dark Blue,49.50,50
+Clothing,CLO005,Hoodie,L,Gray,39.90,40
+Clothing,CLO006,Jacket,XL,Red,89.90,30
+Clothing,CLO007,Socks,One Size,White,5.00,200
+
+Electronics,ELE001,Smartphone,X100,AcmeCorp,299.99,25
+Electronics,ELE002,Smartphone,X200,AcmeCorp,399.99,20
+Electronics,ELE003,Laptop,ZBook,TechMasters,799.00,15
+Electronics,ELE004,Tablet,TabPro,MobileInc,249.50,30
+Electronics,ELE005,Headphones,ProSound,AudioInc,129.90,50
+Electronics,ELE006,Smartwatch,WristX,TimeTech,199.00,40
+Electronics,ELE007,Camera,ZoomIt,FotoGear,499.00,10
+
+Book,BK001,George Orwell,1984,9.99,Secker & Warburg,120
+Book,BK002,J.K. Rowling,Harry Potter and the Sorcerer’s Stone,12.50,Bloomsbury,100
+Book,BK003,J.R.R. Tolkien,The Hobbit,14.99,Allen & Unwin,90
+Book,BK004,Harper Lee,To Kill a Mockingbird,11.99,J.B. Lippincott & Co.,80
+Book,BK005,F. Scott Fitzgerald,The Great Gatsby,10.99,Charles Scribner's Sons,75
+Book,BK006,Leo Tolstoy,War and Peace,19.99,The Russian Messenger,50
+Book,BK007,Dan Brown,The Da Vinci Code,13.50,Doubleday,60

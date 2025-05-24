@@ -1,9 +1,10 @@
-mod primitives;
 mod compound;
-mod ownership;
 mod conditionals;
-mod loops;
 mod func_modules;
+mod loops;
+mod ownership;
+mod primitives;
+mod errors;
 
 fn main() {
     // primitives::start();
@@ -11,5 +12,6 @@ fn main() {
     // ownership::start();
     // conditionals::start();
     // loops::start();
-    func_modules::start();
+    // func_modules::start();
+    errors::start();
 }
