@@ -1,5 +1,4 @@
 use rand::Rng;
-use core::num;
 use std::cmp::Ordering;
 use std::io;
 
@@ -12,9 +11,7 @@ fn main() {
         println!("Pleas input your guess.");
 
         let mut guess = String::new();
-        io::stdin()
-            .read_line(&mut guess)
-            .expect("error");
+        io::stdin().read_line(&mut guess).expect("error");
 
         let guess: u32 = match guess.trim().parse() {
             Ok(num) => num,
