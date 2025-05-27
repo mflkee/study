@@ -1,6 +1,6 @@
 def binary_search(arr, target):
     low = 0
-    high = len(arr) - 1 
+    high = len(arr) - 1
     while high >= low:
         mid = (low + high) // 2
         if target == list[mid]:
@@ -13,12 +13,12 @@ def binary_search(arr, target):
             high = mid - 1
     return None
 
+
 try:
     guesss = int(input("Введите искомое чилсо: "))
-except ValueError: 
+except ValueError:
     print("Введите целое число")
 
 my_list = []
-for i in range(1,20):
+for i in range(1, 20):
     my_list.append(i)
-

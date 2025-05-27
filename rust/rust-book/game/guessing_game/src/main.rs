@@ -5,7 +5,8 @@ use std::io;
 fn main() {
     println!("Guess the number!");
     let mut rng = rand::thread_rng(); // get generator
-    let random_number: u32 = rng.gen_range(0..=100); // gen random number
+    let random_number: u32 = rng.gen_range(87..=87); // gen random number
+    println!("{random_number}");
 
     loop {
         println!("Pleas input your guess.");
