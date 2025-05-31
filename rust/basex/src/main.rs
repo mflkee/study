@@ -7,11 +7,11 @@ mod primitives;
 mod errors;
 
 fn main() {
-    // primitives::start();
+    primitives::start();
     // compound::start();
     // ownership::start();
     // conditionals::start();
     // loops::start();
     // func_modules::start();
-    errors::start();
+    // errors::start();
 }
