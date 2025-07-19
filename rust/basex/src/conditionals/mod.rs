@@ -7,6 +7,6 @@ pub fn start(){
     operators::operators();
     if_expressions::if_expressions();
     match_operator::match_operator();
-    if_else::if_else();
+    if_else::main();
 }
 

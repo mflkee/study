@@ -3,5 +3,5 @@ pub fn func_2() {
 }
 
 fn print_value(x: i8) {
-    println!("{}", x);
+    println!("{x}");
 }

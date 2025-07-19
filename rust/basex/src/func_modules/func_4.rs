@@ -3,6 +3,6 @@ pub fn func_4() {
     println!("{x}");
 }
 
-fn five() -> i32 {
+fn five() -> i8 {
     5
 }

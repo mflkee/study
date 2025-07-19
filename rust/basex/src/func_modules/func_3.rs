@@ -3,5 +3,5 @@ pub fn func_3() {
         let x = 3;
         x + 1
     };
-    println!("y:{}", y);
+    println!("y:{y}");
 }
