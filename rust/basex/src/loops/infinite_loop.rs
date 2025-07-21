@@ -1,12 +1,10 @@
-pub fn demo_loop() {
-    let mut count = 0;
-
-    loop {
-        println!("Res_loop: {count}");
-        count += 1;
-        if count == 5 {
-            println!("Finish");
-            break;
+pub fn main(){
+    let mut counter = 0;
+    let result = loop{
+        counter += 1;
+        if counter == 10{
+            break counter * 2;
         }
-    }
+    };
+    println!("The result is {result}");
 }

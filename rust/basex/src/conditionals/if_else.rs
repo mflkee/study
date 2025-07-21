@@ -28,6 +28,6 @@ pub fn check_for_division(number: i32){
 
 pub fn conditions_in_let(){
     let condition = false;
-    let number = if condition {5} else {6};
+    let number = if condition {"five"} else {"six"};
     println!("The value of number is: {number}")
 }

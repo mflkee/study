@@ -1,3 +1,3 @@
-pub fn demo_array_iterating(){
+pub fn main(){
 
 }

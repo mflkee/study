@@ -1,4 +1,4 @@
-pub fn demo_while() {
+pub fn main() {
     let mut lim = 3;
     while lim > 0 {
         println!("Res: {lim}");

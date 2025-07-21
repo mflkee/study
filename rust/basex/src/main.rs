@@ -10,8 +10,8 @@ fn main() {
     // primitives::start();
     // compound::start();
     // ownership::start();
-    conditionals::start();
-    // loops::start();
+    // conditionals::start();
+    loops::start();
     // func_modules::start();
     // errors::start();
 }
