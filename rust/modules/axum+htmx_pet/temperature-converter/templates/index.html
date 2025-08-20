@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form hx-post="/convert" hx-target="#result" hx-swap="innerHTML">
+    <div class="form-group">
+        <label for="from_unit">Convert from:</label>
+        <select name="from_unit" id="from_unit" required>
+            <option value="c">Celsius (°C)</option>
+            <option value="f">Fahrenheit (°F)</option>
+            <option value="k">Kelvin (K)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="value">Temperature value:</label>
+        <input type="number" name="value" id="value" step="0.01" required />
+    </div>
+
+    <div class="form-group">
+        <label for="to_unit">Convert to:</label>
+        <select name="to_unit" id="to_unit" required>
+            <option value="c">Celsius (°C)</option>
+            <option value="f">Fahrenheit (°F)</option>
+            <option value="k">Kelvin (K)</option>
+        </select>
+    </div>
+
+    <button type="submit">Convert</button>
+</form>
+
+<div id="result"></div>
+{% endblock %}
