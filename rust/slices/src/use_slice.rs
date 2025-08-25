@@ -1,24 +1,22 @@
 pub fn main(){
-    // let s = String::from("helloworld");
+    // let s = String::from("hello world");
+    let s = "hello world";
+    let word = first_word(s);
+    println!("{word}");
 
-    // let hello = &s[0..=4];
-    // let world = &s[5..=9];
-    // println!("{hello} {world}");
-    //
-    // let s1 = String::from("demension");
-    // println!("{s1}");
-    // let slice_s1 = &s1[6..];
-    // println!("{slice_s1}");
-    
-    // let slice_s2 = String::from("Makeev");
-    // let len = slice_s2.len();
-    // // let slice = &slice_s2[0..len];
-    // println!("{len}");
-    // let slice = &slice_s2[0..len];
-    // println!("{slice}");
+    let word = first_word(&s[0..6]);
+    println!("{word}");
 
 }
 
+fn first_word(s: &str) -> &str {
+    let bytes = s.as_bytes();
 
-fn slice 
+    for (i, &item) in bytes.iter().enumerate() {
+        if item == b' ' {
+            return &s[..i];
+        }
+    }
+    s
+}
 
