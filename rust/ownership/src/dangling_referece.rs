@@ -3,9 +3,9 @@ pub fn main(){
     println!("{}", _reference_to_nothing);
 }
 
-fn dangle() -> &String{
+fn dangle() -> String{
     let s = String::from("hello");
-    &s
+    s.to_string()
 }
 
-dangle returns a reference to a String
+// dangle returns a reference to a String

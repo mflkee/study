@@ -1,12 +1,10 @@
 pub fn main(){
     // let s = String::from("hello world");
     let s = "hello world";
-    let word = first_word(s);
-    println!("{word}");
+    println!("{s}");
 
     let word = first_word(&s[0..6]);
     println!("{word}");
-
 }
 
 fn first_word(s: &str) -> &str {

@@ -9,9 +9,9 @@ mod primitives;
 fn main() {
     // primitives::start();
     // compound::start();
-    // ownership::start();
+    ownership::start();
     // conditionals::start();
-    loops::start();
+    // loops::start();
     // func_modules::start();
     // errors::start();
 }

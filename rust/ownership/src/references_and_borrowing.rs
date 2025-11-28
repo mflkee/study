@@ -20,6 +20,6 @@ fn calculate_lenght(s: &String) -> usize {
 }
 
 fn str_up(s: &mut String) {
-    let a = s.push_str(" Gleb")e
+    let a = s.push_str(" Gleb");
     a
 }
