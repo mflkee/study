@@ -1,0 +1,13 @@
+[workspace]
+members = [
+    "crates/data_types",
+    "crates/ownership",
+    "crates/slices",
+    "crates/io",
+    "crates/cmp",
+    "crates/temperature-converter",
+    "crates/guessing_game",
+    "crates/gen_fibonacci",
+    "crates/mathmagic-in-rust", "crates/struct_lab", "crates/rectangles",
+]
+resolver = "2"
