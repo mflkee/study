@@ -8,6 +8,6 @@ members = [
     "crates/temperature-converter",
     "crates/guessing_game",
     "crates/gen_fibonacci",
-    "crates/mathmagic-in-rust", "crates/struct_lab", "crates/rectangles",
+    "crates/mathmagic-in-rust", "crates/struct_lab", "crates/rectangles", "crates/enums-and-pattern-matching",
 ]
 resolver = "2"
