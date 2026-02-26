@@ -99,17 +99,26 @@ fn demo_str(){
 fn demo_hashmap(){
     let mut scores = HashMap::new();
     scores.insert("Blue".to_string(), 10);
-    scores.insert("Re".to_string(), 5);
+    scores.insert("Red".to_string(), 5);
     scores.insert("Green".to_string(), 8);
 
     println!("{scores:#?}");
+    let mut group = 0;
 
     for (team, score) in &scores{
-        println!("{team}: {score}")
+        println!("{team}: {score}");
+        
+        group += *score;
     }
+    println!("Group points: {}", group);
+
 
     let a = scores.get("Red").copied().unwrap_or(0);
     println!("{a}");
+
+    let team = "Blue".to_string();
+    let score = scores.get(&team).copied().unwrap_or(0); 
+    println!("{score}");
 }
 
 
