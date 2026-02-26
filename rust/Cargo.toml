@@ -1,13 +1,21 @@
 [workspace]
 members = [
-    "crates/data_types",
-    "crates/ownership",
-    "crates/slices",
-    "crates/io",
-    "crates/cmp",
-    "crates/temperature-converter",
-    "crates/guessing_game",
-    "crates/gen_fibonacci",
-    "crates/mathmagic-in-rust", "crates/struct_lab", "crates/rectangles", "crates/enums-and-pattern-matching",
+    # Basics - последовательное изучение основ
+    "01_basics/01_variables",
+    "01_basics/02_data_types",
+    "01_basics/03_functions",
+    "01_basics/04_control_flow",
+    "01_basics/05_ownership",
+    "01_basics/06_slices",
+    "01_basics/07_structs",
+    "01_basics/08_enums",
+    # Exercises - упражнения из книги
+    "02_exercises/guessing_game",
+    "02_exercises/fibonacci",
+    "02_exercises/temperature_converter",
+    # Projects - полноценные проекты
+    "03_projects/temperature_converter_web",
+    # Experiments - эксперименты и математические задачи
+    "04_experiments/mathmagic",
 ]
 resolver = "2"
