@@ -1,5 +1,4 @@
-[workspace]
-members = [
+[workspace] members = [
     # Basics - последовательное изучение основ
     "01_basics/01_variables",
     "01_basics/02_data_types",
@@ -9,6 +8,7 @@ members = [
     "01_basics/06_slices",
     "01_basics/07_structs",
     "01_basics/08_enums",
+    "01_basics/09_collections",
     # Exercises - упражнения из книги
     "02_exercises/guessing_game",
     "02_exercises/fibonacci",
