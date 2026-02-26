@@ -1,4 +1,5 @@
-[workspace] members = [
+[workspace] 
+members = [
     # Basics - последовательное изучение основ
     "01_basics/01_variables",
     "01_basics/02_data_types",

@@ -1,8 +1,121 @@
+use std::collections::HashMap;
+
 fn demo_vec() {
+
+    // 1. Create a vector
     let v: Vec<i32> = Vec::new();
-    println!("{v:?}");
+    println!("{v:#?}");
+
+    let mut v2 = vec![1,2,3];
+    println!("{:?}", v2);
+    
+    // 2. Add/remove values
+    v2.push(4);
+    println!("{:?}", v2);
+    
+    v2.pop();
+    println!("{:?}", v2);
+    
+    // 3. Access to the elenents
+    let third = &v2[2];
+    println!("{}",third);
+
+    let third2 = v2.get(2);
+    println!("{:?}",third2);
+
+    let mut v = vec![1, 2, 3];
+    let first = v[0];
+    v.push(4); // ошибка
+    println!("{first}");
+    
+    // 4. Iteration
+    for x in &v {
+        println!("{}",x)
+    }
+    println!("{:?}", v);
+
+    let mut v3: Vec<i32> = Vec::new();
+    for x in &mut v {
+        *x += 10;
+        v3.push(*x);
+        println!("{x}")
+
+    }
+    println!("{:?}", v3);
+
+    // 5. Different types in one vec
+    #[derive(Debug)]
+    enum Cell{
+        Int(i32),
+        Float(f64),
+        Text(String),
+    }
+
+    let row1 = vec![
+        Cell::Int(10),
+        Cell::Float(3.123),
+        Cell::Text("Ohhh...".to_string())
+    ];
+    println!("{:?}", row1);
+
+     for cell in &row1 {
+      match cell {
+          Cell::Int(i) => println!("int: {i}"),
+          Cell::Float(f) => println!("float: {f}"),
+          Cell::Text(t) => println!("text: {t}"),
+      };
+  }
 }
+
+fn demo_str(){
+    let mut s = String::new();
+    s.push_str("HELL FIRE");
+
+    s.push('!');
+    s.find(' ');
+
+    let s2 = String::from("Hello");
+    let s3 = "hello".to_string();
+    println!("{s}\n{s2}\n{s3}");
+
+    let s4 = "Gleb ".to_string();
+    let s5 = "Makeev ".to_string();
+    // let s45 = s4 + &s5
+    // println!("{s45}");
+    // or
+    let s54 = format!("{s5}{s4}");
+    println!("{s54}");
+
+    for c in "HI".chars() {
+    println!("{c}");
+    }
+
+    for b in "".bytes() {
+        println!("{b}");
+    }
+
+}
+
+fn demo_hashmap(){
+    let mut scores = HashMap::new();
+    scores.insert("Blue".to_string(), 10);
+    scores.insert("Re".to_string(), 5);
+    scores.insert("Green".to_string(), 8);
+
+    println!("{scores:#?}");
+
+    for (team, score) in &scores{
+        println!("{team}: {score}")
+    }
+
+    let a = scores.get("Red").copied().unwrap_or(0);
+    println!("{a}");
+}
+
+
 
 fn main() {
     demo_vec();
+    demo_str();
+    demo_hashmap();
 }
