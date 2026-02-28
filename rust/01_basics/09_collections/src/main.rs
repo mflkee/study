@@ -119,6 +119,32 @@ fn demo_hashmap(){
     let team = "Blue".to_string();
     let score = scores.get(&team).copied().unwrap_or(0); 
     println!("{score}");
+
+    scores.entry("Black".to_string()).or_insert(20);
+    println!("{:?}", scores);
+
+    let x = String::from("First");
+    let y = String::from("Second");
+
+    println!("{}, {}",x, y);
+
+    let mut newhm = HashMap::new();
+    newhm.insert(x, y);
+
+    println!("{:?},", newhm);
+    
+    let mut map = HashMap::new();
+    for word in "hello world world hello hi".split_whitespace() {
+        let count = map.entry(word).or_insert(0);
+        *count += 1;
+    }
+    println!("{:?}", map);
+
+}
+
+fn add_score(map: &mut HashMap<String, i32>, team: &str, points: i32){
+    let score = map.entry(team.to_string()).or_insert(0);
+    *score += points;
 }
 
 
@@ -127,4 +153,10 @@ fn main() {
     demo_vec();
     demo_str();
     demo_hashmap();
+
+    let mut scores = HashMap::new();
+    add_score(&mut scores, "Blue", 5);
+    add_score(&mut scores, "Blue", 10);
+    add_score(&mut scores, "Red", 8);
+    println!("{:?}",scores);
 }
