@@ -1,0 +1,6 @@
+[package]
+name = "ex_word_frequencies"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]

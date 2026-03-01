@@ -1,0 +1,6 @@
+[package]
+name = "company_directory_cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]

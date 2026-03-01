@@ -188,6 +188,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
+name = "company_directory_cli"
+version = "0.1.0"
+
+[[package]]
 name = "derive-where"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -217,6 +221,42 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "ex_borrow_shift"
+version = "0.1.0"
+
+[[package]]
+name = "ex_join_with_comma"
+version = "0.1.0"
+
+[[package]]
+name = "ex_pig_latin"
+version = "0.1.0"
+
+[[package]]
+name = "ex_safe_get"
+version = "0.1.0"
+
+[[package]]
+name = "ex_stats_mean_median_mode"
+version = "0.1.0"
+
+[[package]]
+name = "ex_table_row"
+version = "0.1.0"
+
+[[package]]
+name = "ex_utf8_trap"
+version = "0.1.0"
+
+[[package]]
+name = "ex_vec_stack"
+version = "0.1.0"
+
+[[package]]
+name = "ex_word_frequencies"
+version = "0.1.0"
 
 [[package]]
 name = "fibonacci"

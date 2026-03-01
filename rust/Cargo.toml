@@ -13,8 +13,18 @@ members = [
     # Exercises - упражнения из книги
     "02_exercises/guessing_game",
     "02_exercises/fibonacci",
-    "02_exercises/temperature_converter",
+    "02_exercises/01_vectors/01_vec_stack",
+    "02_exercises/01_vectors/02_safe_get",
+    "02_exercises/01_vectors/03_borrow_shift",
+    "02_exercises/01_vectors/04_table_row",
+    "02_exercises/02_strings/01_join_with_comma",
+    "02_exercises/02_strings/02_utf8_trap",
+    "02_exercises/02_strings/03_pig_latin",
+    "02_exercises/03_hashmaps/01_word_frequencies",
+    "02_exercises/03_hashmaps/02_stats_mean_median_mode",
+    "03_projects/temperature_converter",
     # Projects - полноценные проекты
+    "03_projects/company_directory_cli",
     "03_projects/temperature_converter_web",
     # Experiments - эксперименты и математические задачи
     "04_experiments/mathmagic",
