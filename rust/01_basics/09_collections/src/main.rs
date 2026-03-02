@@ -147,12 +147,19 @@ fn add_score(map: &mut HashMap<String, i32>, team: &str, points: i32){
     *score += points;
 }
 
+fn demo_vec_access(){
+    let v = vec![1,2,3,4,5];
+    let 
+}
+
+
 
 
 fn main() {
     demo_vec();
     demo_str();
     demo_hashmap();
+    demo_vec_access();
 
     let mut scores = HashMap::new();
     add_score(&mut scores, "Blue", 5);
