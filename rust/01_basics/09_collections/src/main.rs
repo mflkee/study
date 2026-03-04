@@ -147,11 +147,20 @@ fn add_score(map: &mut HashMap<String, i32>, team: &str, points: i32){
     *score += points;
 }
 
-fn demo_vec_access(){
-    let v = vec![1,2,3,4,5];
-    let 
-}
 
+fn demo_vec_access(){
+    let v = vec![1, 2, 3, 4, 5];
+    let third: &i32 = &v[2];
+
+    println!("The third element is {third}");
+
+    let third: Option<&i32> = v.get(2);
+
+    match third {
+        Some(third) => println!("The third element is {third}"),
+        None => println!("There is no third element."),
+        }
+}
 
 
 
@@ -159,11 +168,12 @@ fn main() {
     demo_vec();
     demo_str();
     demo_hashmap();
-    demo_vec_access();
 
     let mut scores = HashMap::new();
     add_score(&mut scores, "Blue", 5);
     add_score(&mut scores, "Blue", 10);
     add_score(&mut scores, "Red", 8);
     println!("{:?}",scores);
+
+    demo_vec_access();
 }
