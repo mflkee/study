@@ -1,0 +1,3 @@
+[workspace]
+members = ["task_tracker_core", "task_tracker_cli"]
+resolver = "2"

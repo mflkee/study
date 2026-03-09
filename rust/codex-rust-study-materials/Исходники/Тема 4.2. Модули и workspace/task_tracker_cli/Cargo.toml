@@ -1,0 +1,7 @@
+[package]
+name = "task_tracker_cli"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+task_tracker_core = { path = "../task_tracker_core" }
