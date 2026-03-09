@@ -15,6 +15,9 @@
 4. `04_collections_iterators.rs`
 5. `05_results_options.rs`
 6. `06_traits_lifetimes.rs`
+7. `07_pattern_matching.rs`
+8. `08_strings_utf8.rs`
+9. `09_threads_channels.rs`
 
 ## Команды
 
