@@ -36,8 +36,8 @@ fn structs_group_related_data() {
         name: String::from("Nika"),
         score: 92,
     };
-    let expected_name: String = todo();
-    let expected_excellent: bool = todo();
+    let expected_name: String = String::from("Nika");
+    let expected_excellent: bool = true;
 
     assert_eq!(student.name, expected_name);
     assert_eq!(student.is_excellent(), expected_excellent);
