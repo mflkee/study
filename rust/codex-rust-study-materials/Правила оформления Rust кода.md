@@ -28,7 +28,7 @@ cargo clippy --all-targets --all-features -- -D warnings
 - типы, `struct`, `enum`, `trait`: `CamelCase`;
 - константы: `SCREAMING_SNAKE_CASE`.
 
-**Хорошо**
+### Хорошо
 
 ```rust
 const MAX_RETRIES: usize = 3;
@@ -42,7 +42,7 @@ fn parse_command(input: &str) -> bool {
 }
 ```
 
-**Плохо**
+### Плохо
 
 ```rust
 const maxRetries: usize = 3;
@@ -60,15 +60,16 @@ fn ParseCommand(input: &str) -> bool {
 
 Если функция не обязана владеть данными, не принимайте `String` или `Vec<T>` без причины.
 
-**Хорошо**
+Хорошо
 
 ```rust
 fn is_valid_title(title: &str) -> bool {
     !title.trim().is_empty()
 }
 ```
+Fenced code blocks should be surrounded by blank lines
 
-**Плохо**
+Плохо
 
 ```rust
 fn is_valid_title(title: String) -> bool {
@@ -80,7 +81,7 @@ fn is_valid_title(title: String) -> bool {
 
 В библиотечном коде избегайте `unwrap()` и `expect()`, если ошибка может возникнуть на реальных входных данных.
 
-**Хорошо**
+Хорошо
 
 ```rust
 fn parse_score(input: &str) -> Result<u8, std::num::ParseIntError> {
@@ -88,7 +89,7 @@ fn parse_score(input: &str) -> Result<u8, std::num::ParseIntError> {
 }
 ```
 
-**Плохо**
+Плохо
 
 ```rust
 fn parse_score(input: &str) -> u8 {
@@ -102,7 +103,7 @@ fn parse_score(input: &str) -> u8 {
 
 Если сущность имеет конечный набор состояний, используйте `enum`.
 
-**Хорошо**
+Хорошо
 
 ```rust
 enum TaskStatus {
@@ -112,7 +113,7 @@ enum TaskStatus {
 }
 ```
 
-**Плохо**
+Плохо
 
 ```rust
 struct Task {
@@ -149,7 +150,7 @@ struct Task {
 
 Не пишите комментарии, которые дублируют код.
 
-**Плохо**
+Плохо
 
 ```rust
 // Увеличиваем счётчик на 1
