@@ -4,7 +4,7 @@
 
 ## Структура
 
-```
+```text
 rust/
 ├── 01_basics/              # Основы (проходить последовательно)
 │   ├── 01_variables/       # Переменные, мутабельность, shadowing
@@ -89,12 +89,14 @@ cargo build --release
 ## Добавление новых примеров
 
 1. Создайте новый крейт в соответствующей папке:
+
    ```bash
    cargo new 01_basics/09_topic_name
    ```
 
 2. Добавьте его в `Cargo.toml` в секцию `[workspace].members`
 3. Переименуйте пакет в `Cargo.toml` (имя не должно начинаться с цифры):
+
    ```toml
    [package]
    name = "basics_topic_name"
