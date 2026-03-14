@@ -1,4 +1,4 @@
-# 07 Option, Result и обработка ошибок
+# 07 Option, Result, and Error Handling
 
 ## Что нужно перестроить в голове
 
@@ -71,11 +71,11 @@ enum ScheduleError {
 
 - Koans: [05_results_options.rs](../Rust-Koans/tests/05_results_options.rs)
 - Домашнее: [2.4 Option, Result и обработка
-  ошибок](../Домашние%20задания/2.4%20Option,%20Result%20и%20обработка%20ошибок/README.md)
+  ошибок](../Homework/2.4%20Option,%20Result,%20and%20Error%20Handling/README.md)
 - Домашнее: [3.2 Парсинг логов и
-  отчёты](../Домашние%20задания/3.2%20Парсинг%20логов%20и%20отчёты/README.md)
-- Практика: [7 Парсер команд
-  калькулятора](../Практика/7%20Парсер%20команд%20калькулятора/README.md)
+  отчёты](../Homework/3.2%20Log%20Parsing%20and%20Reports/README.md)
+- Practice: [7 Парсер команд
+  калькулятора](../Practice/7%20Calculator%20Command%20Parser/README.md)
 
 ## Вопросы для самопроверки
 

@@ -1,4 +1,4 @@
-# Работа в терминале и cargo
+# Working in the Terminal and Cargo
 
 Этот файл играет ту же роль, что и краткий терминальный гайд в исходном
 репозитории, но адаптирован под повседневную работу с Rust.
@@ -24,7 +24,7 @@ mkdir <папка>
 Если в пути есть пробелы, заключайте путь в кавычки:
 
 ```bash
-cd "~/study/rust/codex-rust-study-materials/Домашние задания/1.4 Итераторы и замыкания в Rust/starter"
+cd "~/study/rust/codex-rust-study-materials/Homework/1.4 Iterators and Closures in Rust/starter"
 ```
 
 ## Базовые команды cargo

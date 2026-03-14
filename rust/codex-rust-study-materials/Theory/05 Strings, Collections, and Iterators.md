@@ -1,4 +1,4 @@
-# 05 Строки, коллекции и итераторы
+# 05 Strings, Collections, and Iterators
 
 ## Главная идея
 
@@ -74,14 +74,14 @@ let passed: Vec<u8> = scores
 - Koans:
   [04_collections_iterators.rs](../Rust-Koans/tests/04_collections_iterators.rs)
 - Koans: [08_strings_utf8.rs](../Rust-Koans/tests/08_strings_utf8.rs)
-- Практика: [6 Частотный словарь](../Практика/6%20Частотный%20словарь/README.md)
-- Практика: [11 CSV-журнал
-  успеваемости](../Практика/11%20CSV-журнал%20успеваемости/README.md)
-- Практика: [13 Анализ логов](../Практика/13%20Анализ%20логов/README.md)
+- Practice: [6 Frequency Dictionary](../Practice/6%20Frequency%20Dictionary/README.md)
+- Practice: [11 CSV-журнал
+  успеваемости](../Practice/11%20CSV%20Gradebook/README.md)
+- Practice: [13 Log Analysis](../Practice/13%20Log%20Analysis/README.md)
 - Домашнее: [1.4 Итераторы и замыкания в
-  Rust](../Домашние%20задания/1.4%20Итераторы%20и%20замыкания%20в%20Rust/README.md)
+  Rust](../Homework/1.4%20Iterators%20and%20Closures%20in%20Rust/README.md)
 - Домашнее: [3.2 Парсинг логов и
-  отчёты](../Домашние%20задания/3.2%20Парсинг%20логов%20и%20отчёты/README.md)
+  отчёты](../Homework/3.2%20Log%20Parsing%20and%20Reports/README.md)
 
 ## Вопросы для самопроверки
 

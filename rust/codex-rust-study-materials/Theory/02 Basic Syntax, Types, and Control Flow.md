@@ -1,4 +1,4 @@
-# 02 Базовый синтаксис, типы и управление потоком
+# 02 Basic Syntax, Types, and Control Flow
 
 ## Главная мысль темы
 
@@ -75,10 +75,10 @@ let student = ("Mira", 5, true);
 ## Что сделать руками
 
 - Koans: [01_basics.rs](../Rust-Koans/tests/01_basics.rs)
-- Практика: [1 Конвертер
-  температур](../Практика/1%20Конвертер%20температур/README.md)
-- Практика: [3 Анализ оценок
-  группы](../Практика/3%20Анализ%20оценок%20группы/README.md)
+- Practice: [1 Конвертер
+  температур](../Practice/1%20Temperature%20Converter/README.md)
+- Practice: [3 Анализ оценок
+  группы](../Practice/3%20Group%20Grade%20Analysis/README.md)
 
 ## Вопросы для самопроверки
 

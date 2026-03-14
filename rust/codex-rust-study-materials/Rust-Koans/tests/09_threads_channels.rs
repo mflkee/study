@@ -1,5 +1,5 @@
-fn placeholder<T>() -> T {
-    panic!("Замените placeholder() правильным значением");
+fn todo<T>() -> T {
+    std::todo!("Замените todo() правильным значением");
 }
 
 use std::sync::{Arc, Mutex, mpsc};
@@ -8,8 +8,9 @@ use std::thread;
 #[test]
 fn thread_join_returns_result() {
     let handle = thread::spawn(|| 21 * 2);
+    let expected: i32 = todo();
 
-    assert_eq!(handle.join().unwrap(), placeholder::<i32>());
+    assert_eq!(handle.join().unwrap(), expected);
 }
 
 #[test]
@@ -19,8 +20,9 @@ fn channel_transfers_value_between_threads() {
     thread::spawn(move || {
         tx.send("done").expect("message should be sent");
     });
+    let expected: &str = todo();
 
-    assert_eq!(rx.recv().unwrap(), placeholder::<&str>());
+    assert_eq!(rx.recv().unwrap(), expected);
 }
 
 #[test]
@@ -39,6 +41,7 @@ fn arc_mutex_can_share_mutable_state() {
     for handle in handles {
         handle.join().expect("thread should finish");
     }
+    let expected: i32 = todo();
 
-    assert_eq!(*counter.lock().unwrap(), placeholder::<i32>());
+    assert_eq!(*counter.lock().unwrap(), expected);
 }

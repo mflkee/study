@@ -32,4 +32,4 @@
 
 Посмотрите пример в разделе:
 
-`Исходники/Тема 4.1. Рабочее окружение современного Rust-проекта`
+`Source Code/Topic 4.1. Modern Rust Project Environment`

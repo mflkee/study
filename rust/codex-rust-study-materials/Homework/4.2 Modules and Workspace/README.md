@@ -25,4 +25,4 @@
 
 См. пример:
 
-`Исходники/Тема 4.2. Модули и workspace`
+`Source Code/Topic 4.2. Modules and Workspace`

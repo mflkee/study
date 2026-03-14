@@ -1,4 +1,4 @@
-# 04 Struct, enum и pattern matching
+# 04 Structs, Enums, and Pattern Matching
 
 ## Зачем это нужно
 
@@ -77,10 +77,10 @@ Rust вместо этого обычно используют:
 
 - Koans: [03_structs_enums.rs](../Rust-Koans/tests/03_structs_enums.rs)
 - Koans: [07_pattern_matching.rs](../Rust-Koans/tests/07_pattern_matching.rs)
-- Практика: [4 Каталог книг](../Практика/4%20Каталог%20книг/README.md)
-- Практика: [5 TODO в памяти](../Практика/5%20TODO%20в%20памяти/README.md)
+- Practice: [4 Book Catalog](../Practice/4%20Book%20Catalog/README.md)
+- Practice: [5 In-Memory TODO](../Practice/5%20In-Memory%20TODO/README.md)
 - Домашнее: [2.2 Структуры, enum, методы и
-  traits](../Домашние%20задания/2.2%20Структуры,%20enum,%20методы%20и%20traits/README.md)
+  traits](../Homework/2.2%20Structs,%20Enums,%20Methods,%20and%20Traits/README.md)
 
 ## Вопросы для самопроверки
 

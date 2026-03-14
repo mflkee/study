@@ -1,4 +1,4 @@
-# 03 Ownership, borrowing и slices
+# 03 Ownership, Borrowing, and Slices
 
 ## Почему это центральная тема Rust
 
@@ -84,11 +84,11 @@ let head = &values[..2];
 ## Что сделать руками
 
 - Koans: [02_ownership.rs](../Rust-Koans/tests/02_ownership.rs)
-- Практика: [2 Очистка и сокращение
-  текста](../Практика/2%20Очистка%20и%20сокращение%20текста/README.md)
-- Практика: [6 Частотный словарь](../Практика/6%20Частотный%20словарь/README.md)
+- Practice: [2 Очистка и сокращение
+  текста](../Practice/2%20Text%20Cleanup%20and%20Shortening/README.md)
+- Practice: [6 Frequency Dictionary](../Practice/6%20Frequency%20Dictionary/README.md)
 - Домашнее: [2.6 Дженерики, trait bounds и
-  lifetimes](../Домашние%20задания/2.6%20Дженерики,%20trait%20bounds%20и%20lifetimes/README.md)
+  lifetimes](../Homework/2.6%20Generics,%20Trait%20Bounds,%20and%20Lifetimes/README.md)
 
 ## Вопросы для самопроверки
 

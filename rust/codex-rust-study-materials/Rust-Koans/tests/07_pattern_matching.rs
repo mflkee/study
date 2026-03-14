@@ -1,5 +1,5 @@
-fn placeholder<T>() -> T {
-    panic!("Замените placeholder() правильным значением");
+fn todo<T>() -> T {
+    std::todo!("Замените todo() правильным значением");
 }
 
 #[derive(Debug, PartialEq)]
@@ -37,15 +37,17 @@ fn match_can_destructure_enum_fields() {
         StudyEvent::Lesson { title, .. } => title,
         _ => "other",
     };
+    let expected_title: &str = todo();
 
-    assert_eq!(title, placeholder::<&str>());
+    assert_eq!(title, expected_title);
 }
 
 #[test]
 fn match_can_return_different_values_for_variants() {
     let result = event_points(StudyEvent::Submit { passed: true });
+    let expected_result: u16 = todo();
 
-    assert_eq!(result, placeholder::<u16>());
+    assert_eq!(result, expected_result);
 }
 
 #[test]
@@ -56,11 +58,14 @@ fn tuple_like_variants_can_be_unpacked() {
         StudyEvent::Break(minutes) => minutes,
         _ => 0,
     };
+    let expected_minutes: u16 = todo();
 
-    assert_eq!(extracted, placeholder::<u16>());
+    assert_eq!(extracted, expected_minutes);
 }
 
 #[test]
 fn ranges_work_in_match_arms() {
-    assert_eq!(score_label(4), placeholder::<&str>());
+    let expected_label: &str = todo();
+
+    assert_eq!(score_label(4), expected_label);
 }

@@ -1,4 +1,4 @@
-# 09 Модули, crates и workspace
+# 09 Modules, Crates, and Workspace
 
 ## Что меняется на этом этапе
 
@@ -64,12 +64,12 @@ members = ["core", "cli"]
 
 ## Что сделать руками
 
-- Исходники: [Тема
-  4.2](../Исходники/Тема%204.2.%20Модули%20и%20workspace/README.md)
+- Source Code: [Тема
+  4.2](../Source Code/Topic%204.2.%20Modules%20and%20Workspace/README.md)
 - Домашнее: [4.2 Модули и
-  workspace](../Домашние%20задания/4.2%20Модули%20и%20workspace/README.md)
-- Практика: [15 Планировщик
-  дедлайнов](../Практика/15%20Планировщик%20дедлайнов/README.md)
+  workspace](../Homework/4.2%20Modules%20and%20Workspace/README.md)
+- Practice: [15 Планировщик
+  дедлайнов](../Practice/15%20Deadline%20Scheduler/README.md)
 
 ## Вопросы для самопроверки
 

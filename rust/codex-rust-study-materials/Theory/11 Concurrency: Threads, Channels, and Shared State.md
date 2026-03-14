@@ -1,4 +1,4 @@
-# 11 Параллелизм: threads, channels и shared state
+# 11 Concurrency: Threads, Channels, and Shared State
 
 ## Почему эту тему стоит включать в базу
 
@@ -66,10 +66,10 @@ use std::sync::{Arc, Mutex};
 ## Что сделать руками
 
 - Koans: [09_threads_channels.rs](../Rust-Koans/tests/09_threads_channels.rs)
-- Практика: [14 Параллельный
-  подсчёт](../Практика/14%20Параллельный%20подсчёт/README.md)
+- Practice: [14 Параллельный
+  подсчёт](../Practice/14%20Parallel%20Counting/README.md)
 - Домашнее: [3.4 Параллельная обработка
-  данных](../Домашние%20задания/3.4%20Параллельная%20обработка%20данных/README.md)
+  данных](../Homework/3.4%20Parallel%20Data%20Processing/README.md)
 
 ## Вопросы для самопроверки
 

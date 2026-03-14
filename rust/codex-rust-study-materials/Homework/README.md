@@ -1,18 +1,18 @@
-# Домашние задания
+# Homework
 
 Здесь собраны более крупные задания, в которых студент уже не просто тренирует
 один синтаксический приём, а собирает маленький, но цельный кусок приложения.
 
 Последовательность:
 
-1. `1.4 Итераторы и замыкания в Rust`
-2. `2.2 Структуры, enum, методы и traits`
-3. `2.4 Option, Result и обработка ошибок`
-4. `2.6 Дженерики, trait bounds и lifetimes`
-5. `3.1 CLI и файловый ввод-вывод`
-6. `3.2 Парсинг логов и отчёты`
-7. `3.4 Параллельная обработка данных`
-8. `4.1 Рабочее окружение современного Rust-проекта`
-9. `4.2 Модули и workspace`
-10. `4.3 Тестирование кода в Rust`
-11. `5 Итоговое задание`
+1. `1.4 Iterators and Closures in Rust`
+2. `2.2 Structs, Enums, Methods, and Traits`
+3. `2.4 Option, Result, and Error Handling`
+4. `2.6 Generics, Trait Bounds, and Lifetimes`
+5. `3.1 CLI and File IO`
+6. `3.2 Log Parsing and Reports`
+7. `3.4 Parallel Data Processing`
+8. `4.1 Modern Rust Project Environment`
+9. `4.2 Modules and Workspace`
+10. `4.3 Testing Rust Code`
+11. `5 Final Assignment`

@@ -1,4 +1,4 @@
-# 01 Инструменты, rustup и cargo
+# 01 Tools, rustup, and Cargo
 
 ## Зачем это нужно
 
@@ -75,14 +75,14 @@ Edition `2024` определяет набор правил языка и рек
 ## Что сделать руками
 
 - Прочитать [Работа в терминале и
-  cargo](../Работа%20в%20терминале%20и%20cargo.md)
-- Практика: [1 Конвертер
-  температур](../Практика/1%20Конвертер%20температур/README.md)
-- Практика: [8 Мини-утилита wc](../Практика/8%20Мини-утилита%20wc/README.md)
+  cargo](../Working%20in%20the%20Terminal%20and%20Cargo.md)
+- Practice: [1 Конвертер
+  температур](../Practice/1%20Temperature%20Converter/README.md)
+- Practice: [8 Mini WC Utility](../Practice/8%20Mini%20WC%20Utility/README.md)
 - Домашнее: [4.1 Рабочее окружение современного
-  Rust-проекта](../Домашние%20задания/4.1%20Рабочее%20окружение%20современного%20Rust-проекта/README.md)
-- Исходники: [Тема
-  4.1](../Исходники/Тема%204.1.%20Рабочее%20окружение%20современного%20Rust-проекта/README.md)
+  Rust-проекта](../Homework/4.1%20Modern%20Rust%20Project%20Environment/README.md)
+- Source Code: [Тема
+  4.1](../Source Code/Topic%204.1.%20Modern%20Rust%20Project%20Environment/README.md)
 
 ## Вопросы для самопроверки
 

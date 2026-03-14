@@ -1,4 +1,4 @@
-# 06 Functions, closures, traits, generics и lifetimes
+# 06 Functions, Closures, Traits, Generics, and Lifetimes
 
 ## Почему это сильная тема
 
@@ -80,9 +80,9 @@ Lifetimes чаще всего появляются не потому, что “
 
 - Koans: [06_traits_lifetimes.rs](../Rust-Koans/tests/06_traits_lifetimes.rs)
 - Домашнее: [2.6 Дженерики, trait bounds и
-  lifetimes](../Домашние%20задания/2.6%20Дженерики,%20trait%20bounds%20и%20lifetimes/README.md)
+  lifetimes](../Homework/2.6%20Generics,%20Trait%20Bounds,%20and%20Lifetimes/README.md)
 - Домашнее: [1.4 Итераторы и замыкания в
-  Rust](../Домашние%20задания/1.4%20Итераторы%20и%20замыкания%20в%20Rust/README.md)
+  Rust](../Homework/1.4%20Iterators%20and%20Closures%20in%20Rust/README.md)
 
 ## Вопросы для самопроверки
 

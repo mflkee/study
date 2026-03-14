@@ -1,4 +1,4 @@
-# Практика
+# Practice
 
 В исходном JavaScript-репозитории практика была серией коротких задач на один
 механизм. Здесь используется тот же принцип, но вместо DOM и браузера акцент
@@ -7,20 +7,20 @@
 
 Рекомендуемый порядок:
 
-1. Конвертер температур
-2. Очистка и сокращение текста
-3. Анализ оценок группы
-4. Каталог книг
-5. TODO в памяти
-6. Частотный словарь
-7. Парсер команд калькулятора
-8. Мини-утилита wc
-9. Учёт складских остатков
-10. Агрегация результатов опроса
-11. CSV-журнал успеваемости
-12. Мини-поисковик по заметкам
-13. Анализ логов
-14. Параллельный подсчёт
-15. Планировщик дедлайнов
+1. Temperature Converter
+2. Text Cleanup and Shortening
+3. Group Grade Analysis
+4. Book Catalog
+5. In-Memory TODO
+6. Frequency Dictionary
+7. Calculator Command Parser
+8. Mini WC Utility
+9. Inventory Tracking
+10. Survey Results Aggregation
+11. CSV Gradebook
+12. Mini Note Search Engine
+13. Log Analysis
+14. Parallel Counting
+15. Deadline Scheduler
 
 Во всех папках есть `starter`-проект. Его нужно дописывать самостоятельно.

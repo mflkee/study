@@ -1,4 +1,4 @@
-# Тема 4.2. Модули и workspace
+# Topic 4.2. Modules and Workspace
 
 В этом примере приложение разделено на два crates:
 
