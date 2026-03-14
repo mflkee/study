@@ -13,6 +13,7 @@ dependencies = [
 dev = [
     "httpx>=0.28.0",
     "pytest>=8.3.0",
+    "ruff>=0.11.0",
 ]
 
 [build-system]
@@ -25,3 +26,10 @@ packages = ["src/calculator_api"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

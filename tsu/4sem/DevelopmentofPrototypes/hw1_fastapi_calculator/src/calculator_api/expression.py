@@ -3,7 +3,7 @@ from __future__ import annotations
 import ast
 import operator
 from dataclasses import dataclass
-from typing import TypeAlias
+from typing import TypeAlias, TypeGuard
 
 Number: TypeAlias = int | float
 Operand: TypeAlias = Number | str
@@ -30,7 +30,7 @@ def format_number(value: Number) -> str:
     return str(int(as_float)) if as_float.is_integer() else str(as_float)
 
 
-def _is_number_constant(node: ast.AST) -> bool:
+def _is_number_constant(node: ast.AST) -> TypeGuard[ast.Constant]:
     return (
         isinstance(node, ast.Constant)
         and isinstance(node.value, (int, float))
@@ -120,7 +120,11 @@ class ExpressionStore:
         if op not in {"+", "-", "*", "/"}:
             raise ValueError("Operation must be one of: +, -, *, /.")
 
-        expression = f"{self._stringify_operand(left)} {op} {self._stringify_operand(right)}"
+        expression = (
+            f"{self._stringify_operand(left)} "
+            f"{op} "
+            f"{self._stringify_operand(right)}"
+        )
         self.current_expression = validate_expression(expression)
         return self.current_expression
 

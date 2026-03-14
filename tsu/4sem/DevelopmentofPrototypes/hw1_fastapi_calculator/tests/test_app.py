@@ -12,7 +12,10 @@ def reset_store() -> None:
 @pytest.fixture
 async def client() -> httpx.AsyncClient:
     transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as async_client:
+    async with httpx.AsyncClient(
+        transport=transport,
+        base_url="http://testserver",
+    ) as async_client:
         yield async_client
 
 
@@ -63,7 +66,9 @@ async def test_parse_and_evaluate_complex_expression(client: httpx.AsyncClient) 
 
 
 @pytest.mark.anyio
-async def test_compose_append_and_evaluate_expression(client: httpx.AsyncClient) -> None:
+async def test_compose_append_and_evaluate_expression(
+    client: httpx.AsyncClient,
+) -> None:
     compose_response = await client.post(
         "/expression/compose",
         json={"left": "2 + 3", "op": "*", "right": 4},

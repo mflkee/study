@@ -27,6 +27,12 @@ uv run uvicorn calculator_api.main:app --reload
 uv run pytest
 ```
 
+## Линтинг
+
+```bash
+uv run ruff check
+```
+
 ## Основные эндпоинты
 
 - `GET /operations/add?a=2&b=3`
