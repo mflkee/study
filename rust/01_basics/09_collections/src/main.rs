@@ -19,7 +19,6 @@ fn demo_vec() {
     // 3. Access to the elenents
     let third = &v2[2];
     println!("{}",third);
-
     let third2 = v2.get(2);
     println!("{:?}",third2);
 
@@ -93,7 +92,7 @@ fn demo_str(){
     for b in "".bytes() {
         println!("{b}");
     }
-
+    
 }
 
 fn demo_hashmap(){

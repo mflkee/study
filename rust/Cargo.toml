@@ -10,6 +10,7 @@ members = [
     "01_basics/07_structs",
     "01_basics/08_enums",
     "01_basics/09_collections",
+    "01_basics/10_modules/backyard",
     # Exercises - упражнения из книги
     "02_exercises/guessing_game",
     "02_exercises/fibonacci",
@@ -27,6 +28,6 @@ members = [
     "03_projects/company_directory_cli",
     "03_projects/temperature_converter_web",
     # Experiments - эксперименты и математические задачи
-    "04_experiments/mathmagic",
+    "04_experiments/mathmagic", "01_basics/10_modules/restautant",
 ]
 resolver = "2"
