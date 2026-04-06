@@ -28,6 +28,6 @@ members = [
     "03_projects/company_directory_cli",
     "03_projects/temperature_converter_web",
     # Experiments - эксперименты и математические задачи
-    "04_experiments/mathmagic", "01_basics/10_modules/restautant",
+    "04_experiments/mathmagic", "01_basics/10_modules/restautant", "01_basics/11_handing_errors",
 ]
 resolver = "2"
