@@ -1,0 +1,2 @@
+WRN 2026-04-14T16:01:57.749 ui.342126  tui_handle_term_mode:239: TUI: terminal mode 2031 detected, state 2
+WRN 2026-04-14T16:12:40.707 ?.2        server_start:197: Failed to start server: operation not permitted: /run/user/1000/nvim.2.0
