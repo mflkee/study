@@ -1,37 +1,37 @@
 ---
-name: Bug report
-about: Report a defect found during testing
+name: Сообщить о баге
+about: Оформить найденный дефект
 title: "[BUG] "
 labels: bug
 assignees: ""
 ---
 
-## Summary
+## Краткое описание
 
-Short description of the defect.
+Коротко опишите дефект.
 
-## Preconditions
+## Предусловия
 
-- Environment or page state needed to reproduce the bug
+- Окружение или состояние страницы, нужное для воспроизведения
 
-## Steps to Reproduce
+## Шаги воспроизведения
 
 1. 
 2. 
 3. 
 
-## Expected Result
+## Ожидаемый результат
 
-- What should happen
+- Что должно происходить
 
-## Actual Result
+## Фактический результат
 
-- What happens instead
+- Что происходит на самом деле
 
-## Severity
+## Серьёзность
 
 - Low / Medium / High / Critical
 
-## Additional Context
+## Дополнительно
 
-- Screenshots, logs, browser version, or other useful details
+- Скриншоты, логи, версия браузера и другие полезные детали
