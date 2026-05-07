@@ -11,7 +11,8 @@ members = [
     "01_basics/08_enums",
     "01_basics/09_collections",
     "01_basics/10_modules/backyard",
-    "01_basics/11_handing_errors/",
+    "01_basics/11_handing_errors/ai_vers",
+    "01_basics/11_handing_errors/rb_vers",
     # Exercises - упражнения из книги
     "02_exercises/guessing_game",
     "02_exercises/fibonacci",
@@ -29,6 +30,6 @@ members = [
     "03_projects/company_directory_cli",
     "03_projects/temperature_converter_web",
     # Experiments - эксперименты и математические задачи
-    "04_experiments/mathmagic", "01_basics/10_modules/restautant", "01_basics/11_handing_errors",
+    "04_experiments/mathmagic",
 ]
 resolver = "2"
