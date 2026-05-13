@@ -1,0 +1,239 @@
+{
+  "n_objects": 342,
+  "features": [
+    "bill_length_mm",
+    "bill_depth_mm",
+    "flipper_length_mm"
+  ],
+  "pairs": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "best_pair": [
+    0,
+    2
+  ],
+  "desc_stats": {
+    "bill_length_mm": {
+      "count": 342.0,
+      "mean": 43.9219298245614,
+      "std": 5.4595837139265315,
+      "min": 32.1,
+      "25%": 39.225,
+      "50%": 44.45,
+      "75%": 48.5,
+      "max": 59.6
+    },
+    "bill_depth_mm": {
+      "count": 342.0,
+      "mean": 17.151169590643278,
+      "std": 1.9747931568167814,
+      "min": 13.1,
+      "25%": 15.6,
+      "50%": 17.3,
+      "75%": 18.7,
+      "max": 21.5
+    },
+    "flipper_length_mm": {
+      "count": 342.0,
+      "mean": 200.91520467836258,
+      "std": 14.061713679356886,
+      "min": 172.0,
+      "25%": 190.0,
+      "50%": 197.0,
+      "75%": 213.0,
+      "max": 231.0
+    }
+  },
+  "kmeans_results": {
+    "2": {
+      "silhouette": 0.519
+    },
+    "3": {
+      "silhouette": 0.502
+    },
+    "4": {
+      "silhouette": 0.419
+    },
+    "5": {
+      "silhouette": 0.38
+    },
+    "6": {
+      "silhouette": 0.332
+    }
+  },
+  "best_k": 2,
+  "dbscan_results": {
+    "eps=0.4, min_samples=5": {
+      "n_clusters": 4,
+      "n_noise": 54,
+      "silhouette": 0.432
+    },
+    "eps=0.4, min_samples=6": {
+      "n_clusters": 3,
+      "n_noise": 67,
+      "silhouette": 0.563
+    },
+    "eps=0.4, min_samples=7": {
+      "n_clusters": 4,
+      "n_noise": 74,
+      "silhouette": 0.479
+    },
+    "eps=0.4, min_samples=8": {
+      "n_clusters": 4,
+      "n_noise": 86,
+      "silhouette": 0.491
+    },
+    "eps=0.4, min_samples=9": {
+      "n_clusters": 4,
+      "n_noise": 103,
+      "silhouette": 0.488
+    },
+    "eps=0.5, min_samples=5": {
+      "n_clusters": 2,
+      "n_noise": 18,
+      "silhouette": 0.542
+    },
+    "eps=0.5, min_samples=6": {
+      "n_clusters": 2,
+      "n_noise": 20,
+      "silhouette": 0.545
+    },
+    "eps=0.5, min_samples=7": {
+      "n_clusters": 3,
+      "n_noise": 22,
+      "silhouette": 0.518
+    },
+    "eps=0.5, min_samples=8": {
+      "n_clusters": 3,
+      "n_noise": 24,
+      "silhouette": 0.52
+    },
+    "eps=0.5, min_samples=9": {
+      "n_clusters": 3,
+      "n_noise": 30,
+      "silhouette": 0.527
+    },
+    "eps=0.6, min_samples=5": {
+      "n_clusters": 2,
+      "n_noise": 9,
+      "silhouette": 0.527
+    },
+    "eps=0.6, min_samples=6": {
+      "n_clusters": 2,
+      "n_noise": 11,
+      "silhouette": 0.529
+    },
+    "eps=0.6, min_samples=7": {
+      "n_clusters": 2,
+      "n_noise": 12,
+      "silhouette": 0.531
+    },
+    "eps=0.6, min_samples=8": {
+      "n_clusters": 2,
+      "n_noise": 12,
+      "silhouette": 0.531
+    },
+    "eps=0.6, min_samples=9": {
+      "n_clusters": 2,
+      "n_noise": 12,
+      "silhouette": 0.531
+    },
+    "eps=0.7, min_samples=5": {
+      "n_clusters": 2,
+      "n_noise": 2,
+      "silhouette": 0.523
+    },
+    "eps=0.7, min_samples=6": {
+      "n_clusters": 2,
+      "n_noise": 3,
+      "silhouette": 0.524
+    },
+    "eps=0.7, min_samples=7": {
+      "n_clusters": 2,
+      "n_noise": 3,
+      "silhouette": 0.524
+    },
+    "eps=0.7, min_samples=8": {
+      "n_clusters": 2,
+      "n_noise": 4,
+      "silhouette": 0.524
+    },
+    "eps=0.7, min_samples=9": {
+      "n_clusters": 2,
+      "n_noise": 4,
+      "silhouette": 0.524
+    },
+    "eps=0.8, min_samples=5": {
+      "n_clusters": 1,
+      "n_noise": 1,
+      "silhouette": null
+    },
+    "eps=0.8, min_samples=6": {
+      "n_clusters": 1,
+      "n_noise": 1,
+      "silhouette": null
+    },
+    "eps=0.8, min_samples=7": {
+      "n_clusters": 1,
+      "n_noise": 2,
+      "silhouette": null
+    },
+    "eps=0.8, min_samples=8": {
+      "n_clusters": 1,
+      "n_noise": 2,
+      "silhouette": null
+    },
+    "eps=0.8, min_samples=9": {
+      "n_clusters": 1,
+      "n_noise": 2,
+      "silhouette": null
+    }
+  },
+  "best_dbscan": {
+    "eps": 0.4,
+    "min_samples": 6,
+    "silhouette": 0.563,
+    "n_clusters": 3,
+    "n_noise": 67
+  },
+  "agg_results": {
+    "2": {
+      "silhouette": 0.476
+    },
+    "3": {
+      "silhouette": 0.498
+    },
+    "4": {
+      "silhouette": 0.406
+    },
+    "5": {
+      "silhouette": 0.349
+    }
+  },
+  "best_agg_k": 3,
+  "algorithms_summary": {
+    "K-means": {
+      "n_clusters": 2,
+      "silhouette": 0.519
+    },
+    "DBSCAN": {
+      "n_clusters": 3,
+      "silhouette": 0.563
+    },
+    "Agglomerative": {
+      "n_clusters": 3,
+      "silhouette": 0.498
+    }
+  }
+}
