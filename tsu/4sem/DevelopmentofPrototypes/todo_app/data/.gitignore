@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.env
+.venv
+ml_models/
+alembic/versions/*.pyc
