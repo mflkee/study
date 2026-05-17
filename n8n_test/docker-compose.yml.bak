@@ -1,0 +1,48 @@
+services:
+  awg:
+    image: isonecom/amneziawg-client:latest
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    volumes:
+      - ./Netherlands.conf:/config/Netherlands.conf:ro
+    ports:
+      - "5678:5678"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for f in /config/*.conf; do
+          name=$(basename "$$f" .conf)
+          cp "$$f" "/etc/amnezia/amneziawg/$${name}.conf"
+          chmod 600 "/etc/amnezia/amneziawg/$${name}.conf"
+          awg-quick up "$$name"
+          iptables -A FORWARD -i "$$name" -j ACCEPT
+          iptables -A FORWARD -o "$$name" -j ACCEPT
+          iptables -A FORWARD -i "$$name" -o "$$name" -j ACCEPT
+        done
+        sleep infinity
+    restart: unless-stopped
+
+  n8n:
+    image: n8nio/n8n:latest
+    network_mode: "service:awg"
+    depends_on:
+      awg:
+        condition: service_started
+    user: "1000:1000"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=your_password
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - GENERIC_TIMEZONE=Europe/Moscow
+    volumes:
+      - n8n_data:/home/node/.n8n
+    restart: unless-stopped
+
+volumes:
+  n8n_data:

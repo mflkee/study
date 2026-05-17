@@ -1,10 +1,59 @@
 services:
-  n8n:
-    image: n8nio/n8n:latest
-    restart: always
-    user: "1000:1000"  # <-- явно указываем UID:GID
+  awg:
+    image: isonecom/amneziawg-client:latest
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    devices:
+      - /dev/net/tun
+    volumes:
+      - ./Netherlands.conf:/config/Netherlands.conf:ro
     ports:
       - "5678:5678"
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        for f in /config/*.conf; do
+          name=$$(basename "$$f" .conf)
+
+          addr=$$(grep -i '^Address' "$$f" | head -1 | cut -d= -f2 | tr -d ' ')
+
+          # strip Address and DNS, keep everything else (Jc/Jmin etc are valid for awg)
+          grep -v -i '^Address\b\|^DNS\b' "$$f" > "/tmp/$${name}.conf"
+
+          cp "$$f" "/etc/amnezia/amneziawg/$${name}.conf"
+          chmod 600 "/etc/amnezia/amneziawg/$${name}.conf"
+
+          # start userspace daemon (creates TUN)
+          amneziawg-go "$$name" &
+          sleep 2
+
+          # configure tunnel (without Address/DNS which awg rejects)
+          awg setconf "$$name" "/tmp/$${name}.conf"
+          ip -4 address add "$$addr" dev "$$name"
+          ip link set mtu 1420 up dev "$$name"
+          awg set "$$name" fwmark 51820
+
+          # routing — no iptables needed, n8n shares this netns
+          ip -4 rule add not fwmark 51820 table 51820 2>/dev/null || true
+          ip -4 rule add table main suppress_prefixlength 0 2>/dev/null || true
+          ip -4 route add 0.0.0.0/0 dev "$$name" table 51820
+
+          echo "=== awg interface $$name is up ==="
+        done
+        sleep infinity
+    restart: unless-stopped
+
+  n8n:
+    image: n8nio/n8n:latest
+    network_mode: "service:awg"
+    depends_on:
+      awg:
+        condition: service_started
+    user: "1000:1000"
     environment:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=admin
@@ -15,9 +64,7 @@ services:
       - GENERIC_TIMEZONE=Europe/Moscow
     volumes:
       - n8n_data:/home/node/.n8n
-    # Или если хочешь хранить на хосте:
-    # volumes:
-    #   - ./n8n_data:/home/node/.n8n
+    restart: unless-stopped
 
 volumes:
   n8n_data:
