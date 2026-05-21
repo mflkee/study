@@ -1,64 +1,70 @@
-// Ownership (Владение)
+// Владение (Ownership) — ключевая концепция Rust
 // https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html
+// Правила:
+// 1) У каждого значения есть один владелец (owner)
+// 2) Одновременно может быть только один владелец
+// 3) Когда владелец выходит из области видимости — значение удаляется (drop)
+
+mod references; // подключаем модуль со ссылками и заимствованием
 
 fn main() {
+    // Запускаем примеры из модуля references.rs
+    references::demo();
+
+    println!("\n--- Основы владения ---");
+
     // === Stack vs Heap ===
-    // Stack: LIFO, фиксированный размер, быстрый доступ
-    // Heap: динамический размер, медленнее, нужен allocator
+    // Стек: LIFO, фиксированный размер, быстрый доступ
+    // Куча (Heap): динамический размер, медленнее, нужен аллокатор
 
-    // === Ownership Rules ===
-    // 1. Each value has a variable that's its 'owner'
-    // 2. There can only be one owner at a time
-    // 3. When the owner goes out of scope, the value will be dropped
-
-    // String (heap-allocated)
+    // String — heap-allocated (данные в куче)
     let s = String::from("hello");
     println!("{s}");
 
-    // Move (перемещение)
+    // Move (перемещение) — при присваивании владение переходит
     let s1 = String::from("hello");
-    let s2 = s1; // s1 больше не валиден (move)
-    // println!("{s1}"); // ERROR: value borrowed here after move
-    println!("{s2}");
+    let s2 = s1; // s1 moved -> больше невалиден
+    // println!("{s1}"); // ОШИБКА: s1 больше не владеет значением
+    println!("{s2}"); // OK
 
-    // Clone (глубокое копирование)
+    // Clone (глубокое копирование) — clone() для heap-данных
     let s3 = String::from("hello");
-    let s4 = s3.clone();
+    let s4 = s3.clone(); // копируем и кучу тоже
     println!("s3 = {s3}, s4 = {s4}");
 
-    // Copy types (stack-only, автоматическое копирование)
+    // Copy-типы (хранятся только на стеке) — копируются автоматически
     let x = 5;
-    let y = x; // Copy trait
+    let y = x; // i32 реализует Copy, поэтому x остаётся валидным
     println!("x = {x}, y = {y}");
 
-    // Ownership и функции
+    // Владение и функции: передача значения = передача владения
     let s = String::from("hello");
     takes_ownership(s);
-    // println!("{s}"); // ERROR: value moved
+    // println!("{s}"); // ОШИБКА: значение перемещено в функцию
 
     let x = 5;
     makes_copy(x);
-    println!("{x}"); // OK: Copy trait
+    println!("{x}"); // OK: i32 копируется, а не перемещается
 
-    // Return values and scope
-    let s1 = gives_ownership();
+    // Возврат значений и область видимости
+    let s1 = gives_ownership();       // Функция возвращает владение
     let s2 = String::from("hello");
-    let s2 = takes_and_gives_back(s2);
+    let s2 = takes_and_gives_back(s2); // Перемещаем и возвращаем
     println!("{s2}");
 }
 
 fn takes_ownership(some_string: String) {
     println!("{some_string}");
-}
+} // Здесь some_string выходит из scope и drop() освобождает память
 
 fn makes_copy(some_integer: i32) {
     println!("{some_integer}");
-}
+} // i32 — Copy, ничего не освобождается
 
 fn gives_ownership() -> String {
-    String::from("hello")
+    String::from("hello") // возвращает владение строкой
 }
 
 fn takes_and_gives_back(a_string: String) -> String {
-    a_string
+    a_string // принимает и возвращает владение
 }

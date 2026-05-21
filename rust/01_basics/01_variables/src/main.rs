@@ -1,30 +1,34 @@
-// Variables and Mutability
+// Переменные и мутабельность (изменяемость)
 // https://doc.rust-lang.org/book/ch03-01-variables-and-mutability.html
+// В Rust переменные по умолчанию неизменяемые (immutable).
+// Это ключевая фича языка для безопасности и параллелизма.
 
 fn main() {
-    // Immutable binding (по умолчанию)
+    // Неизменяемая привязка (по умолчанию)
     let x = 5;
-    println!("The value of x is: {x}");
-    // x = 6; // ERROR: cannot assign twice to immutable variable
+    println!("Значение x: {x}");
+    // x = 6; // ОШИБКА: нельзя присвоить дважды неизменяемой переменной
 
-    // Mutable binding
+    // Изменяемая привязка — ключевое слово mut
     let mut y = 10;
-    println!("The value of y is: {y}");
-    y = 20;
-    println!("The value of y after mutation is: {y}");
+    println!("Значение y: {y}");
+    y = 20; // теперь можно изменить
+    println!("Значение y после изменения: {y}");
 
-    // Constants (константы)
+    // Константы — всегда неизменяемы, тип обязателен
+    // Отличаются от let: вычисляются на этапе компиляции
     const MAX_POINTS: u32 = 100_000;
-    println!("Max points: {MAX_POINTS}");
+    println!("Максимум очков: {MAX_POINTS}");
 
-    // Shadowing (теневое связывание)
+    // Теневое связывание (shadowing) — объявляем новую переменную с тем же именем
+    // Старая переменная "затеняется" новой
     let z = 5;
-    let z = z + 1;
+    let z = z + 1; // новая переменная z, shadowing
     let z = z * 2;
-    println!("The value of z after shadowing is: {z}");
+    println!("Значение z после shadowing: {z}");
 
-    // Shadowing с изменением типа
-    let spaces = "   ";
-    let spaces = spaces.len();
-    println!("Spaces count: {spaces}");
+    // Shadowing позволяет изменить даже тип переменной
+    let spaces = "   ";          // сначала это &str
+    let spaces = spaces.len();    // теперь это usize (длина строки)
+    println!("Количество пробелов: {spaces}");
 }

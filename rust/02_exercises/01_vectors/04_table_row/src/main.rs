@@ -1,5 +1,6 @@
-// Exercise 04: Mixed Row with Enum
-// Topic: enum + Vec
+// Упражнение 04: смешанная строка таблицы через enum
+// Тема: enum + Vec
+// Храним разные типы данных в одном векторе с помощью перечисления
 
 #[derive(Debug, Clone, PartialEq)]
 enum SpreadsheetCell {
@@ -9,27 +10,31 @@ enum SpreadsheetCell {
 }
 
 fn main() {
-    println!("Exercise 04: table row");
-    println!("Complete TODO blocks in this file.");
+    println!("Упражнение 04: строка таблицы с перечислением");
 
-    // Self-check (uncomment after implementation):
-    // let row = make_row();
-    // println!("{row:?}");
-    // println!("Text cells: {}", count_text_cells(&row));
+    // Создаём строку с данными разных типов
+    let row = make_row();
+    println!("Строка таблицы: {:?}", row);
+
+    // Считаем количество текстовых ячеек
+    let text_count = count_text_cells(&row);
+    println!("Текстовых ячеек: {text_count}");
 }
 
-/// TODO:
-/// Create one row with mixed types:
+/// Создаёт строку (Vec<SpreadsheetCell>) с тремя разными типами:
 /// Int(42), Float(3.14), Text("hello")
 fn make_row() -> Vec<SpreadsheetCell> {
-    // Write your code below this line.
-    Vec::new()
+    vec![
+        SpreadsheetCell::Int(42),
+        SpreadsheetCell::Float(3.14),
+        SpreadsheetCell::Text("hello".to_string()),
+    ]
 }
 
-/// TODO:
-/// Count how many `Text` cells are inside row.
+/// Считает количество ячеек с вариантом Text в срезе.
+/// Использует pattern matching внутри итератора.
 fn count_text_cells(row: &[SpreadsheetCell]) -> usize {
-    let _ = row;
-    // Write your code below this line.
-    0
+    row.iter()
+        .filter(|cell| matches!(cell, SpreadsheetCell::Text(_)))
+        .count()
 }

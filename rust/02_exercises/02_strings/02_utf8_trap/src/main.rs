@@ -1,50 +1,39 @@
-// Exercise 06: UTF-8 Trap
-// Topic: bytes vs chars in Rust strings
+// Упражнение 06: UTF-8 ловушка
+// Тема: bytes vs chars в строках Rust
+// В Rust строки — это UTF-8, поэтому:
+// - s.len() возвращает количество БАЙТ, а не символов
+// - s.chars() — правильный способ работать с Unicode
 
 fn main() {
-    println!("Exercise 06: utf8 trap");
-    println!("Complete TODO blocks in this file.");
+    println!("Упражнение 06: UTF-8 байты vs символы");
 
-    // Self-check (uncomment after implementation):
-    // let s = "Hello";
-    // println!("{:?}", first_char(s)); // Some('H')
-    // println!("{:?}", last_char(s));  // Some('o')
-    // println!("chars: {}", char_count(s)); // 5
-    // println!("bytes: {}", byte_count(s)); // 5
-    //
-    // let ru = "Привет";
-    // println!("chars: {}", char_count(ru));
-    // println!("bytes: {}", byte_count(ru));
+    let s = "Hello";
+    println!("{:?}", first_char(s)); // Some('H')
+    println!("{:?}", last_char(s));  // Some('o')
+    println!("chars: {}", char_count(s)); // 5
+    println!("bytes: {}", byte_count(s)); // 5
+
+    let ru = "Привет";
+    println!("Символов в 'Привет': {}", char_count(ru)); // 6
+    println!("Байтов в 'Привет': {}", byte_count(ru));   // 12 (каждый символ по 2 байта)
 }
 
-/// TODO:
-/// Return first Unicode character.
+/// Возвращает первый Unicode-символ строки (или None если строка пуста)
 fn first_char(s: &str) -> Option<char> {
-    let _ = s;
-    // Write your code below this line.
-    None
+    s.chars().next()
 }
 
-/// TODO:
-/// Return last Unicode character.
+/// Возвращает последний Unicode-символ строки (или None если строка пуста)
 fn last_char(s: &str) -> Option<char> {
-    let _ = s;
-    // Write your code below this line.
-    None
+    s.chars().last()
 }
 
-/// TODO:
-/// Count Unicode characters (not bytes).
+/// Считает количество Unicode-символов (не байтов!)
 fn char_count(s: &str) -> usize {
-    let _ = s;
-    // Write your code below this line.
-    0
+    s.chars().count()
 }
 
-/// TODO:
-/// Count bytes in UTF-8 string.
+/// Считает количество байт в UTF-8 строке
 fn byte_count(s: &str) -> usize {
-    let _ = s;
-    // Write your code below this line.
-    0
+    s.len()
 }

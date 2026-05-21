@@ -1,82 +1,85 @@
-// Control Flow
+// Управляющие конструкции в Rust
 // https://doc.rust-lang.org/book/ch03-05-control-flow.html
+// if/else, loop, while, for — без круглых скобок вокруг условия
 
 fn main() {
     // === if/else ===
     let number = 7;
 
     if number < 5 {
-        println!("condition was true");
+        println!("условие истинно");
     } else {
-        println!("condition was false");
+        println!("условие ложно");
     }
 
-    // Multiple conditions
+    // Несколько условий: else if
     if number % 4 == 0 {
-        println!("number is divisible by 4");
+        println!("число делится на 4");
     } else if number % 3 == 0 {
-        println!("number is divisible by 3");
+        println!("число делится на 3");
     } else if number % 2 == 0 {
-        println!("number is divisible by 2");
+        println!("число делится на 2");
     } else {
-        println!("number is not divisible by 4, 3, or 2");
+        println!("число не делится на 4, 3 или 2");
     }
 
-    // if в let statement
+    // if в let — тернарный оператор по-растовски
     let condition = true;
     let number = if condition { 5 } else { 6 };
-    println!("The value of number is: {number}");
+    // Оба варианта должны быть одного типа!
+    println!("Значение number: {number}");
 
-    // === Loops ===
+    // === Циклы ===
 
-    // loop (бесконечный цикл)
+    // loop — бесконечный цикл, пока не break
     let mut counter = 0;
     let result = loop {
         counter += 1;
         if counter == 10 {
-            break counter * 2; // return value from loop
+            break counter * 2; // break может возвращать значение
         }
     };
-    println!("Loop result: {result}");
+    println!("Результат loop: {result}");
 
-    // Loop labels (метки для вложенных циклов)
+    // Метки циклов для вложенных циклов
     let mut count = 0;
-    'counting_up: loop {
+    'counting_up: loop {  // метка 'counting_up
         println!("count = {count}");
         let mut remaining = 10;
         loop {
             println!("remaining = {remaining}");
             if remaining == 9 {
-                break;
+                break; // выход из внутреннего цикла
             }
             if count == 2 {
-                break 'counting_up;
+                break 'counting_up; // выход из внешнего цикла по метке
             }
             remaining -= 1;
         }
         count += 1;
     }
 
-    // while
+    // while — цикл с предусловием
     let mut n = 3;
     while n != 0 {
         println!("{n}!");
         n -= 1;
     }
-    println!("LIFTOFF!");
+    println!("ПУСК!");
 
-    // for (наиболее идиоматичный цикл)
+    // for — наиболее идиоматичный цикл в Rust
     let arr = [10, 20, 30, 40, 50];
     for element in arr {
-        println!("the value is: {element}");
+        println!("значение: {element}");
     }
 
-    // Range (диапазоны)
+    // Range (диапазоны) — 1..4 это от 1 до 3 (не включая 4)
     for number in 1..4 {
         println!("{number}");
     }
 
+    // rev() — обратный порядок
     for number in (1..4).rev() {
-        println!("countdown: {number}");
+        println!("обратный отсчёт: {number}");
     }
 }

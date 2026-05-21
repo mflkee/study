@@ -1,5 +1,6 @@
-// Structs (Структуры)
+// Структуры (Structs) — пользовательские типы данных
 // https://doc.rust-lang.org/book/ch05-01-defining-structs.html
+// Rust позволяет определять три вида структур
 
 #[derive(Debug)]
 struct Rectangle {
@@ -18,43 +19,42 @@ struct User {
     sign_in_count: u64,
 }
 
-// Tuple structs
+// Кортежные структуры (Tuple structs) — поля без имён, только типы
 struct Color(i32, i32, i32);
 struct Point(i32, i32, i32);
 
-// Unit-like structs (без полей)
+// Unit-подобная структура — без полей
 struct AlwaysEqual;
 
 fn main() {
-    // === Struct Instance ===
+    // === Создание экземпляра структуры ===
     let rect1 = Rectangle {
         width: 30,
         height: 50,
     };
 
-    println!("The rectangle has a nonzero width; it is {} and height {}", 
-             rect1.width, rect1.height);
+    println!("Ширина: {}, высота: {}", rect1.width, rect1.height);
 
-    // Debug trait для println! с {:?}
+    // Вывод структуры через {:?} (требует #[derive(Debug)])
     println!("rect1 = {rect1:?}");
-    println!("rect1 = {rect1:#?}"); // pretty print
+    println!("rect1 = {rect1:#?}"); // pretty-print
 
-    // === Methods ===
+    // === Методы ===
     let rect1 = Rectangle {
         width: 30,
         height: 50,
     };
-    println!("Area: {}", rect1.area());
+    println!("Площадь: {}", rect1.area());
 
     if rect1.has_area() {
-        println!("The rectangle has area");
+        println!("Прямоугольник имеет ненулевую площадь");
     }
 
-    // === Square from Rectangle ===
+    // === Square через Rectangle ===
     let sq = Square { side: 10 };
-    println!("Square area: {}", sq.area());
+    println!("Площадь квадрата: {}", sq.area());
 
-    // === Struct Update Syntax ===
+    // === Синтаксис обновления структуры (..other) ===
     let user1 = User {
         active: true,
         username: String::from("mflkee"),
@@ -64,20 +64,20 @@ fn main() {
 
     let user2 = User {
         email: String::from("another@example.com"),
-        ..user1 // остальные поля из user1
+        ..user1 // остальные поля из user1 (username moved!)
     };
 
-    // === Tuple Structs ===
+    // === Кортежные структуры ===
     let black = Color(0, 0, 0);
     let origin = Point(0, 0, 0);
 
-    // === Ownership in Structs ===
-    // Поля могут владеть данными (String) или заимствовать (&str)
+    // === Владение в структурах ===
+    // Поля могут владеть данными (String) или заимствовать (&str — нужен lifetime)
 }
 
-// === Impl Blocks ===
+// === Блоки impl — методы и ассоциированные функции ===
 impl Rectangle {
-    // Method (self)
+    // Метод: &self — заимствует экземпляр
     fn area(&self) -> u32 {
         self.width * self.height
     }
@@ -86,12 +86,12 @@ impl Rectangle {
         self.width > 0 && self.height > 0
     }
 
-    // Method with mut self
+    // Метод с изменяемой ссылкой
     fn double_width(&mut self) {
         self.width *= 2;
     }
 
-    // Associated function (static)
+    // Ассоциированная функция (без self) — конструктор
     fn new(width: u32, height: u32) -> Self {
         Self { width, height }
     }

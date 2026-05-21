@@ -1,39 +1,43 @@
-// Exercise 07: Pig Latin
-// Topic: chars, slices, String building
+// Упражнение 07: Pig Latin (поросячья латынь)
+// Тема: chars, срезы, построение строк
+// Правила:
+// - слово начинается с согласной: "first" -> "irst-fay"
+// - слово начинается с гласной:  "apple" -> "apple-hay"
 
 fn main() {
-    println!("Exercise 07: pig latin");
-    println!("Complete TODO blocks in this file.");
+    println!("Упражнение 07: Pig Latin");
 
-    // Rules:
-    // - consonant start: "first" -> "irst-fay"
-    // - vowel start: "apple" -> "apple-hay"
-    //
-    // Self-check (uncomment after implementation):
-    // println!("{}", to_pig_latin("first")); // irst-fay
-    // println!("{}", to_pig_latin("apple")); // apple-hay
-    // println!("{}", sentence_to_pig_latin("rust is cool"));
+    println!("{}", to_pig_latin("first")); // irst-fay
+    println!("{}", to_pig_latin("apple")); // apple-hay
+    println!("{}", sentence_to_pig_latin("rust is cool"));
 }
 
-/// TODO:
-/// Return true for vowels: a, e, i, o, u (any case).
+/// Возвращает true для гласных: a, e, i, o, u (любой регистр)
 fn is_vowel(ch: char) -> bool {
     matches!(ch.to_ascii_lowercase(), 'a' | 'e' | 'i' | 'o' | 'u')
 }
 
-/// TODO:
-/// Convert one word to Pig Latin by rules above.
+/// Преобразует одно слово в Pig Latin по правилам выше
 fn to_pig_latin(word: &str) -> String {
-    let _ = word;
-    // Write your code below this line.
-    String::new()
+    match word.chars().next() {
+        Some(first_char) if is_vowel(first_char) => {
+            // Гласная: слово + "-hay"
+            format!("{word}-hay")
+        }
+        Some(first_char) => {
+            // Согласная: переносим первую букву в конец + "ay"
+            let rest: String = word.chars().skip(1).collect();
+            format!("{rest}-{first_char}ay")
+        }
+        None => String::new(), // пустая строка
+    }
 }
 
-/// TODO:
-/// Convert all words in sentence to Pig Latin.
-/// Join words with one space.
+/// Преобразует все слова в предложении в Pig Latin.
+/// Разделяет по пробелам, преобразует каждое слово, собирает обратно.
 fn sentence_to_pig_latin(text: &str) -> String {
-    let _ = text;
-    // Write your code below this line.
-    String::new()
+    text.split_whitespace()
+        .map(to_pig_latin)
+        .collect::<Vec<_>>()
+        .join(" ")
 }

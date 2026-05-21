@@ -1,22 +1,25 @@
-// Exercise 05: Join Strings
-// Topic: String, push_str, format
+// Упражнение 05: объединение строк
+// Тема: String, push_str, format!
+// Склеиваем массив слов через запятую с пробелом
 
 fn main() {
-    println!("Exercise 05: join with comma");
-    println!("Complete TODO blocks in this file.");
+    println!("Упражнение 05: объединение строк через запятую");
 
-    // Self-check (uncomment after implementation):
-    // let words = ["rust", "is", "fun"];
-    // let result = join_with_comma(&words);
-    // println!("{result}");
-    // Expected: rust, is, fun
+    let words = ["rust", "is", "fun"];
+    let result = join_with_comma(&words);
+    println!("Результат: {result}");
+    // Ожидаемый вывод: "rust, is, fun"
 }
 
-/// TODO:
-/// Join all words with ", " separator.
-/// Input: ["a", "b", "c"] -> "a, b, c"
+/// Объединяет все слова через разделитель ", ".
+/// Пример: ["a", "b", "c"] -> "a, b, c"
 fn join_with_comma(words: &[&str]) -> String {
-    let _ = words;
-    // Write your code below this line.
-    String::new()
+    let mut result = String::new();
+    for (i, word) in words.iter().enumerate() {
+        if i > 0 {
+            result.push_str(", "); // разделитель между словами
+        }
+        result.push_str(word);
+    }
+    result
 }

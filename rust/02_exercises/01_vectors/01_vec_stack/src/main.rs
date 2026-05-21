@@ -1,41 +1,35 @@
-// Exercise 01: Vec as Stack
-// Topic: Vec::push, Vec::pop, while let
+// Упражнение 01: Vec как стек
+// Тема: Vec::push, Vec::pop, while let
+// Вектор можно использовать как стек: LIFO (Last In, First Out)
 
 fn main() {
-    println!("Exercise 01: vec stack");
-    println!("Complete TODO blocks in this file.");
+    println!("Упражнение 01: стек на Vec");
 
-    // Self-check (uncomment after implementation):
+    // Строим стек из входных данных
     let stack = build_stack(vec![10, 20, 30, 40]);
+    println!("Стек построен: {:?}", stack);
+
+    // Извлекаем все элементы в обратном порядке
     let popped = pop_all(stack);
-    println!("{popped:?}");
-    // Expected: [40, 30, 20, 10]
+    println!("Извлечено: {:?}", popped);
+    // Ожидаемый результат: [40, 30, 20, 10]
 }
 
-/// TODO:
-/// 1) Add all values from `input` to stack.
-/// 2) Return resulting stack.
+/// Добавляет все значения из input в стек (Vec как LIFO)
 fn build_stack(input: Vec<i32>) -> Vec<i32> {
-    // Write your code below this line.
     let mut stack: Vec<i32> = Vec::new();
-
-    for value in input{
-        stack.push(value);
+    for value in input {
+        stack.push(value); // push — кладём на вершину стека
     }
-
     stack
 }
 
-/// TODO:
-/// 1) Pop all values from stack.
-/// 2) Save popped values in order.
-/// 3) Return them as Vec<i32>.
+/// Извлекает все значения из стека (pop — забираем с вершины)
+/// while let — удобный паттерн для цикла, пока Option имеет значение Some
 fn pop_all(mut stack: Vec<i32>) -> Vec<i32> {
-    // Write your code below this line.
     let mut popped: Vec<i32> = Vec::new();
-    while let Some(value) = stack.pop(){
+    while let Some(value) = stack.pop() {
         popped.push(value);
-    };
-
+    }
     popped
 }

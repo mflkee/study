@@ -1,5 +1,6 @@
-// Enums and Pattern Matching
+// Перечисления (Enums) и сопоставление с образцом (Pattern Matching)
 // https://doc.rust-lang.org/book/ch06-00-enums.html
+// Rust enums — мощный инструмент: могут содержать данные разных типов
 
 #[derive(Debug)]
 enum Coin {
@@ -19,52 +20,55 @@ enum UsState {
 #[derive(Debug)]
 enum Quarter {
     Regular,
-    State(UsState),
+    State(UsState), // вариант с вложенными данными
 }
 
-// Enum с данными
+// Enum с данными — каждый вариант может иметь свою структуру
 #[derive(Debug)]
 enum Message {
-    Quit,                       // no data
-    Move { x: i32, y: i32 },   // struct-like
-    Write(String),              // single String
-    ChangeColor(i32, i32, i32), // tuple-like
+    Quit,                       // без данных
+    Move { x: i32, y: i32 },   // именованные поля (как struct)
+    Write(String),              // одно значение
+    ChangeColor(i32, i32, i32), // кортеж
 }
 
-// Option<T> - enum для nullable значений
+// Option<T> — стандартный enum для nullable значений
 // enum Option<T> {
-//     None,
-//     Some(T),
+//     None,     // нет значения
+//     Some(T),  // есть значение
 // }
+// Option не нужно путать с null — это типобезопасный способ
+// обработки отсутствия значения
 
 fn main() {
     // === Enum Values ===
     let coin = Coin::Penny;
     let value = value_in_cents(coin);
-    println!("Coin value: {value} cents");
+    println!("Монета: {value} центов");
 
-    // === Match with Quarter ===
+    // === Match с Quarter ===
     let quarter = Quarter::State(UsState::Alaska);
     let cents = quarter_value_in_cents(&quarter);
-    println!("Quarter value: {cents} cents");
+    println!("Стоимость quarter: {cents} центов");
 
-    // === If Let ===
+    // === If Let — сокращённый синтаксис для одного варианта ===
     let coin = Coin::Nickel;
     if let Coin::Nickel = coin {
-        println!("It's a nickel!");
+        println!("Это пятицентовик!");
     }
 
     // === Option<T> ===
     let some_number: Option<i32> = Some(5);
     let absent_number: Option<i32> = None;
 
-    // Pattern matching with Option
+    // Безопасная работа с Option через match
     match some_number {
-        Some(x) => println!("Number: {x}"),
-        None => println!("No number"),
+        Some(x) => println!("Число: {x}"),
+        None => println!("Нет числа"),
     }
 
-    // unwrap / unwrap_or
+    // unwrap — получить значение (panic! если None)
+    // unwrap_or — значение по умолчанию при None
     let x = some_number.unwrap_or(0);
     println!("unwrap_or: {x}");
 }
@@ -82,15 +86,15 @@ fn quarter_value_in_cents(quarter: &Quarter) -> u8 {
     match quarter {
         Quarter::Regular => 25,
         Quarter::State(state) => {
-            println!("State quarter from {state:?}");
+            println!("Квартал штата {state:?}");
             25
         }
     }
 }
 
-// Methods on Message enum
+// Методы можно определять и на enum
 impl Message {
     fn call(&self) {
-        println!("Calling message: {self:?}");
+        println!("Вызов message: {self:?}");
     }
 }

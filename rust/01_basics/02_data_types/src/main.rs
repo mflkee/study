@@ -1,57 +1,61 @@
-// Data Types
+// Типы данных в Rust
 // https://doc.rust-lang.org/book/ch03-02-data-types.html
+// Rust — статически типизированный язык, компилятор выводит типы где возможно.
 
 fn main() {
-    // === Scalar Types ===
+    // === Скалярные типы (Scalar Types) ===
+    // Представляют одно значение: целые числа, плавающая точка, bool, char
 
-    // Integer types
-    let decimal: i32 = 97_321;
-    let hex: i32 = 0xff;
-    let octal: i32 = 0o77;
-    let binary: i32 = 0b1111_0000;
-    let byte: u8 = b'A';
+    // Целочисленные типы: i8..i128 (знаковые), u8..u128 (беззнаковые)
+    let decimal: i32 = 97_321;       // десятичная запись с разделителями
+    let hex: i32 = 0xff;             // шестнадцатеричная
+    let octal: i32 = 0o77;           // восьмеричная
+    let binary: i32 = 0b1111_0000;   // двоичная
+    let byte: u8 = b'A';             // байт (только для u8)
 
-    println!("Integers: decimal={decimal}, hex={hex}, octal={octal}, binary={binary}, byte={byte}");
+    println!("Целые: dec={decimal}, hex={hex}, oct={octal}, bin={binary}, byte={byte}");
 
-    // Floating-point
-    let float_32: f32 = 2.0;
-    let float_64: f64 = 3.0;
+    // Числа с плавающей точкой: f32 (32 бита) и f64 (64 бита, по умолчанию)
+    let float_32: f32 = 2.0;  // f32
+    let float_64: f64 = 3.0;  // f64 — точнее, но медленнее на некоторых архитектурах
 
-    // Boolean
+    // Логический тип bool: true / false
     let t: bool = true;
     let f: bool = false;
 
-    // Character
+    // Символьный тип char — 4 байта, Unicode
     let c: char = 'z';
     let heart: char = '❤';
     let japanese: char = 'あ';
-    println!("Chars: {c}, {heart}, {japanese}");
+    println!("Символы: {c}, {heart}, {japanese}");
 
-    // === Compound Types ===
+    // === Составные типы (Compound Types) ===
+    // Группируют несколько значений в один тип
 
-    // Tuple (кортеж) - фиксированная длина, разные типы
+    // Кортеж (tuple) — фиксированная длина, элементы могут быть разных типов
     let tup: (i32, f64, u8) = (500, 6.4, 1);
-    let (x, y, z) = tup; // destructuring
-    println!("Tuple: x={x}, y={y}, z={z}");
+    let (x, y, z) = tup; // деструктуризация (распаковка)
+    println!("Кортеж: x={x}, y={y}, z={z}");
 
-    // Access by index
+    // Доступ по индексу через точку
     let five_hundred = tup.0;
     let six_point_four = tup.1;
 
-    // Unit type (пустой кортеж)
+    // Unit-тип () — пустой кортеж, "ничего не возвращает"
     let unit: () = ();
 
-    // Array (массив) - фиксированная длина, одинаковые типы
+    // Массив (array) — фиксированная длина, все элементы одного типа
+    // В отличие от Vec, длина известна на этапе компиляции
     let arr: [i32; 5] = [1, 2, 3, 4, 5];
     let first = arr[0];
     let second = arr[1];
 
-    // Array с повторением
+    // Массив с повторяющимся значением: [значение; количество]
     let repeated = [3; 5]; // [3, 3, 3, 3, 3]
 
-    println!("Array: first={first}, second={second}, repeated={repeated:?}");
+    println!("Массив: first={first}, second={second}, repeated={repeated:?}");
 
-    // Array bounds (выход за границы вызывает panic)
+    // Выход за границы массива вызывает panic! (программа аварийно завершается)
     // let index = 10;
-    // let element = arr[index]; // PANIC!
+    // let element = arr[index]; // PANIC! индекс за пределами
 }

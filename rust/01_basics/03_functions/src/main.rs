@@ -1,39 +1,44 @@
-// Functions and Modules
+// Функции и выражения
 // https://doc.rust-lang.org/book/ch03-03-how-functions-work.html
+// Функции объявляются через fn, параметры с типами, возвращаемое значение после ->
 
 fn main() {
-    // Function call
+    // Вызов функции с параметрами
     print_labeled_value(5, 'h');
 
-    // Expression vs Statement
+    // Выражение (expression) vs инструкция (statement)
+    // Инструкция — действие (let x = ...), не возвращает значение
+    // Выражение — вычисляет значение, не имеет точки с запятой
     let y = {
         let x = 3;
-        x + 1 // expression (без точки с запятой)
+        x + 1 // выражение — это значение блока
     };
-    println!("The value of y is: {y}");
+    println!("Значение y: {y}");
 
-    // Function with return value
+    // Функция с возвращаемым значением
     let result = plus_one(5);
     println!("plus_one(5) = {result}");
 
-    // Multiple return values via tuple
+    // Несколько возвращаемых значений через кортеж
     let (len, sum) = analyze_array(&[1, 2, 3, 4, 5]);
-    println!("Array: len={len}, sum={sum}");
+    println!("Массив: len={len}, sum={sum}");
 }
 
+// Функция с двумя параметрами, без возвращаемого значения
 fn print_labeled_value(value: i32, unit_label: char) {
-    println!("The measurement is: {value}{unit_label}");
+    println!("Измерение: {value}{unit_label}");
 }
 
-// Function with return value (-> type)
+// Функция с возвращаемым значением (-> i32)
+// Последнее выражение в теле — это возвращаемое значение
 fn plus_one(x: i32) -> i32 {
     x + 1
-    // return x + 1; // explicit return (не нужен в конце)
+    // return x + 1; // явный return (не нужен в конце функции)
 }
 
-// Function returning multiple values
+// Функция возвращает кортеж (два значения)
 fn analyze_array(arr: &[i32]) -> (usize, i32) {
     let len = arr.len();
     let sum: i32 = arr.iter().sum();
-    (len, sum)
+    (len, sum) // возвращаем кортеж
 }

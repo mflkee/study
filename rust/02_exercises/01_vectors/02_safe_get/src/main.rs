@@ -1,22 +1,28 @@
-// Exercise 02: Safe Access to Vec
-// Topic: Option, get(), match
+// Упражнение 02: безопасный доступ к Vec
+// Тема: Option, get(), match
+// Вместо прямого индексирования (которое паникует при выходе за границы)
+// используем get(), возвращающий Option<&T>
 
 fn main() {
-    println!("Exercise 02: safe get");
-    println!("Complete TODO blocks in this file.");
+    println!("Упражнение 02: безопасный доступ к вектору");
 
-    // Self-check (uncomment after implementation):
-    // let data = vec![5, 10, 15];
-    // println!("{:?}", safe_get(&data, 1)); // Some(10)
-    // println!("{:?}", safe_get(&data, 10)); // None
+    let data = vec![5, 10, 15];
+
+    // get() возвращает Option<&i32> — None если индекс за пределами
+    match safe_get(&data, 1) {
+        Some(val) => println!("Элемент [1] = {val}"),
+        None => println!("Нет элемента с индексом 1"),
+    }
+
+    match safe_get(&data, 10) {
+        Some(val) => println!("Элемент [10] = {val}"),
+        None => println!("Нет элемента с индексом 10"),
+    }
 }
 
-/// TODO:
-/// Return element by index without panic.
-/// Use `get()` and convert `Option<&i32>` to `Option<i32>`.
+/// Безопасно получает элемент по индексу без паники.
+/// Использует get() и копирует значение через copied().
 fn safe_get(data: &[i32], index: usize) -> Option<i32> {
-    let _ = data;
-    let _ = index;
-    // Write your code below this line.
-    None
+    // get() возвращает Option<&i32>, copied() превращает в Option<i32>
+    data.get(index).copied()
 }
