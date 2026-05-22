@@ -1,0 +1,9 @@
+{
+  "name": "rpg-battle",
+  "version": "1.0.0",
+  "description": "RPG игра с персонажами и поединками",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test.js"
+  }
+}
