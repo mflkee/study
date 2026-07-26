@@ -1,0 +1,807 @@
+Id;Длина улицы, примыкающей к участку;Площадь 1-го этажа;Площадь 2-го этажа;Материал кровли;Материал наружного покрытия дома;Район расположения;Количество спален;Вместимость гаража (количество машиномест);Цена
+1;65.0;856;854;CompShg;VinylSd;CollgCr;3;2;208500
+2;80.0;1262;0;CompShg;MetalSd;Veenker;3;2;181500
+3;68.0;920;866;CompShg;VinylSd;CollgCr;3;2;223500
+4;60.0;961;756;CompShg;Wd Sdng;Crawfor;3;3;140000
+5;84.0;1145;1053;CompShg;VinylSd;NoRidge;4;3;250000
+6;85.0;796;566;CompShg;VinylSd;Mitchel;1;2;143000
+7;75.0;1694;0;;VinylSd;Somerst;3;2;307000
+12;85.0;1182;1142;CompShg;WdShing;NridgHt;4;3;345000
+14;91.0;1494;0;CompShg;VinylSd;CollgCr;3;3;279500
+19;66.0;1114;0;CompShg;VinylSd;SawyerW;3;2;159000
+20;70.0;1339;0;CompShg;BrkFace;Names;3;1;139000
+21;101.0;1158;1218;CompShg;VinylSd;NridgHt;4;3;325300
+22;57.0;1108;0;CompShg;Wd Sdng;IDOTRR;3;1;139400
+23;75.0;1795;0;CompShg;VinylSd;CollgCr;3;2;230000
+26;110.0;1600;0;CompShg;VinylSd;NridgHt;3;3;256300
+28;98.0;1704;0;CompShg;VinylSd;NridgHt;3;3;306000
+29;47.0;1600;0;;MetalSd;Names;2;1;207500
+33;85.0;1234;0;CompShg;VinylSd;CollgCr;3;2;179900
+34;70.0;1700;0;CompShg;BrkFace;Names;4;2;165500
+35;60.0;1561;0;CompShg;MetalSd;NridgHt;2;2;277500
+36;108.0;1132;1320;CompShg;VinylSd;NridgHt;4;3;309000
+37;112.0;1097;0;CompShg;VinylSd;CollgCr;3;2;145000
+38;74.0;1297;0;CompShg;Wd Sdng;Names;3;2;153000
+41;84.0;1324;0;;Wd Sdng;Names;3;2;160000
+42;115.0;1328;0;;VinylSd;Timber;2;1;170000
+45;70.0;1150;0;CompShg;BrkFace;Names;3;1;141000
+46;61.0;1752;0;CompShg;MetalSd;NridgHt;2;2;319900
+47;48.0;1518;631;CompShg;VinylSd;Mitchel;1;2;239686
+48;84.0;1656;0;CompShg;VinylSd;Somerst;3;3;249700
+54;68.0;1842;0;WdShngl;WdShing;Veenker;0;3;385000
+56;100.0;1425;0;CompShg;HdBoard;Names;3;2;180500
+57;24.0;983;756;CompShg;MetalSd;Somerst;3;2;172500
+58;89.0;860;860;CompShg;VinylSd;CollgCr;3;2;196500
+59;66.0;1426;1519;CompShg;VinylSd;StoneBr;3;3;438780
+61;63.0;1158;0;CompShg;VinylSd;SawyerW;3;2;158000
+63;44.0;1370;0;CompShg;VinylSd;NridgHt;2;2;202500
+64;50.0;902;808;CompShg;Stucco;OldTown;3;2;140000
+66;76.0;1143;1330;CompShg;VinylSd;NridgHt;4;3;317000
+68;72.0;1479;0;CompShg;VinylSd;CollgCr;3;2;226000
+70;81.0;1304;983;CompShg;BrkFace;ClearCr;3;2;225000
+71;95.0;2223;0;CompShg;Plywood;Names;3;2;244000
+73;74.0;885;833;CompShg;VinylSd;Gilbert;3;2;185000
+74;85.0;1086;0;CompShg;Wd Sdng;Names;3;2;144900
+79;72.0;1768;0;CompShg;HdBoard;Sawyer;4;0;136500
+81;100.0;1182;960;CompShg;VinylSd;Names;4;1;193500
+82;32.0;1337;0;CompShg;VinylSd;Mitchel;2;2;153500
+83;78.0;1563;0;CompShg;VinylSd;Somerst;3;3;245000
+86;121.0;1301;1116;CompShg;HdBoard;NoRidge;4;2;260000
+87;122.0;684;876;CompShg;VinylSd;Gilbert;3;2;174000
+88;40.0;612;612;CompShg;VinylSd;Somerst;2;2;164500
+93;80.0;964;0;;Wd Sdng;Crawfor;2;2;163500
+95;69.0;905;881;CompShg;VinylSd;CollgCr;3;2;204750
+97;78.0;1588;0;CompShg;VinylSd;CollgCr;3;2;214000
+102;77.0;977;755;CompShg;HdBoard;SawyerW;3;2;178000
+104;94.0;1226;0;CompShg;VinylSd;CollgCr;3;3;198900
+106;75.0;1053;939;CompShg;VinylSd;Somerst;3;2;250000
+110;105.0;1844;0;CompShg;Plywood;NWAmes;3;2;190000
+111;75.0;1216;639;CompShg;Wd Sdng;Edwards;4;1;136900
+113;77.0;1282;1414;CompShg;VinylSd;CollgCr;4;3;383970
+115;61.0;1436;884;CompShg;Wd Sdng;Crawfor;3;1;259500
+116;34.0;729;729;CompShg;MetalSd;Somerst;2;2;176000
+118;74.0;1125;0;CompShg;VinylSd;Edwards;2;2;155000
+119;90.0;1699;1523;CompShg;Plywood;SawyerW;5;3;320000
+120;65.0;728;728;CompShg;VinylSd;CollgCr;3;2;163990
+123;75.0;1080;0;CompShg;MetalSd;Names;3;1;136000
+124;55.0;1199;0;CompShg;Plywood;SawyerW;2;2;153900
+125;48.0;1586;0;CompShg;HdBoard;NWAmes;3;2;181000
+129;69.0;660;688;CompShg;VinylSd;Names;3;2;155000
+130;69.0;1053;0;CompShg;Plywood;Names;3;2;150000
+131;88.0;1216;941;CompShg;MetalSd;Names;4;2;226000
+133;75.0;1327;0;CompShg;MetalSd;Names;3;2;150750
+135;78.0;1721;0;CompShg;Plywood;Sawyer;3;2;180000
+136;80.0;1682;0;CompShg;Plywood;NWAmes;3;2;174000
+138;82.0;1959;0;CompShg;VinylSd;Mitchel;5;3;171000
+139;73.0;1004;848;CompShg;VinylSd;CollgCr;3;3;230000
+140;65.0;928;836;CompShg;VinylSd;CollgCr;3;2;231500
+142;78.0;1734;0;CompShg;VinylSd;CollgCr;3;2;260000
+143;71.0;910;475;CompShg;BrkFace;Names;4;2;166000
+144;78.0;1501;0;CompShg;VinylSd;CollgCr;3;2;204000
+149;63.0;1080;0;CompShg;VinylSd;SawyerW;3;0;141000
+152;107.0;1710;0;CompShg;VinylSd;NridgHt;2;3;372402
+158;92.0;774;1194;CompShg;VinylSd;Timber;4;3;269500
+159;100.0;991;956;;VinylSd;Somerst;3;2;254900
+160;134.0;1392;1070;CompShg;VinylSd;Gilbert;4;2;320000
+162;110.0;1572;1096;CompShg;VinylSd;NridgHt;3;3;412500
+163;95.0;1541;0;CompShg;VinylSd;NridgHt;3;2;220000
+165;40.0;1149;467;CompShg;MetalSd;OldTown;3;1;152000
+168;86.0;1610;551;CompShg;VinylSd;NridgHt;3;3;325624
+169;62.0;840;880;CompShg;VinylSd;Gilbert;3;2;183500
+172;141.0;1656;0;CompShg;BrkFace;Names;3;2;215000
+173;44.0;1064;703;CompShg;HdBoard;StoneBr;2;2;239000
+174;80.0;1362;0;CompShg;WdShing;Names;3;2;163000
+175;47.0;1651;0;CompShg;VinylSd;Timber;3;2;184000
+176;84.0;2158;0;CompShg;WdShing;Edwards;4;2;243000
+177;97.0;1164;896;CompShg;Plywood;ClearCr;4;2;211000
+179;63.0;2234;0;CompShg;VinylSd;StoneBr;1;3;501837
+182;54.0;901;901;CompShg;Stucco;Crawfor;4;1;200100
+184;63.0;1362;720;CompShg;VinylSd;OldTown;3;2;200000
+186;90.0;1518;1518;WdShngl;Wd Sdng;OldTown;4;3;475000
+189;64.0;1224;0;CompShg;Plywood;SawyerW;2;2;153337
+190;41.0;1593;0;CompShg;CemntBd;StoneBr;0;2;286000
+191;70.0;1549;1178;CompShg;BrkFace;Crawfor;3;2;315000
+193;68.0;1431;0;CompShg;VinylSd;CollgCr;3;2;192000
+196;24.0;855;601;CompShg;Plywood;NPkVill;3;2;148500
+197;79.0;1726;0;CompShg;CemntBd;Somerst;3;3;311872
+198;174.0;1360;1360;CompShg;Stucco;Names;4;2;235000
+200;76.0;1713;0;CompShg;VinylSd;NridgHt;3;3;274900
+201;80.0;1121;0;CompShg;VinylSd;Edwards;2;2;140000
+202;75.0;1279;0;CompShg;Plywood;Mitchel;3;2;171500
+206;99.0;1442;0;CompShg;HdBoard;Gilbert;3;2;180500
+207;40.0;1696;0;CompShg;HdBoard;Sawyer;3;1;143900
+210;75.0;1092;0;CompShg;HdBoard;Names;3;2;145000
+212;83.0;1212;0;CompShg;VinylSd;Edwards;3;2;186000
+213;72.0;932;920;CompShg;VinylSd;Somerst;3;2;252678
+214;43.0;990;0;CompShg;VinylSd;CollgCr;3;2;156000
+217;65.0;1436;0;CompShg;VinylSd;CollgCr;3;2;210000
+220;43.0;1248;0;CompShg;VinylSd;Blmngtn;2;2;167240
+221;73.0;1498;0;CompShg;VinylSd;CollgCr;2;2;204900
+223;85.0;811;741;CompShg;VinylSd;NWAmes;3;2;179900
+225;103.0;2392;0;CompShg;VinylSd;NridgHt;3;3;386250
+227;82.0;1214;1306;CompShg;VinylSd;NoRidge;4;3;290000
+230;43.0;1555;0;CompShg;VinylSd;Blmngtn;2;2;192500
+231;73.0;1194;0;CompShg;MetalSd;Names;3;1;148000
+232;174.0;1490;1304;CompShg;VinylSd;NoRidge;4;3;403000
+237;65.0;1414;0;CompShg;VinylSd;CollgCr;3;2;185500
+239;93.0;1694;0;;VinylSd;NridgHt;3;3;318000
+241;75.0;1566;0;CompShg;VinylSd;Somerst;3;2;262500
+246;80.0;1872;0;CompShg;Wd Sdng;NWAmes;3;2;241500
+247;69.0;908;1020;CompShg;AsbShng;OldTown;4;1;137000
+248;75.0;1375;0;CompShg;Wd Sdng;Names;2;2;140000
+249;72.0;840;828;CompShg;VinylSd;CollgCr;3;2;180000
+252;44.0;1625;0;CompShg;VinylSd;Crawfor;2;2;235000
+253;65.0;798;842;CompShg;VinylSd;SawyerW;3;2;173000
+254;85.0;1302;0;CompShg;HdBoard;Names;3;1;158000
+255;70.0;1314;0;CompShg;MetalSd;Names;3;1;145000
+256;66.0;1005;1286;CompShg;VinylSd;Gilbert;4;2;230000
+257;64.0;864;864;CompShg;VinylSd;Somerst;3;2;207500
+258;68.0;1604;0;;VinylSd;CollgCr;3;2;220000
+259;80.0;963;829;CompShg;VinylSd;CollgCr;3;2;231500
+261;120.0;1382;0;CompShg;Wd Sdng;Names;3;2;176000
+262;69.0;1482;1092;CompShg;CemntBd;CollgCr;3;3;276000
+263;88.0;1212;0;CompShg;HdBoard;Sawyer;3;2;151000
+266;78.0;1422;0;CompShg;MetalSd;NWAmes;3;2;175500
+267;70.0;802;709;CompShg;VinylSd;Gilbert;3;2;185000
+268;60.0;1052;720;CompShg;Wd Sdng;SWISU;4;1;179500
+271;84.0;1095;844;CompShg;VinylSd;Somerst;3;3;266000
+272;73.0;1363;0;Membran;Plywood;ClearCr;2;2;241500
+273;92.0;1164;1106;CompShg;VinylSd;NoRidge;4;3;290000
+274;80.0;1632;0;CompShg;Wd Sdng;Names;3;1;139000
+276;55.0;952;596;CompShg;Wd Sdng;BrkSide;3;2;205000
+277;129.0;1560;0;CompShg;VinylSd;Mitchel;3;2;201000
+278;140.0;864;0;CompShg;VinylSd;Gilbert;2;2;141000
+279;107.0;2121;0;CompShg;CemntBd;NridgHt;3;3;415298
+280;83.0;1156;866;CompShg;Plywood;ClearCr;4;2;192000
+281;82.0;1175;807;CompShg;Plywood;SawyerW;3;2;228500
+282;60.0;1262;0;CompShg;VinylSd;Somerst;2;2;185000
+283;34.0;1314;0;CompShg;VinylSd;NridgHt;2;2;207500
+284;74.0;1468;0;CompShg;VinylSd;Somerst;3;3;244600
+285;50.0;1575;0;;Plywood;SawyerW;2;2;179200
+286;35.0;625;625;CompShg;MetalSd;Somerst;2;2;164700
+287;77.0;1085;649;CompShg;Wd Sdng;Names;3;2;159000
+290;60.0;698;698;CompShg;Wd Sdng;BrkSide;3;1;153575
+291;120.0;1079;840;CompShg;VinylSd;CollgCr;3;2;233230
+292;55.0;936;780;CompShg;VinylSd;SWISU;6;;135900
+295;80.0;1644;0;CompShg;HdBoard;Names;3;2;167000
+296;37.0;1003;0;CompShg;HdBoard;Mitchel;3;2;142500
+297;75.0;910;648;CompShg;Wd Sdng;IDOTRR;4;1;152000
+298;66.0;975;975;CompShg;VinylSd;Somerst;3;2;239000
+299;90.0;1041;702;CompShg;HdBoard;NWAmes;3;2;175000
+300;80.0;1152;0;CompShg;HdBoard;Crawfor;3;1;158500
+301;90.0;1336;0;;MetalSd;Crawfor;2;1;157000
+302;66.0;1210;1242;;VinylSd;CollgCr;4;2;267000
+303;118.0;1541;0;CompShg;VinylSd;CollgCr;3;3;205000
+304;70.0;894;0;CompShg;VinylSd;CollgCr;3;2;149900
+305;87.0;1675;1818;CompShg;CemntBd;OldTown;3;3;295000
+306;80.0;2000;0;CompShg;CemntBd;CollgCr;3;3;305900
+307;116.0;1122;1121;CompShg;HdBoard;SawyerW;4;3;225000
+310;90.0;1944;0;CompShg;VinylSd;NridgHt;3;3;360000
+314;150.0;2036;0;CompShg;BrkFace;Timber;3;2;375000
+315;60.0;832;809;CompShg;Wd Sdng;OldTown;3;2;178000
+316;71.0;716;716;CompShg;VinylSd;Gilbert;3;2;188500
+317;94.0;1153;1200;CompShg;CemntBd;NWAmes;4;2;260000
+318;75.0;1088;871;CompShg;VinylSd;Somerst;3;3;270000
+319;90.0;1372;1274;CompShg;HdBoard;NoRidge;4;3;260000
+321;111.0;1249;1347;CompShg;VinylSd;NridgHt;4;3;342643
+322;99.0;1136;1332;CompShg;VinylSd;NridgHt;4;3;354000
+323;86.0;1553;1177;CompShg;Plywood;SawyerW;4;2;301000
+325;96.0;1898;1080;WdShake;Wd Sdng;Names;5;2;242000
+327;32.0;1719;0;CompShg;BrkFace;Veenker;1;2;324000
+328;80.0;1383;0;CompShg;Wd Sdng;Names;3;1;145250
+332;70.0;1056;0;CompShg;Wd Sdng;Names;3;1;139000
+333;85.0;1629;0;CompShg;VinylSd;NridgHt;3;3;284000
+334;59.0;1358;0;CompShg;VinylSd;NridgHt;2;2;207000
+335;59.0;943;695;CompShg;VinylSd;Gilbert;3;2;192000
+337;86.0;1922;0;CompShg;VinylSd;StoneBr;3;3;377426
+338;70.0;1536;0;CompShg;VinylSd;CollgCr;3;2;214000
+339;91.0;1621;0;CompShg;Wd Sdng;NWAmes;3;2;202500
+340;66.0;1215;0;CompShg;Wd Sdng;Names;3;1;155000
+341;85.0;993;915;CompShg;VinylSd;Timber;4;2;202900
+344;63.0;1684;0;CompShg;MetalSd;NridgHt;2;2;266000
+346;65.0;972;605;CompShg;MetalSd;BrkSide;3;1;140200
+349;36.0;764;862;CompShg;VinylSd;NridgHt;2;2;154000
+350;56.0;1848;880;CompShg;CemntBd;NridgHt;4;3;437154
+351;68.0;1869;0;;MetalSd;NridgHt;2;2;318061
+355;60.0;1192;403;CompShg;Wd Sdng;SWISU;2;1;140000
+356;105.0;1200;0;CompShg;VinylSd;CollgCr;3;2;177500
+360;78.0;1086;838;CompShg;VinylSd;NoRidge;3;2;280000
+363;64.0;495;1427;CompShg;HdBoard;Edwards;4;2;198500
+366;59.0;672;672;CompShg;VinylSd;IDOTRR;3;1;147000
+368;101.0;1431;0;Tar&Grv;Plywood;Names;3;1;165000
+375;65.0;847;1081;CompShg;VinylSd;CollgCr;4;2;219500
+377;57.0;914;0;CompShg;VinylSd;CollgCr;2;2;148000
+378;102.0;1580;886;CompShg;CemntBd;Somerst;4;2;340000
+379;88.0;1856;0;CompShg;VinylSd;StoneBr;1;3;394432
+380;60.0;1007;793;CompShg;VinylSd;Gilbert;3;2;179000
+382;60.0;1301;0;CompShg;VinylSd;Somerst;2;2;187750
+383;79.0;939;858;CompShg;VinylSd;CollgCr;3;2;213500
+386;43.0;1269;0;CompShg;VinylSd;Blmngtn;2;2;192000
+389;93.0;1479;0;CompShg;VinylSd;CollgCr;3;2;191000
+390;96.0;1742;590;CompShg;VinylSd;NridgHt;3;3;426000
+392;71.0;804;1157;CompShg;VinylSd;Mitchel;3;2;215000
+398;69.0;876;936;CompShg;VinylSd;Names;4;1;169500
+400;65.0;1112;438;CompShg;CemntBd;Somerst;2;2;241000
+401;38.0;1288;0;CompShg;BrkFace;Veenker;1;2;245500
+402;65.0;1310;0;CompShg;VinylSd;CollgCr;3;2;164990
+404;93.0;1165;1098;CompShg;VinylSd;NoRidge;4;2;258000
+408;63.0;840;840;CompShg;Wd Sdng;Crawfor;4;1;177000
+409;109.0;1071;1101;CompShg;VinylSd;NridgHt;3;3;280000
+410;85.0;1050;1028;CompShg;VinylSd;Somerst;3;3;339750
+412;100.0;1056;0;CompShg;Wd Sdng;Gilbert;3;2;145000
+415;59.0;1080;1017;;VinylSd;SawyerW;3;3;228000
+416;73.0;1340;0;CompShg;VinylSd;Gilbert;3;2;181134
+417;74.0;672;728;CompShg;HdBoard;Sawyer;3;2;149500
+418;86.0;1370;1254;CompShg;Wd Sdng;Crawfor;4;3;239000
+420;65.0;1056;0;CompShg;VinylSd;Names;3;1;142000
+421;78.0;1344;0;CompShg;VinylSd;Mitchel;2;4;206300
+424;80.0;1470;1160;CompShg;VinylSd;NoRidge;4;3;315000
+425;72.0;1196;0;CompShg;Wd Sdng;Names;2;1;139000
+429;64.0;1208;0;CompShg;VinylSd;CollgCr;2;2;195400
+430;130.0;1412;0;CompShg;HdBoard;Timber;3;2;175000
+434;100.0;926;678;CompShg;VinylSd;Gilbert;3;2;181000
+436;43.0;827;834;CompShg;VinylSd;CollgCr;3;2;212000
+441;105.0;2402;0;CompShg;VinylSd;NridgHt;2;3;555000
+443;52.0;1128;445;CompShg;MetalSd;BrkSide;3;2;162900
+444;53.0;1258;0;CompShg;WdShing;Blmngtn;2;3;172500
+445;70.0;933;975;CompShg;VinylSd;CollgCr;4;2;210000
+447;137.0;1888;0;CompShg;BrkFace;Names;2;2;190000
+452;62.0;1533;0;WdShngl;Plywood;ClearCr;2;2;280000
+454;75.0;786;804;CompShg;VinylSd;Somerst;3;2;210000
+455;63.0;1728;0;CompShg;Plywood;Mitchel;4;2;188000
+456;80.0;1242;0;CompShg;HdBoard;NWAmes;3;2;175500
+461;75.0;832;1103;CompShg;VinylSd;Somerst;3;2;263435
+462;60.0;575;560;CompShg;Wd Sdng;SWISU;3;2;155000
+464;74.0;849;811;CompShg;Stucco;Crawfor;3;1;188700
+467;85.0;1277;0;Tar&Grv;Plywood;Names;2;2;167000
+468;79.0;888;756;CompShg;MetalSd;Names;3;1;146500
+469;98.0;1634;0;CompShg;VinylSd;NridgHt;3;3;250000
+470;76.0;832;878;CompShg;HdBoard;SawyerW;3;2;187000
+472;92.0;1161;808;WdShake;WdShing;NWAmes;3;2;190000
+473;35.0;1072;0;CompShg;VinylSd;Edwards;2;2;148000
+474;110.0;1976;0;;VinylSd;NridgHt;2;3;440000
+475;41.0;1652;0;CompShg;CemntBd;StoneBr;2;2;251000
+477;75.0;1493;0;CompShg;VinylSd;CollgCr;3;2;208900
+478;105.0;2069;574;CompShg;VinylSd;NridgHt;3;3;380000
+479;79.0;1718;0;CompShg;VinylSd;CollgCr;3;3;297000
+481;98.0;1850;0;CompShg;VinylSd;NridgHt;3;3;326000
+482;72.0;1792;0;CompShg;VinylSd;NridgHt;2;3;374000
+483;50.0;916;910;CompShg;Stucco;OldTown;4;1;155000
+484;32.0;1216;0;CompShg;VinylSd;Mitchel;2;2;164000
+486;80.0;1113;0;CompShg;MetalSd;Names;3;1;147000
+487;79.0;1073;0;CompShg;MetalSd;Names;3;2;156000
+488;70.0;1484;0;CompShg;Plywood;NWAmes;3;2;175000
+489;60.0;1766;648;CompShg;Wd Sdng;OldTown;3;2;160000
+493;105.0;728;728;CompShg;VinylSd;Gilbert;3;2;172785
+494;70.0;1269;0;CompShg;BrkFace;Names;3;1;155000
+498;60.0;1133;687;CompShg;Wd Sdng;BrkSide;4;1;184000
+502;75.0;866;902;CompShg;VinylSd;Somerst;3;2;226700
+503;70.0;1214;0;CompShg;MetalSd;Edwards;2;2;140000
+504;100.0;1801;0;CompShg;BrkFace;Crawfor;1;2;289000
+505;24.0;855;467;CompShg;Plywood;NPkVill;3;2;147000
+507;80.0;1065;846;CompShg;VinylSd;SawyerW;3;2;215000
+508;75.0;1218;0;CompShg;VinylSd;Somerst;2;2;208300
+509;60.0;689;689;CompShg;MetalSd;OldTown;3;2;161000
+511;75.0;1363;0;CompShg;Wd Sdng;Names;2;1;164900
+512;40.0;1368;0;CompShg;VinylSd;NridgHt;2;2;202665
+516;94.0;2020;0;CompShg;CemntBd;NridgHt;3;3;402861
+518;79.0;1277;1067;CompShg;VinylSd;NoRidge;3;3;265000
+520;53.0;1276;804;CompShg;MetalSd;Crawfor;3;1;234000
+522;90.0;1244;0;CompShg;VinylSd;Names;3;1;150000
+523;50.0;1004;660;CompShg;CemntBd;BrkSide;3;2;159000
+524;130.0;3138;1538;CompShg;CemntBd;Edwards;3;3;184750
+525;95.0;1383;1015;CompShg;VinylSd;NoRidge;3;3;315750
+526;62.0;1266;0;CompShg;VinylSd;Somerst;3;2;176000
+528;67.0;1476;1237;CompShg;VinylSd;NridgHt;3;3;446261
+531;85.0;1509;0;CompShg;HdBoard;Timber;3;2;175000
+535;74.0;707;707;CompShg;VinylSd;Gilbert;3;2;178000
+537;57.0;880;844;CompShg;VinylSd;CollgCr;3;2;188000
+541;85.0;1838;0;CompShg;VinylSd;Timber;2;3;315000
+543;78.0;1680;0;CompShg;VinylSd;NWAmes;3;2;213250
+545;58.0;664;832;CompShg;VinylSd;Gilbert;3;2;179665
+547;70.0;915;720;CompShg;BrkFace;BrkSide;3;2;210000
+550;75.0;912;1182;CompShg;VinylSd;Somerst;4;2;263000
+551;53.0;1069;0;CompShg;Plywood;NPkVill;2;2;140000
+553;87.0;1717;0;CompShg;VinylSd;NridgHt;3;3;255500
+555;85.0;1006;1040;CompShg;VinylSd;NridgHt;3;3;284000
+557;69.0;1092;0;CompShg;Wd Sdng;Names;2;1;141000
+559;57.0;729;717;CompShg;HdBoard;Gilbert;3;2;175000
+562;77.0;1389;0;CompShg;HdBoard;Mitchel;2;2;170000
+564;66.0;1163;511;CompShg;Wd Sdng;Edwards;4;2;185000
+567;77.0;1134;1370;CompShg;VinylSd;StoneBr;4;3;325000
+568;70.0;1535;0;CompShg;VinylSd;NridgHt;3;2;214000
+569;79.0;1496;636;CompShg;Wd Sdng;SawyerW;1;2;316600
+571;74.0;1728;0;CompShg;HdBoard;Names;6;2;142600
+573;83.0;846;846;CompShg;VinylSd;Timber;3;2;224500
+574;76.0;774;656;CompShg;VinylSd;Gilbert;3;2;170000
+575;70.0;576;533;CompShg;MetalSd;Names;3;1;139000
+577;52.0;877;600;CompShg;Wd Sdng;SWISU;3;1;145000
+578;96.0;1320;0;CompShg;VinylSd;Sawyer;3;2;164500
+579;34.0;703;689;CompShg;VinylSd;Somerst;2;2;146000
+582;98.0;2042;0;CompShg;VinylSd;NridgHt;3;3;253293
+584;75.0;1521;1254;CompShg;Wd Sdng;OldTown;3;2;325000
+586;88.0;2028;0;CompShg;VinylSd;Timber;2;3;369900
+588;74.0;860;0;CompShg;HdBoard;Sawyer;2;2;137000
+589;65.0;1473;0;Tar&Grv;Wd Sdng;ClearCr;1;1;143000
+591;64.0;770;812;CompShg;VinylSd;CollgCr;3;2;185900
+592;97.0;1728;568;CompShg;CemntBd;NridgHt;3;3;451950
+593;60.0;816;0;CompShg;HdBoard;Mitchel;2;2;138000
+596;69.0;1826;0;CompShg;VinylSd;StoneBr;3;3;319000
+598;53.0;1402;0;CompShg;VinylSd;Blmngtn;2;3;194201
+599;80.0;1647;0;;Plywood;Crawfor;3;2;217500
+600;24.0;716;840;CompShg;MetalSd;Blueste;3;2;151000
+601;74.0;1058;846;CompShg;VinylSd;NridgHt;3;2;275000
+602;50.0;780;595;CompShg;Wd Sdng;IDOTRR;3;1;141000
+603;80.0;927;988;CompShg;HdBoard;SawyerW;3;2;220000
+604;30.0;600;600;CompShg;MetalSd;Somerst;2;2;151000
+605;88.0;1494;0;CompShg;VinylSd;CollgCr;3;2;221000
+606;85.0;1186;800;CompShg;HdBoard;Names;3;2;205000
+607;82.0;1040;0;CompShg;VinylSd;CollgCr;3;2;152000
+608;78.0;1112;896;CompShg;MetalSd;Edwards;3;1;225000
+609;78.0;1940;1254;CompShg;BrkFace;Crawfor;4;2;359100
+614;70.0;1120;0;CompShg;VinylSd;Mitchel;3;;147000
+616;80.0;1054;0;CompShg;MetalSd;Names;3;2;137500
+619;90.0;1828;0;CompShg;CemntBd;NridgHt;3;3;314813
+620;85.0;1482;780;CompShg;VinylSd;Timber;4;3;305000
+622;90.0;1548;1066;CompShg;HdBoard;NWAmes;4;2;240000
+625;80.0;1012;778;CompShg;VinylSd;NWAmes;4;2;165150
+626;87.0;1116;0;CompShg;Wd Sdng;Names;3;2;160000
+628;80.0;1520;0;CompShg;AsbShng;Names;3;1;153000
+630;82.0;1350;0;WdShngl;Plywood;Names;3;2;168500
+632;34.0;1554;0;CompShg;VinylSd;NridgHt;2;2;209500
+634;80.0;1056;0;CompShg;Wd Sdng;Names;3;1;139400
+635;64.0;1056;0;CompShg;Plywood;OldTown;0;2;144000
+636;60.0;1440;1440;CompShg;VinylSd;SWISU;8;;200000
+640;53.0;1567;0;CompShg;VinylSd;Blmngtn;1;3;264561
+641;62.0;1518;0;CompShg;MetalSd;NridgHt;1;2;274000
+643;75.0;2000;704;CompShg;Plywood;Names;4;2;345000
+644;80.0;780;840;CompShg;WdShing;NWAmes;4;2;152000
+645;85.0;1766;0;CompShg;CemntBd;Somerst;2;3;370878
+648;85.0;1094;0;CompShg;Wd Sdng;Edwards;3;2;155000
+649;70.0;1051;788;CompShg;MetalSd;Names;4;2;155000
+651;65.0;822;843;CompShg;CemntBd;Somerst;3;2;205950
+653;70.0;909;807;CompShg;VinylSd;CollgCr;2;2;191000
+655;91.0;2113;0;;MetalSd;NoRidge;2;3;350000
+657;72.0;1053;0;CompShg;HdBoard;Names;3;1;145500
+658;60.0;851;651;CompShg;Stucco;Crawfor;3;1;149000
+660;75.0;1486;0;CompShg;MetalSd;Edwards;3;2;167000
+662;52.0;1686;762;CompShg;VinylSd;NoRidge;4;3;402000
+664;90.0;1181;0;CompShg;Plywood;Edwards;3;2;137500
+665;49.0;2097;0;CompShg;VinylSd;Somerst;1;3;423000
+666;106.0;1454;482;CompShg;VinylSd;Gilbert;3;2;230500
+668;65.0;1679;0;CompShg;HdBoard;SawyerW;3;2;193500
+670;80.0;1180;0;CompShg;MetalSd;Crawfor;2;1;137500
+671;64.0;738;738;CompShg;VinylSd;CollgCr;3;2;173500
+674;110.0;1839;0;CompShg;CemntBd;Crawfor;3;2;257500
+675;80.0;1136;0;CompShg;HdBoard;Names;3;1;140000
+676;24.0;855;586;CompShg;Plywood;NPkVill;3;2;148500
+679;80.0;2046;0;CompShg;VinylSd;StoneBr;3;3;372500
+681;50.0;923;0;CompShg;Plywood;SawyerW;2;1;143000
+682;55.0;848;672;CompShg;VinylSd;SWISU;3;1;159434
+684;90.0;1668;0;CompShg;VinylSd;CollgCr;3;3;285000
+685;58.0;1195;644;CompShg;VinylSd;NoRidge;4;2;221000
+687;84.0;874;887;CompShg;VinylSd;Somerst;3;2;227875
+689;60.0;1419;0;CompShg;MetalSd;StoneBr;2;2;392000
+690;61.0;1362;0;CompShg;VinylSd;NridgHt;2;2;194700
+692;104.0;2444;1872;WdShngl;HdBoard;NoRidge;4;3;755000
+693;42.0;1238;1281;CompShg;MetalSd;Timber;4;2;335000
+695;51.0;1067;472;CompShg;Wd Sdng;BrkSide;3;2;141500
+696;54.0;1137;0;CompShg;HdBoard;Timber;2;2;176000
+699;65.0;894;0;CompShg;MetalSd;Sawyer;3;1;138500
+700;59.0;1391;0;;MetalSd;Somerst;2;2;196000
+701;85.0;1800;0;CompShg;VinylSd;Timber;3;3;312500
+702;80.0;1164;0;CompShg;HdBoard;NWAmes;3;2;140000
+703;82.0;1264;1312;CompShg;VinylSd;StoneBr;4;3;361919
+704;76.0;1032;780;CompShg;Wd Sdng;OldTown;4;2;140000
+705;70.0;1484;0;CompShg;VinylSd;CollgCr;3;2;213000
+708;48.0;1324;0;CompShg;MetalSd;NridgHt;2;2;254000
+709;65.0;728;728;CompShg;VinylSd;Gilbert;3;2;179540
+713;40.0;1228;0;CompShg;HdBoard;StoneBr;2;2;189000
+716;78.0;1350;0;CompShg;HdBoard;NWAmes;3;2;165000
+717;60.0;1576;978;CompShg;Wd Sdng;OldTown;3;2;159500
+718;80.0;1178;0;CompShg;HdBoard;NWAmes;3;2;157000
+719;96.0;1325;1093;CompShg;Wd Sdng;NoRidge;3;3;341000
+725;86.0;1698;0;CompShg;CemntBd;Edwards;3;3;320000
+728;64.0;1232;0;CompShg;VinylSd;CollgCr;2;2;194500
+731;39.0;1616;0;CompShg;CemntBd;StoneBr;2;2;236500
+732;73.0;1146;0;CompShg;VinylSd;Timber;3;2;187500
+733;75.0;1153;878;CompShg;VinylSd;CollgCr;3;2;222500
+736;60.0;880;888;CompShg;Wd Sdng;OldTown;2;2;163000
+738;72.0;901;900;CompShg;VinylSd;Gilbert;3;3;239900
+739;60.0;1200;0;CompShg;Plywood;Edwards;3;;179000
+740;65.0;864;864;CompShg;VinylSd;CollgCr;3;2;190000
+742;65.0;912;0;CompShg;HdBoard;Sawyer;3;1;142000
+743;65.0;1349;0;CompShg;VinylSd;SawyerW;3;2;179000
+744;70.0;1464;0;CompShg;HdBoard;Sawyer;3;2;175000
+745;41.0;1337;0;CompShg;HdBoard;StoneBr;2;2;180000
+748;65.0;1320;1320;CompShg;Stucco;OldTown;4;4;265979
+749;59.0;1720;0;CompShg;VinylSd;NoRidge;3;2;260400
+753;79.0;1494;0;CompShg;VinylSd;CollgCr;3;2;217000
+754;80.0;1038;1060;CompShg;VinylSd;NridgHt;3;3;275500
+755;61.0;1026;0;CompShg;Plywood;Names;3;2;156000
+756;34.0;742;729;CompShg;MetalSd;Somerst;3;2;172500
+757;68.0;866;902;CompShg;VinylSd;CollgCr;3;2;212000
+759;24.0;757;744;CompShg;MetalSd;Somerst;3;2;179400
+760;65.0;1328;1203;CompShg;VinylSd;NoRidge;4;3;290000
+763;72.0;764;783;CompShg;VinylSd;Somerst;3;2;215200
+764;82.0;1268;1097;CompShg;VinylSd;NoRidge;3;3;337000
+765;30.0;1494;0;CompShg;BrkFace;Veenker;2;2;270000
+766;75.0;1506;0;CompShg;VinylSd;Somerst;2;2;264132
+767;80.0;980;734;CompShg;HdBoard;NWAmes;3;2;196500
+768;75.0;983;767;CompShg;VinylSd;Mitchel;4;1;160000
+769;70.0;1836;0;CompShg;VinylSd;CollgCr;3;2;216837
+770;47.0;1690;1589;CompShg;CemntBd;StoneBr;4;3;538000
+775;110.0;1973;0;CompShg;VinylSd;NridgHt;3;3;395000
+776;32.0;1204;0;CompShg;VinylSd;Mitchel;2;2;162000
+777;86.0;1614;0;CompShg;VinylSd;CollgCr;3;3;221500
+778;100.0;894;0;CompShg;HdBoard;Sawyer;3;2;142500
+779;60.0;2020;0;CompShg;Plywood;SawyerW;4;2;144000
+781;63.0;1253;0;;HdBoard;Gilbert;3;2;176000
+782;65.0;810;793;CompShg;VinylSd;SawyerW;3;2;175900
+783;67.0;1430;0;CompShg;VinylSd;CollgCr;3;2;187100
+787;60.0;966;686;CompShg;MetalSd;OldTown;4;1;139000
+788;76.0;956;1128;CompShg;VinylSd;SawyerW;4;2;233000
+791;43.0;1145;0;CompShg;VinylSd;Blmngtn;2;2;160200
+793;92.0;1127;886;CompShg;MetalSd;NoRidge;3;2;269790
+794;76.0;1496;0;CompShg;CemntBd;Somerst;3;2;225000
+796;70.0;888;676;CompShg;HdBoard;SawyerW;3;2;171000
+797;71.0;1285;0;CompShg;Plywood;Sawyer;3;2;143500
+799;104.0;1966;1174;CompShg;VinylSd;NridgHt;4;3;485000
+800;60.0;981;787;CompShg;Wd Sdng;SWISU;3;1;175000
+801;79.0;616;1072;CompShg;VinylSd;ClearCr;4;2;200000
+803;63.0;728;728;CompShg;WdShing;CollgCr;3;2;189000
+804;107.0;1734;1088;CompShg;VinylSd;NridgHt;4;3;582933
+806;91.0;1428;0;CompShg;VinylSd;Somerst;3;2;227680
+808;144.0;1072;504;CompShg;Wd Sdng;BrkSide;3;2;223500
+809;85.0;1086;0;CompShg;VinylSd;Names;3;2;159950
+811;78.0;1309;0;CompShg;HdBoard;NWAmes;3;2;181000
+814;75.0;1442;0;CompShg;MetalSd;Names;4;1;157900
+816;48.0;1661;0;CompShg;VinylSd;CollgCr;3;2;224900
+819;80.0;1052;0;CompShg;HdBoard;ClearCr;3;2;155000
+820;44.0;1358;0;CompShg;VinylSd;NridgHt;2;2;224000
+821;72.0;798;842;CompShg;VinylSd;CollgCr;3;2;183000
+824;60.0;944;545;CompShg;VinylSd;SWISU;3;1;139500
+825;81.0;1489;0;CompShg;VinylSd;Somerst;3;2;232600
+826;114.0;2084;0;CompShg;CemntBd;NridgHt;2;3;385000
+828;65.0;1434;0;CompShg;VinylSd;SawyerW;3;2;189000
+830;24.0;520;623;CompShg;MetalSd;Somerst;2;2;147400
+831;80.0;1392;0;CompShg;HdBoard;Names;3;2;166000
+832;30.0;520;600;CompShg;MetalSd;Somerst;2;2;151000
+833;44.0;941;888;CompShg;VinylSd;CollgCr;3;2;237000
+834;100.0;1516;0;CompShg;HdBoard;Names;3;2;167000
+835;75.0;1144;0;CompShg;VinylSd;Names;3;2;139950
+837;90.0;1559;0;CompShg;VinylSd;OldTown;2;2;153500
+839;75.0;1099;0;CompShg;VinylSd;CollgCr;3;1;144000
+842;60.0;958;581;CompShg;MetalSd;OldTown;3;2;157500
+843;82.0;1165;0;CompShg;HdBoard;Names;3;2;174900
+844;80.0;1800;0;CompShg;BrkFace;Names;6;0;141000
+845;100.0;876;540;CompShg;Wd Sdng;OldTown;4;3;153900
+847;75.0;1006;769;CompShg;HdBoard;SawyerW;3;2;213000
+849;75.0;1307;1051;CompShg;Wd Sdng;ClearCr;5;2;240000
+850;80.0;1094;761;CompShg;Plywood;Veenker;3;2;187000
+853;53.0;918;728;CompShg;MetalSd;Crawfor;4;1;164000
+855;102.0;1779;0;CompShg;Wd Sdng;Sawyer;3;2;170000
+858;65.0;702;779;CompShg;HdBoard;Gilbert;3;2;174000
+859;80.0;1370;0;CompShg;HdBoard;NWAmes;3;2;152000
+861;55.0;912;514;CompShg;Wd Sdng;Crawfor;3;1;189950
+863;81.0;1097;0;CompShg;HdBoard;SawyerW;3;2;152000
+865;72.0;1372;0;CompShg;VinylSd;Somerst;3;2;250580
+867;67.0;1646;0;CompShg;VinylSd;Timber;3;3;248900
+870;80.0;1062;887;CompShg;MetalSd;SawyerW;3;2;236000
+872;70.0;804;878;CompShg;VinylSd;CollgCr;3;2;200500
+876;75.0;1184;1426;CompShg;CemntBd;Somerst;4;2;303477
+878;74.0;1462;762;CompShg;VinylSd;NridgHt;4;3;350000
+879;88.0;1155;0;CompShg;HdBoard;Sawyer;3;2;148000
+881;60.0;1090;0;CompShg;VinylSd;Edwards;2;2;157000
+882;44.0;1187;530;CompShg;HdBoard;Timber;3;2;187500
+886;50.0;1709;0;CompShg;MetalSd;Somerst;2;2;328900
+887;70.0;1712;0;CompShg;MetalSd;Names;4;2;145000
+889;95.0;2217;0;Tar&Grv;Wd Sdng;Names;4;2;268000
+890;128.0;1505;0;CompShg;Wd Sdng;Names;2;2;149500
+892;70.0;918;765;CompShg;HdBoard;Sawyer;3;2;172500
+893;70.0;1068;0;CompShg;HdBoard;Sawyer;3;1;154500
+896;71.0;983;813;CompShg;HdBoard;Names;4;2;140000
+898;64.0;1120;1120;CompShg;Plywood;SawyerW;6;2;142953
+899;100.0;2364;0;CompShg;VinylSd;NridgHt;2;3;611657
+902;64.0;1306;0;CompShg;MetalSd;Names;2;1;153000
+903;63.0;807;702;CompShg;VinylSd;Gilbert;3;2;180000
+904;50.0;1670;0;CompShg;VinylSd;Gilbert;3;3;240000
+907;116.0;1636;0;CompShg;VinylSd;Somerst;3;3;255000
+908;86.0;1020;1037;CompShg;BrkFace;Crawfor;3;1;250000
+910;149.0;742;742;CompShg;VinylSd;Gilbert;3;2;174000
+911;80.0;1105;1169;CompShg;MetalSd;Names;5;2;154300
+914;82.0;1001;1001;CompShg;MetalSd;Crawfor;4;3;145000
+915;30.0;612;612;CompShg;VinylSd;Somerst;2;2;173733
+919;103.0;912;1215;CompShg;HdBoard;SawyerW;4;3;238000
+920;87.0;1414;0;CompShg;MetalSd;Names;3;2;176500
+921;70.0;936;785;CompShg;HdBoard;SawyerW;3;2;201000
+922;67.0;1272;928;CompShg;MetalSd;Edwards;4;0;145900
+923;65.0;1316;0;CompShg;VinylSd;Gilbert;3;2;169990
+924;50.0;1617;0;CompShg;Plywood;SawyerW;2;2;193000
+925;79.0;1686;0;CompShg;Plywood;NWAmes;3;2;207500
+927;93.0;1234;1140;CompShg;VinylSd;NridgHt;4;3;285000
+931;73.0;1466;0;CompShg;VinylSd;Timber;3;3;201000
+933;84.0;1905;0;CompShg;VinylSd;Somerst;3;3;320000
+934;63.0;1500;0;CompShg;VinylSd;CollgCr;3;2;190000
+935;313.0;2069;0;Tar&Grv;Wd Sdng;Names;4;2;242000
+937;67.0;1200;0;CompShg;VinylSd;SawyerW;2;2;184900
+938;75.0;1113;858;CompShg;VinylSd;Somerst;3;2;253000
+939;73.0;1391;571;CompShg;VinylSd;CollgCr;3;3;239799
+941;55.0;1728;0;CompShg;Plywood;Mitchel;4;2;150900
+943;42.0;1440;0;CompShg;MetalSd;Edwards;4;0;150000
+944;100.0;1632;0;CompShg;HdBoard;Mitchel;4;2;143000
+947;70.0;1144;0;CompShg;HdBoard;Names;3;1;143000
+948;85.0;1629;0;CompShg;VinylSd;Timber;3;3;270000
+949;65.0;936;840;CompShg;VinylSd;CollgCr;3;2;192500
+950;78.0;1381;0;CompShg;Plywood;NWAmes;3;2;197500
+956;82.0;979;979;CompShg;MetalSd;Crawfor;4;2;145000
+959;65.0;1337;0;CompShg;VinylSd;CollgCr;3;2;185000
+960;24.0;696;720;CompShg;MetalSd;Somerst;3;2;155000
+963;24.0;804;744;CompShg;Plywood;NPkVill;3;2;155000
+964;122.0;1800;0;CompShg;VinylSd;CollgCr;2;2;239000
+965;80.0;824;1070;CompShg;VinylSd;Timber;4;2;214900
+966;65.0;783;701;CompShg;VinylSd;Gilbert;3;2;178900
+967;130.0;976;332;CompShg;MetalSd;Crawfor;2;1;160000
+970;75.0;1095;0;CompShg;HdBoard;Names;2;1;140000
+972;36.0;764;862;CompShg;VinylSd;NridgHt;2;2;173000
+974;95.0;1428;0;CompShg;CemntBd;Somerst;3;2;182000
+975;60.0;1136;883;CompShg;HdBoard;BrkSide;3;2;167500
+978;35.0;1241;0;CompShg;VinylSd;Somerst;1;2;199900
+980;80.0;1121;0;CompShg;VinylSd;Sawyer;3;2;139000
+982;98.0;1276;1336;CompShg;VinylSd;NoRidge;4;3;336000
+983;43.0;1266;0;CompShg;VinylSd;Blmngtn;2;2;159895
+988;83.0;1940;0;CompShg;VinylSd;NridgHt;3;3;395192
+990;65.0;778;798;CompShg;VinylSd;Somerst;3;2;197000
+991;82.0;1407;985;CompShg;VinylSd;NoRidge;3;3;348000
+992;121.0;916;826;CompShg;Wd Sdng;OldTown;4;2;168000
+993;80.0;1020;831;CompShg;Wd Sdng;Names;3;2;187000
+994;68.0;750;750;CompShg;VinylSd;CollgCr;3;2;173900
+995;96.0;1718;0;CompShg;CemntBd;NridgHt;3;3;337500
+1000;64.0;1208;0;CompShg;VinylSd;CollgCr;2;2;206000
+1003;75.0;1574;0;CompShg;VinylSd;Somerst;3;3;232000
+1005;43.0;1504;0;CompShg;VinylSd;Blmngtn;1;2;181000
+1006;65.0;985;0;CompShg;HdBoard;CollgCr;3;1;149900
+1009;43.0;1710;0;CompShg;VinylSd;Mitchel;3;2;240000
+1013;55.0;900;602;CompShg;Wd Sdng;Crawfor;3;1;165000
+1016;70.0;810;855;CompShg;VinylSd;NWAmes;3;2;227000
+1017;73.0;1504;0;CompShg;VinylSd;CollgCr;3;2;203000
+1020;43.0;1506;0;CompShg;VinylSd;Blmngtn;2;2;213490
+1021;60.0;1132;0;CompShg;VinylSd;Edwards;2;2;176000
+1022;64.0;1220;0;CompShg;VinylSd;CollgCr;2;2;194000
+1024;43.0;1504;0;CompShg;VinylSd;Blmngtn;2;2;191000
+1027;73.0;1264;0;CompShg;MetalSd;Names;3;2;167500
+1028;71.0;1646;0;CompShg;VinylSd;Timber;3;3;293077
+1032;102.0;1687;998;CompShg;Wd Sdng;SWISU;5;2;197000
+1037;89.0;1620;0;CompShg;VinylSd;Timber;2;3;315500
+1041;88.0;1803;0;CompShg;Wd Sdng;Sawyer;3;2;155000
+1043;34.0;1306;0;CompShg;VinylSd;NridgHt;1;2;196000
+1044;86.0;1532;797;CompShg;HdBoard;SawyerW;4;2;262280
+1045;80.0;2524;0;WdShngl;BrkFace;NWAmes;4;2;278000
+1047;85.0;1992;876;CompShg;CemntBd;StoneBr;4;3;556581
+1048;57.0;990;0;CompShg;VinylSd;CollgCr;3;2;145000
+1051;73.0;1302;0;CompShg;VinylSd;Gilbert;3;2;176485
+1052;103.0;1316;0;CompShg;VinylSd;CollgCr;3;2;200141
+1053;100.0;1127;850;CompShg;VinylSd;Names;4;2;165000
+1054;68.0;1526;0;CompShg;HdBoard;Edwards;4;1;144500
+1055;90.0;1091;898;CompShg;VinylSd;CollgCr;3;2;255000
+1056;104.0;1523;0;CompShg;Plywood;NWAmes;3;2;180000
+1057;43.0;1364;0;CompShg;VinylSd;NridgHt;2;2;185850
+1059;96.0;1130;1054;CompShg;VinylSd;NridgHt;3;3;335000
+1061;41.0;1338;0;CompShg;CemntBd;StoneBr;2;2;213500
+1066;80.0;1306;954;CompShg;Wd Sdng;ClearCr;3;2;328000
+1067;59.0;799;772;CompShg;VinylSd;Gilbert;3;2;178000
+1068;80.0;798;813;CompShg;HdBoard;Names;4;2;167900
+1069;42.0;1291;1230;CompShg;CemntBd;MeadowV;5;2;151400
+1072;78.0;829;727;CompShg;MetalSd;NWAmes;4;2;154000
+1074;75.0;698;728;CompShg;HdBoard;Edwards;3;2;159500
+1075;74.0;1240;0;CompShg;VinylSd;CollgCr;2;3;194000
+1076;75.0;960;780;CompShg;Wd Sdng;Crawfor;3;1;219500
+1077;60.0;1096;370;CompShg;Wd Sdng;OldTown;3;2;170000
+1079;37.0;848;0;CompShg;VinylSd;CollgCr;1;2;155900
+1081;80.0;1258;0;CompShg;VinylSd;NWAmes;3;2;145000
+1083;70.0;1459;0;CompShg;VinylSd;CollgCr;3;2;192000
+1084;80.0;1251;0;CompShg;HdBoard;Names;3;1;160000
+1086;73.0;996;0;CompShg;HdBoard;SawyerW;2;2;147000
+1088;85.0;1082;871;CompShg;VinylSd;Somerst;3;3;252000
+1089;24.0;970;739;CompShg;VinylSd;Edwards;3;2;137500
+1090;37.0;1247;0;CompShg;MetalSd;Somerst;1;2;197000
+1092;24.0;624;628;CompShg;MetalSd;Somerst;2;2;160000
+1093;60.0;1390;304;CompShg;MetalSd;SWISU;4;2;136500
+1094;71.0;1200;0;CompShg;MetalSd;Names;1;2;146000
+1096;78.0;1314;0;CompShg;VinylSd;CollgCr;3;2;176432
+1100;82.0;1601;0;CompShg;Plywood;NWAmes;3;2;157000
+1104;79.0;1194;0;CompShg;BrkFace;Names;3;2;159500
+1106;98.0;1500;1122;CompShg;HdBoard;NoRidge;3;2;325000
+1107;114.0;1442;0;CompShg;HdBoard;SawyerW;3;2;179900
+1108;168.0;887;1134;CompShg;VinylSd;Gilbert;3;2;274725
+1110;107.0;1836;0;CompShg;MetalSd;NridgHt;3;3;280000
+1112;80.0;1098;866;CompShg;Plywood;NWAmes;4;2;205000
+1116;93.0;1734;0;CompShg;VinylSd;NridgHt;3;3;318000
+1119;85.0;1021;580;CompShg;MetalSd;Sawyer;3;1;140000
+1122;84.0;1552;0;CompShg;VinylSd;CollgCr;3;3;212900
+1127;53.0;1555;0;CompShg;VinylSd;Blmngtn;2;3;174000
+1128;182.0;1530;0;CompShg;VinylSd;Gilbert;3;3;259000
+1129;59.0;847;1112;CompShg;VinylSd;Gilbert;4;2;215000
+1130;60.0;936;0;CompShg;MetalSd;OldTown;2;2;140000
+1134;80.0;1142;878;CompShg;VinylSd;SawyerW;3;2;239500
+1135;57.0;916;684;CompShg;VinylSd;Gilbert;3;2;169000
+1140;98.0;1167;0;CompShg;Stucco;BrkSide;3;2;144000
+1141;60.0;952;0;CompShg;HdBoard;Names;2;2;139000
+1143;77.0;1466;1362;CompShg;VinylSd;CollgCr;4;3;424870
+1146;52.0;1042;534;CompShg;MetalSd;BrkSide;3;1;149000
+1148;75.0;860;704;CompShg;MetalSd;Crawfor;3;1;174500
+1150;50.0;832;650;CompShg;VinylSd;OldTown;3;2;143000
+1152;134.0;1466;0;CompShg;HdBoard;Edwards;3;2;149900
+1153;90.0;1811;0;CompShg;Stone;Crawfor;2;2;230000
+1156;90.0;1437;0;CompShg;Plywood;Veenker;3;2;218000
+1157;85.0;1265;0;CompShg;BrkFace;Names;3;2;179900
+1158;34.0;1314;0;CompShg;VinylSd;NridgHt;2;2;230000
+1159;92.0;1580;0;CompShg;VinylSd;Somerst;3;3;235128
+1160;76.0;943;933;CompShg;HdBoard;NWAmes;4;2;185000
+1161;24.0;855;601;CompShg;Plywood;NPkVill;3;2;146000
+1166;79.0;1502;0;CompShg;VinylSd;NridgHt;3;2;233170
+1167;64.0;1694;0;CompShg;VinylSd;CollgCr;3;3;245350
+1168;58.0;959;712;CompShg;VinylSd;Gilbert;3;2;173000
+1169;120.0;1236;872;CompShg;Stucco;Edwards;4;2;235000
+1170;118.0;1831;1796;CompShg;HdBoard;NoRidge;4;3;625000
+1171;76.0;1118;0;CompShg;Plywood;Mitchel;3;1;171000
+1172;76.0;1261;0;CompShg;MetalSd;Names;3;2;163000
+1173;35.0;625;625;CompShg;MetalSd;Somerst;2;2;171900
+1174;138.0;1636;971;CompShg;MetalSd;ClearCr;3;0;200500
+1175;80.0;1170;1175;CompShg;Wd Sdng;Crawfor;4;2;239000
+1176;85.0;2129;743;CompShg;HdBoard;NoRidge;4;2;285000
+1179;54.0;820;523;CompShg;Wd Sdng;Crawfor;3;1;154900
+1182;64.0;1652;0;CompShg;CemntBd;Crawfor;2;2;392500
+1183;160.0;2411;2065;CompShg;Wd Sdng;NoRidge;4;3;745000
+1185;50.0;1572;0;CompShg;MetalSd;Timber;3;3;186700
+1188;89.0;1624;0;CompShg;ImStucc;NoRidge;2;3;262000
+1189;68.0;831;829;CompShg;VinylSd;CollgCr;3;2;195000
+1190;60.0;1028;776;CompShg;VinylSd;Gilbert;3;2;189000
+1192;24.0;764;677;CompShg;MetalSd;Somerst;2;2;174000
+1195;80.0;663;689;CompShg;HdBoard;Sawyer;4;1;158000
+1196;51.0;728;728;CompShg;VinylSd;Gilbert;3;2;176000
+1197;58.0;879;984;CompShg;VinylSd;Gilbert;4;3;219210
+1198;65.0;815;875;CompShg;MetalSd;OldTown;3;1;144000
+1199;70.0;1212;0;CompShg;VinylSd;CollgCr;3;2;178000
+1200;75.0;1382;0;CompShg;HdBoard;Sawyer;3;2;148000
+1202;80.0;866;913;CompShg;VinylSd;CollgCr;3;2;197900
+1204;75.0;1630;0;CompShg;VinylSd;CollgCr;3;2;213000
+1205;78.0;1074;0;CompShg;HdBoard;NWAmes;3;2;153500
+1206;90.0;2196;0;CompShg;HdBoard;SawyerW;3;3;271900
+1208;70.0;1700;0;CompShg;VinylSd;CollgCr;3;2;200000
+1209;70.0;1283;0;CompShg;MetalSd;Names;3;2;140000
+1210;85.0;1660;0;CompShg;VinylSd;Somerst;3;2;290000
+1211;70.0;1055;790;CompShg;Wd Sdng;SawyerW;3;2;189000
+1212;152.0;1080;672;CompShg;Wd Sdng;Gilbert;4;2;164000
+1218;72.0;1314;0;CompShg;CemntBd;Somerst;3;2;229456
+1223;78.0;1168;678;CompShg;Wd Sdng;Names;3;1;143000
+1224;89.0;2136;0;CompShg;Wd Sdng;Names;4;2;137900
+1225;60.0;788;702;CompShg;VinylSd;Gilbert;3;2;184000
+1226;65.0;1138;0;CompShg;VinylSd;Names;3;1;145000
+1227;86.0;894;1039;CompShg;VinylSd;Somerst;4;3;214000
+1228;72.0;912;0;CompShg;VinylSd;Names;2;2;147000
+1229;65.0;1702;0;CompShg;MetalSd;NridgHt;1;3;367294
+1236;96.0;892;892;CompShg;Wd Sdng;Crawfor;4;1;138887
+1237;36.0;764;862;CompShg;VinylSd;NridgHt;2;2;175500
+1238;41.0;847;1101;CompShg;VinylSd;CollgCr;4;2;195000
+1239;63.0;1141;0;CompShg;VinylSd;SawyerW;3;2;142500
+1240;64.0;1484;0;CompShg;VinylSd;Timber;2;2;265900
+1241;65.0;884;884;CompShg;VinylSd;CollgCr;3;2;224900
+1242;83.0;1689;0;CompShg;VinylSd;Somerst;3;3;248328
+1243;85.0;1173;0;CompShg;Plywood;NWAmes;3;2;170000
+1244;107.0;2076;0;CompShg;VinylSd;NridgHt;2;3;465000
+1246;78.0;1140;728;CompShg;VinylSd;NWAmes;3;2;178000
+1247;65.0;756;797;CompShg;VinylSd;Somerst;3;2;186500
+1251;93.0;2110;0;CompShg;BrkFace;Names;3;2;244000
+1255;60.0;760;896;CompShg;VinylSd;Edwards;3;2;165400
+1257;91.0;1987;0;CompShg;HdBoard;NoRidge;2;2;301500
+1259;59.0;1166;0;CompShg;VinylSd;Gilbert;2;2;190000
+1260;65.0;1054;0;CompShg;HdBoard;Names;3;2;151000
+1264;60.0;1060;764;CompShg;Wd Sdng;BrkSide;3;2;180500
+1265;34.0;1337;0;CompShg;MetalSd;Names;2;2;181000
+1266;35.0;713;739;CompShg;MetalSd;Somerst;3;2;183900
+1268;89.0;2018;0;CompShg;Stucco;Timber;3;3;378500
+1270;78.0;874;650;CompShg;MetalSd;Names;3;1;144000
+1274;124.0;1357;0;CompShg;Plywood;Edwards;2;1;177000
+1275;53.0;661;589;CompShg;Wd Sdng;Crawfor;3;2;139000
+1276;95.0;928;992;Roll;AsbShng;Names;4;2;137000
+1279;75.0;1128;903;CompShg;VinylSd;CollgCr;3;2;237000
+1281;67.0;1573;0;CompShg;VinylSd;CollgCr;3;2;227000
+1282;50.0;1339;0;CompShg;HdBoard;Timber;2;2;180000
+1283;61.0;1040;0;CompShg;HdBoard;CollgCr;3;2;150500
+1284;94.0;912;912;CompShg;MetalSd;Mitchel;4;0;139000
+1285;50.0;1699;748;CompShg;Wd Sdng;SWISU;4;1;169000
+1289;40.0;1659;0;CompShg;CemntBd;StoneBr;2;2;278000
+1290;86.0;1120;850;CompShg;VinylSd;NridgHt;3;3;281000
+1294;78.0;832;832;CompShg;HdBoard;NWAmes;4;2;162900
+1296;70.0;1052;0;CompShg;HdBoard;Names;3;1;138500
+1297;80.0;1128;0;CompShg;MetalSd;Names;3;2;155000
+1298;35.0;1072;0;CompShg;VinylSd;Edwards;2;2;140000
+1299;313.0;4692;950;ClyTile;Stucco;Edwards;3;2;160000
+1300;75.0;1246;0;CompShg;BrkFace;Names;3;1;154000
+1303;92.0;1203;1323;CompShg;VinylSd;NoRidge;4;3;290000
+1304;73.0;1616;0;CompShg;VinylSd;Somerst;3;3;232000
+1306;108.0;1652;0;CompShg;VinylSd;NridgHt;2;2;325000
+1307;48.0;1368;0;CompShg;VinylSd;NridgHt;2;2;202500
+1308;60.0;990;0;CompShg;VinylSd;CollgCr;3;2;138000
+1309;100.0;1122;0;CompShg;MetalSd;OldTown;2;2;147000
+1311;100.0;1902;0;CompShg;BrkFace;Crawfor;3;2;335000
+1312;68.0;1274;0;CompShg;VinylSd;CollgCr;3;2;203000
+1314;108.0;1422;1177;CompShg;VinylSd;NoRidge;4;3;333168
+1316;85.0;1092;1020;CompShg;HdBoard;Names;4;2;206900
+1317;61.0;1630;0;CompShg;VinylSd;CollgCr;3;3;295493
+1318;47.0;1352;0;CompShg;VinylSd;Somerst;2;2;208900
+1321;70.0;1478;0;CompShg;BrkFace;Names;3;2;156500
+1323;107.0;1061;862;CompShg;HdBoard;NoRidge;3;2;190000
+1325;75.0;1795;0;CompShg;VinylSd;Somerst;2;3;147000
+1329;60.0;1584;1208;CompShg;BrkFace;OldTown;5;2;256000
+1330;63.0;955;677;CompShg;VinylSd;Gilbert;3;2;176500
+1331;85.0;1588;0;CompShg;VinylSd;Somerst;3;3;227000
+1336;80.0;1334;0;CompShg;Plywood;NWAmes;2;2;167900
+1339;95.0;920;941;CompShg;VinylSd;CollgCr;3;2;200000
+1342;66.0;1114;0;CompShg;VinylSd;SawyerW;3;2;155000
+1344;57.0;1172;741;CompShg;BrkFace;Crawfor;3;2;177000
+1345;85.0;728;728;CompShg;VinylSd;CollgCr;3;2;155835
+1348;93.0;1776;0;CompShg;VinylSd;Timber;3;3;283463
+1351;91.0;1338;1296;CompShg;MetalSd;Names;6;4;200000
+1352;70.0;858;858;CompShg;HdBoard;Names;4;2;171000
+1354;56.0;2053;1185;CompShg;VinylSd;NoRidge;4;3;410000
+1356;102.0;1222;698;CompShg;MetalSd;NWAmes;4;2;170000
+1360;129.0;1980;0;CompShg;VinylSd;NridgHt;3;3;315000
+1361;51.0;990;1611;CompShg;MetalSd;SWISU;4;2;189000
+1362;124.0;1530;0;CompShg;VinylSd;StoneBr;3;2;260000
+1364;73.0;616;796;CompShg;VinylSd;Gilbert;3;2;156932
+1365;30.0;520;600;CompShg;MetalSd;Somerst;2;2;144152
+1367;68.0;882;908;CompShg;VinylSd;CollgCr;3;2;193000
+1370;48.0;1668;0;CompShg;VinylSd;CollgCr;3;2;232000
+1372;80.0;1661;0;CompShg;AsbShng;Names;3;1;165500
+1373;75.0;1108;989;CompShg;VinylSd;CollgCr;3;2;274300
+1375;85.0;1026;932;CompShg;CemntBd;Somerst;3;3;250000
+1376;89.0;1571;0;CompShg;VinylSd;Timber;3;3;239000
+1380;73.0;754;640;CompShg;VinylSd;Timber;3;2;167500
+1383;60.0;998;764;CompShg;Wd Sdng;OldTown;4;2;157000
+1387;80.0;1392;1392;CompShg;Plywood;NWAmes;5;2;250000
+1388;60.0;1664;862;CompShg;Stucco;OldTown;5;1;136000
+1389;42.0;1746;0;CompShg;VinylSd;Gilbert;3;3;377500
+1391;70.0;1525;0;CompShg;VinylSd;CollgCr;3;2;235000
+1394;60.0;1221;691;CompShg;Wd Sdng;OldTown;3;2;163000
+1395;53.0;1500;0;CompShg;VinylSd;Blmngtn;2;3;246578
+1396;88.0;1133;1349;CompShg;VinylSd;Timber;4;3;281213
+1398;51.0;939;574;CompShg;MetalSd;BrkSide;4;1;137500
+1399;60.0;1136;768;CompShg;VinylSd;Names;3;1;138000
+1400;51.0;1160;448;CompShg;WdShing;SWISU;3;1;137450
+1402;62.0;864;729;CompShg;VinylSd;Gilbert;3;2;193000
+1403;64.0;1294;0;CompShg;VinylSd;CollgCr;2;2;193879
+1404;49.0;1464;0;CompShg;VinylSd;Somerst;3;3;282922
+1406;44.0;1646;0;CompShg;CemntBd;Crawfor;2;2;275000
+1410;46.0;1236;857;CompShg;Plywood;NWAmes;3;2;215000
+1411;79.0;944;896;CompShg;VinylSd;CollgCr;3;2;230000
+1412;80.0;1112;556;CompShg;VinylSd;Names;3;1;140000
+1414;88.0;1844;0;CompShg;VinylSd;SawyerW;2;2;257000
+1415;64.0;1053;795;CompShg;Wd Sdng;BrkSide;4;2;207000
+1416;51.0;1569;0;CompShg;VinylSd;Blmngtn;1;3;175900
+1421;90.0;708;708;CompShg;HdBoard;NWAmes;3;2;179900
+1423;37.0;848;0;CompShg;VinylSd;CollgCr;1;2;136500
+1426;80.0;1252;0;CompShg;HdBoard;Names;3;2;142000
+1427;81.0;1223;904;CompShg;VinylSd;NoRidge;3;2;271000
+1428;60.0;1048;510;CompShg;MetalSd;Names;3;1;140000
+1431;60.0;734;1104;CompShg;VinylSd;Gilbert;4;2;192140
+1434;93.0;962;830;CompShg;VinylSd;Gilbert;3;2;186500
+1435;80.0;1126;0;CompShg;BrkFace;Mitchel;3;2;160000
+1436;80.0;1537;0;CompShg;Wd Sdng;Names;3;2;174000
+1438;96.0;1932;0;CompShg;VinylSd;NridgHt;2;3;394617
+1439;90.0;1236;0;CompShg;MetalSd;OldTown;2;2;149700
+1440;80.0;1040;685;CompShg;HdBoard;NWAmes;3;2;197000
+1441;79.0;1423;748;CompShg;MetalSd;Crawfor;3;2;191000
+1443;85.0;1026;981;CompShg;VinylSd;Somerst;3;3;310000
+1445;63.0;1422;0;CompShg;VinylSd;CollgCr;3;2;179600
+1448;80.0;1220;870;CompShg;VinylSd;CollgCr;3;2;240000
+1451;60.0;896;896;CompShg;VinylSd;Names;4;0;136000
+1452;78.0;1578;0;CompShg;CemntBd;Somerst;3;3;287090
+1453;35.0;1072;0;CompShg;VinylSd;Edwards;2;2;145000
+1455;62.0;1221;0;CompShg;VinylSd;Somerst;2;2;185000
+1456;62.0;953;694;CompShg;VinylSd;Gilbert;3;2;175000
+1457;85.0;2073;0;CompShg;Plywood;NWAmes;3;2;210000
+1458;66.0;1188;1152;CompShg;CemntBd;Crawfor;4;1;266500
+1459;68.0;1078;0;CompShg;MetalSd;Names;2;1;142125
+1460;75.0;1256;0;CompShg;HdBoard;Edwards;3;1;147500
