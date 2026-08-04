@@ -28,7 +28,7 @@ fn main() {
     println!("Значение z после shadowing: {z}");
 
     // Shadowing позволяет изменить даже тип переменной
-    let spaces = "   ";          // сначала это &str
-    let spaces = spaces.len();    // теперь это usize (длина строки)
+    let spaces = "   "; // сначала это &str
+    let spaces = spaces.len(); // теперь это usize (длина строки)
     println!("Количество пробелов: {spaces}");
 }

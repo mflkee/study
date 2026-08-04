@@ -29,7 +29,7 @@ fn mutable_reference_allows_change() {
     let mut topic = String::from("borrow");
     append_exclamation(&mut topic);
 
-    assert_eq!(topic, "borrow!") ;
+    assert_eq!(topic, "borrow!");
 }
 
 #[test]
