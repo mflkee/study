@@ -9,6 +9,7 @@ def merge_sort(list):
 
     left_half = merge_sort(list[:mid])
     right_half = merge_sort(list[mid:])
+
     result = []
 
     i = j = 0
