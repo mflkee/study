@@ -1,0 +1,29 @@
+[package]
+name = "esp32-modbus-fw"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# ESP32
+esp-idf-hal = "0.44"
+
+# Async (для фоновых задач)
+embassy-time = { version = "0.4", features = ["generic-queue", "std"] }
+embassy-executor = { version = "0.7", features = ["integrated-timers", "executor-thread"] }
+
+# Logging
+log = "0.4"
+
+# Error handling
+anyhow = "1.0"
+
+[profile.release]
+opt-level = "s"
+lto = "fat"
+
+[[bin]]
+name = "esp32-modbus-fw"
+path = "src/main.rs"
+
+[package.metadata.esp-idf-sys]
+esp_idf_version = "v5.3"

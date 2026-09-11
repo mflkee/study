@@ -1,0 +1,19 @@
+[package]
+name = "embassy-skeleton"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+esp-backtrace = { version = "0.14", features = ["exception-handler", "panic-handler", "println"] }
+esp-hal = { version = "0.23", features = ["log"] }
+esp-hal-embassy = { version = "0.6" }
+esp-println = { version = "0.12", features = ["log"] }
+
+embassy-executor = { version = "0.7", default-features = false, features = ["task-pool-size-4"] }
+embassy-time = { version = "0.4" }
+
+log = "0.4"
+
+[profile.release]
+opt-level = "s"
+lto = "fat"

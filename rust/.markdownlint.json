@@ -1,6 +1,6 @@
 {
-  "MD013": {
-    "line_length": 80,
-    "code_blocks": false
-  }
+  "MD013": false,
+  "MD022": false,
+  "MD032": false,
+  "MD033": false
 }

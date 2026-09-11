@@ -1,0 +1,61 @@
+[device]
+name = "esp32-gateway"
+ip = "192.168.1.100"
+modbus_port = 502
+slave_id = 1
+
+[rs485]
+baud_rate = 9600
+data_bits = 8
+parity = "none"
+stop_bits = 1
+poll_interval_ms = 500
+
+# Датчики температуры (Slave ID 1-15)
+[[devices]]
+id = 1
+name = "Датчик температуры 1"
+device_type = "temperature"
+registers = [0x00]
+
+[[devices]]
+id = 2
+name = "Датчик температуры 2"
+device_type = "temperature"
+registers = [0x02]
+
+[[devices]]
+id = 3
+name = "Датчик температуры 3"
+device_type = "temperature"
+registers = [0x04]
+
+# Датчики давления (Slave ID 16-30)
+[[devices]]
+id = 16
+name = "Датчик давления 1"
+device_type = "pressure"
+registers = [0x10]
+
+[[devices]]
+id = 17
+name = "Датчик давления 2"
+device_type = "pressure"
+registers = [0x12]
+
+# Пробоотборники (Slave ID 31-32)
+[[devices]]
+id = 31
+name = "Пробоотборник 1"
+device_type = "pump"
+registers = []
+command_register = 0x30
+status_register = 0x20
+
+[[devices]]
+id = 32
+name = "Пробоотборник 2"
+device_type = "pump"
+registers = []
+command_register = 0x31
+status_register = 0x21

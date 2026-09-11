@@ -1,0 +1,30 @@
+[package]
+name = "esp32-modbus-rtu"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Serial port (RS-485 через UART)
+tokio-serial = { version = "5.4", features = ["bytes"] }
+
+# Logging
+log = "0.4"
+env_logger = "0.11"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Serial port
+bytes = "1"
+
+[features]
+default = ["rtu"]
+rtu = []

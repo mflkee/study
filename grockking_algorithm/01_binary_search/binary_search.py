@@ -1,6 +1,5 @@
 # Определение класса BinarySearch
-class BinarySearch():
-
+class BinarySearch:
     # Определение метода search_iterative с тремя аргументами (self, list, item)
     def search_iterative(self, list, item):
         # low и high указывают, какая часть списка будет искаться
@@ -29,7 +28,6 @@ class BinarySearch():
     def search_recursive(self, list, low, high, item):
         # Проверяем базовый случай
         if high >= low:
-
             # Находим индекс среднего элемента
             mid = (high + low) // 2
             guess = list[mid]
