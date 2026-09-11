@@ -31,6 +31,6 @@ members = [
     "03_projects/company_directory_cli",
     "03_projects/temperature_converter_web",
     # Experiments - эксперименты и математические задачи
-    "04_experiments/mathmagic",
+    "04_experiments/mathmagic", "01_basics/12_generic_types/removing_dublication",
 ]
 resolver = "2"
