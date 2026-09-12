@@ -1,13 +1,11 @@
 /// Modbus RTU Slave — обработка запросов на ESP32
 ///
-/// Принимает кадры, проверяет CRC, отвечает через UART с
-/// управлением направлением через GPIO4 (DE/RE на MAX3485).
+/// Принимает кадры, проверяет CRC, отвечает через UART.
+/// Управление направлением DE/RE (для RS-485) остаётся за вызывающим кодом.
 
 use std::sync::{Arc, RwLock};
 
 use esp_idf_hal::delay::FreeRtos;
-use esp_idf_hal::gpio::OutputPin;
-use esp_idf_hal::gpio::PinDriver;
 use esp_idf_hal::uart::UartDriver;
 
 use crate::crc;
@@ -20,10 +18,6 @@ pub fn handle_frame(
     slave_id: u8,
     map: &Arc<RwLock<RegisterMap>>,
     uart: &mut UartDriver,
-    dir_pin: &mut PinDriver<
-        impl OutputPin,
-        esp_idf_hal::gpio::Output,
-    >,
 ) -> Result<bool, ()> {
     // Минимальный кадр: addr(1) + fc(1) + crc(2) = 4 байта
     if frame.len() < 4 {
@@ -60,18 +54,9 @@ pub fn handle_frame(
         }
     };
     
-    // Переключаем направление: TX mode
-    dir_pin.set_high();
-    
-    // Пауза inter-frame gap (3.5 символа)
-    FreeRtos::delay_ms(5);
-    
     // Отправляем ответ
     let write_result = write_all(uart, &response);
-    
-    // Переключаем обратно: RX mode
-    dir_pin.set_low();
-    
+
     write_result?;
     
     log::debug!("Response sent: {:02X?}", response);

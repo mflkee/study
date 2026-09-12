@@ -1,15 +1,16 @@
-// ESP32 Modbus RTU Slave Firmware — режим «без трансивера»
+// ESP32 Modbus RTU Slave Firmware — режим «RS-485 с трансивером MAX3485»
 //
-// Прямое подключение к ПК через USB-C (UART0):
-//   USB-C (UART/COM) ────► ПК
+// Используй этот файл, когда подключишь MAX3485 по схеме:
+//   UART1_TX = GPIO17 → MAX3485 DI
+//   UART1_RX = GPIO18 ← MAX3485 RO
+//   GPIO4        → MAX3485 DE+RE (управление направлением)
 //
-// TX = GPIO43 (U0TXD),  RX = GPIO44 (U0RXD)  ← идут на USB-мост платы
-//
-// Для работы по RS-485 (с MAX3485) замени содержимое main.rs на main_rs485.rs
+// Чтобы собрать эту версию, замени содержимое main.rs на этот файл.
 
 #![allow(clippy::single_component_path_imports)]
 
 use esp_idf_hal::delay::FreeRtos;
+use esp_idf_hal::gpio::{Output, PinDriver};
 use esp_idf_hal::peripherals::Peripherals;
 use esp_idf_hal::uart::{self, UartDriver, UartConfig};
 
@@ -32,10 +33,10 @@ fn main() -> anyhow::Result<()> {
     esp_idf_svc::log::EspLogger::initialize_default();
 
     log::info!("=".repeat(60));
-    log::info!("ESP32 Modbus RTU Slave (USB/COM mode)");
-    log::info!("= no RS-485 transceiver =");
+    log::info!("ESP32 Modbus RTU Slave (RS-485 + MAX3485 mode)");
     log::info!("Slave ID: {}, baud: {}", SLAVE_ID, BAUD_RATE);
-    log::info!("UART0: GPIO43 (TX), GPIO44 (RX) — USB-C COM port");
+    log::info!("UART1: GPIO17 (TX), GPIO18 (RX)");
+    log::info!("Direction: GPIO4 (DE/RE)");
     log::info!("=".repeat(60));
 
     let peripherals = Peripherals::take().unwrap();
@@ -46,17 +47,19 @@ fn main() -> anyhow::Result<()> {
         .parity(uart::config::Parity::ParityNone)
         .stop_bits(uart::config::StopBits::StopBits1);
 
-    // UART0 — идёт на USB-мост платы (COM-порт в системе)
     let mut uart = UartDriver::new(
-        peripherals.uart0,
-        peripherals.pins.gpio43,
-        peripherals.pins.gpio44,
+        peripherals.uart1,
+        peripherals.pins.gpio17,
+        peripherals.pins.gpio18,
         Option::<esp_idf_hal::gpio::Gpio0>::None,
         Option::<esp_idf_hal::gpio::Gpio0>::None,
         &config,
     )?;
 
-    log::info!("UART0 initialized @ {} baud", BAUD_RATE);
+    let mut dir_pin = PinDriver::output(peripherals.pins.gpio4)?;
+    dir_pin.set_low();
+
+    log::info!("UART1 initialized @ {} baud", BAUD_RATE);
 
     let register_map = Arc::new(RwLock::new(RegisterMap::new()));
     init_test_data(&register_map);
@@ -73,11 +76,13 @@ fn main() -> anyhow::Result<()> {
                 bytes_collected += n;
 
                 if bytes_collected >= 4 {
-                    match handle_frame(
+                    // Перед отправкой ответа переключаем направление на TX
+                    match handle_frame_dir(
                         &buf[..bytes_collected],
                         SLAVE_ID,
                         &register_map,
                         &mut uart,
+                        &mut dir_pin,
                     ) {
                         Ok(processed) => {
                             if processed {
@@ -105,6 +110,23 @@ fn main() -> anyhow::Result<()> {
             }
         }
     }
+}
+
+fn handle_frame_dir(
+    frame: &[u8],
+    slave_id: u8,
+    map: &Arc<RwLock<RegisterMap>>,
+    uart: &mut UartDriver,
+    dir_pin: &mut PinDriver<impl Output, esp_idf_hal::gpio::Output>,
+) -> Result<bool, ()> {
+    // Включаем передатчик перед отправкой ответа
+    dir_pin.set_high();
+    FreeRtos::delay_ms(2); // время на переключение
+
+    let result = handle_frame(frame, slave_id, map, uart);
+
+    dir_pin.set_low();
+    result
 }
 
 fn init_test_data(map: &Arc<RwLock<RegisterMap>>) {

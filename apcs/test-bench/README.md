@@ -20,6 +20,9 @@ test-bench/
 │       ├── rtu_slave.rs
 │       ├── register_map.rs
 │       └── crc.rs
+├── tui/                   # Универсальный терминальный интерфейс (TUI)
+│   ├── README.md          # подробно: возможности, хоткеи, потоки
+│   └── src/               # hotplug, опрос, эмулятор, прошивки
 └── scripts/
     ├── modbus_client.py    # Тестовый клиент (как ПЛК/SCADA)
     ├── zynq_simulator.py   # Симулятор Zynq (опрос датчиков в реальном времени)
@@ -31,6 +34,7 @@ test-bench/
 | Сценарий | Что запускается | Где |
 |----------|-----------------|-----|
 | Без ESP32 | Rust эмулятор на ПК | test-bench/ |
+| Всё-в-одном TUI (эмулятор/hotplug/регистры/прошивки) | tui | test-bench/tui/ |
 | С реальным ESP32 | esp32-fw прошивка | test-bench/esp32-fw/ |
 | Имитация датчиков | Python simulator.py | ПК или ESP32 |
 
@@ -64,6 +68,21 @@ cargo run --release -- /dev/ttyUSB1 9600
 # Терминал 2: тестируем как ПЛК
 python3 scripts/modbus_client.py /dev/ttyUSB0 9600
 ```
+
+Или — универсальный TUI (эмулятор, hotplug, регистры, прошивки):
+
+```bash
+cd tui && cargo run --release
+```
+
+### 1b. Терминальный интерфейс (TUI) — всё в одном
+
+```bash
+cd tui
+cargo run --release      # [e] — встроенный эмулятор; Ports → [c] — ESP32
+```
+
+Подробности и все хоткеи: `tui/README.md`.
 
 ### 2. С реальным ESP32
 
