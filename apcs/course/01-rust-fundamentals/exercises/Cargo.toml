@@ -1,0 +1,5 @@
+[package]
+name = "exercises"
+version = "0.1.0"
+edition = "2021"
+description = "Упражнения Модуля 1. Решения подписаны как TODO — ваша задача исправить."

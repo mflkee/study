@@ -32,9 +32,16 @@ pub fn append(frame: &mut Vec<u8>) {
     frame.extend_from_slice(&crc.to_le_bytes());
 }
 
-/// Проверка, что кадр адресован нашему slave (или broadcast).
-pub fn is_for_us(frame: &[u8], slave_id: u8) -> bool {
-    frame.first().copied() == Some(slave_id) || frame.first().copied() == Some(0)
+/// Hex-строка для лога шины: `01 03 00 00 00 01 84 0A`.
+pub fn to_hex(data: &[u8]) -> String {
+    let mut s = String::with_capacity(data.len() * 3);
+    for (i, b) in data.iter().enumerate() {
+        if i > 0 {
+            s.push(' ');
+        }
+        s.push_str(&format!("{:02X}", b));
+    }
+    s
 }
 
 #[cfg(test)]
@@ -58,12 +65,5 @@ mod tests {
         assert!(verify(&frame));
         frame[0] = 0xFF;
         assert!(!verify(&frame));
-    }
-
-    #[test]
-    fn is_for_us_works() {
-        assert!(is_for_us(&[0x01, 0x03, 0, 0, 0, 1, 0, 0], 0x01));
-        assert!(is_for_us(&[0x00, 0x10, 0, 0, 0, 1, 2, 0, 0, 0, 0], 0x01));
-        assert!(!is_for_us(&[0x02, 0x03, 0, 0, 0, 1, 0, 0], 0x01));
     }
 }

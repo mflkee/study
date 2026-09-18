@@ -2,9 +2,11 @@
 
 use crate::discover::{PortInfo, ScanResult};
 use crate::emulator::{DataType, SharedEmulator};
-use crate::master::SerialMaster;
-use crate::worker::{DeviceSnapshot, Event, PollSource, Runtime};
+use crate::master::{SerialMaster, TraceEntry};
+use crate::tcp_master::TcpMaster;
+use crate::worker::{DeviceSnapshot, Event, PollSource, Runtime, TaskPayload};
 use std::collections::VecDeque;
+use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 
 /// Табы интерфейса.
@@ -15,17 +17,19 @@ pub enum Tab {
     Registers,
     Sensors,
     Firmware,
+    Bus,
     Log,
     Help,
 }
 
 impl Tab {
-    pub const ALL: [Tab; 7] = [
+    pub const ALL: [Tab; 8] = [
         Tab::Dashboard,
         Tab::Ports,
         Tab::Registers,
         Tab::Sensors,
         Tab::Firmware,
+        Tab::Bus,
         Tab::Log,
         Tab::Help,
     ];
@@ -36,16 +40,17 @@ impl Tab {
             Tab::Registers => "Registers",
             Tab::Sensors => "Sensors",
             Tab::Firmware => "Firmware",
+            Tab::Bus => "Bus",
             Tab::Log => "Log",
             Tab::Help => "Help",
         }
     }
     pub fn next(&self) -> Tab {
-        let idx = Tab::ALL.iter().position(|t| t == self).unwrap() as usize;
+        let idx = Tab::ALL.iter().position(|t| t == self).unwrap();
         Tab::ALL[(idx + 1) % Tab::ALL.len()]
     }
     pub fn prev(&self) -> Tab {
-        let idx = Tab::ALL.iter().position(|t| t == self).unwrap() as usize;
+        let idx = Tab::ALL.iter().position(|t| t == self).unwrap();
         Tab::ALL[(idx + Tab::ALL.len() - 1) % Tab::ALL.len()]
     }
 }
@@ -137,6 +142,11 @@ pub struct App {
 
     /// Последняя ошибка опроса (для индикации).
     pub last_poll_error: Option<String>,
+    /// Последняя залогированная ошибка опроса (для подавления повторов).
+    pub last_logged_poll_error: Option<String>,
+    /// Инструмент прошивки, определённый один раз при старте (нужен для UI
+    /// и fw-операций; детект через subprocess нельзя дёргать на каждый кадр).
+    pub fw_tool: Option<String>,
     /// Время последнего удачного опроса.
     pub last_poll_at: f64,
     /// Таймер UI.
@@ -145,6 +155,12 @@ pub struct App {
     pub status_line: String,
     /// Текущий порт, выбранный для прошивки.
     pub fw_port: Option<String>,
+    /// Переподключение к порту после fw-операции: (порт, был ли подключён).
+    pub reconnect_after: Option<(String, bool)>,
+    /// Активная фоновая задача (label) — показывает спиннер в шапке.
+    pub busy: Option<String>,
+    /// Счётчик анимации спиннера.
+    pub spin: usize,
     /// Список файлов бэкапов.
     pub backups: Vec<String>,
     pub backup_selected: usize,
@@ -157,6 +173,36 @@ pub struct App {
     pub sensor_focus: usize,
     /// Режим управления датчиками (навигация по списку + удаление).
     pub sensor_manage: bool,
+    /// Прокрутка лога (вкладка Log).
+    pub log_scroll: usize,
+    /// Прокрутка справки (вкладка Help).
+    pub help_scroll: usize,
+    /// Прокрутка лога шины (вкладка Bus). 0 = всегда внизу (последний кадр).
+    pub bus_scroll: usize,
+    /// Смещение списка устройств дашборда (верх видимой строки).
+    pub dash_scroll: usize,
+    /// Какое устройство было выбрано на дашборде в прошлом кадре —
+    /// нужен, чтобы автопрокрутка к заголовку срабатывала только при
+    /// смене устройства, а не забивала ручную прокрутку.
+    pub dash_sel_seen: usize,
+    /// «Лог шины»: последние Modbus-кадры (вкладка Bus).
+    pub trace: VecDeque<TraceEntry>,
+    /// Modbus TCP-сервер: отдаёт карту эмулятора по Ethernet (для будущего Zynq).
+    pub tcp_server: Option<crate::tcp_server::TcpServerState>,
+    /// Порт TCP-сервера (по умолчанию 1502 — dev-порт, именительный к 502).
+    pub tcp_port: u16,
+    /// Общий журнал TCP-транзакций — дренится в `trace` на каждом тике.
+    pub tcp_trace: crate::tcp_server::SharedTrace,
+
+    /// Modbus TCP *master* (клиент): опрашивает внешние устройства (AI-32 и т.п.).
+    pub tcp_master: Option<Arc<Mutex<TcpMaster>>>,
+    /// Читаемый адрес подключённого TCP-устройства (`host:port`) — для статуса.
+    pub tcp_connected: Option<String>,
+    /// Адрес/порт цели TCP-мастера (редактируются на вкладке Ports).
+    pub tcp_host: String,
+    pub tcp_port_str: String,
+    /// Какое поле формы TCP-мастера в фокусе (0=host, 1=port).
+    pub tcp_focus: usize,
 }
 
 /// Какую форму и какое поле редактируем.
@@ -166,6 +212,8 @@ pub enum FieldEdit {
     Reg(usize),
     /// Поле формы датчиков (0=device,1=name,2=base,3=amplitude,4=period).
     Sensor(usize),
+    /// Поле формы Modbus TCP master на вкладке Ports (0=host, 1=port).
+    Tcp(usize),
 }
 
 /// Строка списка датчиков (левой панели вкладки Sensors).
@@ -209,28 +257,60 @@ impl App {
             sensor_form: SensorForm::default(),
             sensor_selected: 0,
             last_poll_error: None,
+            last_logged_poll_error: None,
+            fw_tool: crate::firmware::find_tool(),
             last_poll_at: 0.0,
             tick: 0,
             status_line: String::new(),
             fw_port: None,
+            reconnect_after: None,
+            busy: None,
+            spin: 0,
             backups,
             backup_selected: 0,
             editing: None,
             reg_focus: 0,
             sensor_focus: 0,
             sensor_manage: false,
+            log_scroll: 0,
+            help_scroll: 0,
+            bus_scroll: 0,
+            dash_scroll: 0,
+            dash_sel_seen: usize::MAX,
+            trace: VecDeque::new(),
+            tcp_server: None,
+            tcp_port: crate::tcp_server::DEFAULT_PORT,
+            tcp_trace: crate::tcp_server::new_shared_trace(),
+            tcp_master: None,
+            tcp_connected: None,
+            tcp_host: "127.0.0.1".into(),
+            tcp_port_str: crate::tcp_server::DEFAULT_PORT.to_string(),
+            tcp_focus: 0,
         }
     }
 
     // --- Лог ---
 
     pub fn log(&mut self, level: u8, text: impl Into<String>) {
+        let text = text.into();
         self.logs.push_back(LogLine {
-            text: text.into(),
+            text: text.clone(),
             level,
         });
         if self.logs.len() > 300 {
             self.logs.pop_front();
+        }
+        // Дублируем в файл ~/esp32-tui.log — чтобы лог можно было посмотреть
+        // даже когда TUI уже закрыт.
+        if let Some(home) = dirs::home_dir() {
+            use std::io::Write;
+            if let Ok(mut f) = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(home.join("esp32-tui.log"))
+            {
+                let _ = writeln!(f, "[{}] {}", level, text);
+            }
         }
     }
 
@@ -243,37 +323,33 @@ impl App {
         self.runtime.set_source(PollSource::Emu(emu));
         self.log(1, "Started test server (in-process emulator)");
         self.status_line = "Connected: EMULATOR".into();
+        // Сразу строим снимок, чтобы список устройств появился мгновенно,
+        // а не после первого опроса.
+        self.snapshot = crate::worker::emu_snapshot(&self.emu, false).unwrap_or_default();
     }
 
-    /// Подключается к serial порту.
+    /// Подключается к serial порту (в фоне, со спиннером).
     pub fn connect_serial(&mut self, port_name: &str) {
-        self.runtime.stop_poller();
-        match SerialMaster::open(port_name, self.serial_baud, 1) {
-            Ok(m) => {
-                let shared = Arc::new(Mutex::new(m));
-                self.serial_master = Some(shared.clone());
-                self.serial_port = Some(port_name.to_string());
-                self.runtime
-                    .set_source(PollSource::Serial {
-                        port: port_name.to_string(),
-                        baud: self.serial_baud,
-                        master: shared,
-                    });
-                self.log(1, format!("Connected to {}", port_name));
-                self.status_line = format!("Connected: {}", port_name);
-            }
-            Err(e) => {
-                self.log(3, format!("Failed to open {}: {}", port_name, e));
-                self.status_line = format!("FAILED: {}", port_name);
-            }
-        }
+        let port = port_name.to_string();
+        let baud = self.serial_baud;
+        self.run_task("connect", move |_sink| {
+            SerialMaster::open(&port, baud, 1)
+                .map(|m| TaskPayload::Master {
+                    port: port.clone(),
+                    master: Arc::new(Mutex::new(m)),
+                })
+                .map_err(|e| format!("Failed to open {}: {}", port, e))
+        });
     }
 
     /// Отключается от serial (но НЕ от эмулятора — эмулятор можно оставить).
     pub fn disconnect_serial(&mut self) {
-        if self.runtime.current_source.is_some()
-            && self.runtime.current_source.as_deref() != Some("EMU")
-        {
+        // Останавливаем поллер, только если сейчас опрашивается именно этот
+        // порт (иначе не трогаем активный TCP/эмулятор).
+        let port = self.serial_port.clone();
+        let is_polled_port = port.is_some()
+            && self.runtime.current_source.as_deref() == port.as_deref();
+        if is_polled_port {
             self.runtime.stop_poller();
         }
         self.serial_master = None;
@@ -288,9 +364,103 @@ impl App {
         self.runtime.current_source.is_some()
     }
 
+    // --- Modbus TCP server ---
+
+    /// Включить/выключить TCP-сервер: отдаёт ту же карту эмулятора по Ethernet.
+    pub fn toggle_tcp_server(&mut self) {
+        if let Some(mut st) = self.tcp_server.take() {
+            st.stop();
+            self.log(1, "Modbus TCP server stopped");
+            return;
+        }
+        let emu = self.emu.clone();
+        let trace = self.tcp_trace.clone();
+        let port = self.tcp_port;
+        match crate::tcp_server::spawn(port, emu, trace) {
+            Ok((addr, st)) => {
+                self.tcp_server = Some(st);
+                self.log(
+                    1,
+                    format!(
+                        "Modbus TCP server on {} — serves the emulator register map ([t] to stop)",
+                        addr
+                    ),
+                );
+            }
+            Err(e) => self.log(3, e),
+        }
+    }
+
+    // --- Modbus TCP master (клиент) ---
+
+    /// Подключается к внешнему Modbus TCP устройству (в фоне, со спиннером).
+    /// Unit ID берём из формы регистров («Slave ID») — это же значение потом
+    /// уходит в MBAP-заголовок каждого запроса.
+    pub fn connect_tcp(&mut self) {
+        if self.busy.is_some() {
+            return;
+        }
+        let host = self.tcp_host.trim().to_string();
+        let port = self.tcp_port_str.trim().parse::<u16>().unwrap_or(crate::tcp_server::DEFAULT_PORT);
+        let unit = self.reg_form.slave_id.parse::<u8>().unwrap_or(1);
+        if host.is_empty() {
+            self.log(2, "TCP host is empty (edit on Ports tab)");
+            return;
+        }
+        self.run_task("tcp-connect", move |_sink| {
+            TcpMaster::open(&host, port, unit)
+                .map(|m| TaskPayload::TcpMaster {
+                    host: host.clone(),
+                    port,
+                    master: Arc::new(Mutex::new(m)),
+                })
+                .map_err(|e| format!("TCP connect {}:{} failed: {}", host, port, e))
+        });
+    }
+
+    /// Отключается от Modbus TCP устройства (не трогает serial и эмулятор).
+    pub fn disconnect_tcp(&mut self) {
+        let was = self.tcp_connected.clone();
+        // Останавливаем поллер только если сейчас опрашивается TCP-источник.
+        if self.runtime.current_source.as_deref().is_some_and(|s| s.starts_with("tcp://")) {
+            self.runtime.stop_poller();
+        }
+        self.tcp_master = None;
+        self.tcp_connected = None;
+        if let Some(w) = was {
+            self.log(2, format!("Disconnected TCP {}", w));
+        }
+    }
+
+    /// Дренит журнал TCP-транзакций в общий «лог шины» (вкладка Bus).
+    fn drain_tcp_trace(&mut self) {
+        let mut lock = match self.tcp_trace.lock() {
+            Ok(l) => l,
+            Err(_) => return,
+        };
+        if lock.is_empty() {
+            return;
+        }
+        let entries: Vec<TraceEntry> = lock.drain(..).collect();
+        drop(lock);
+        self.append_trace_entries(entries);
+    }
+
+    /// Добавляет записи в «лог шины», удерживая последние 120 транзакций.
+    pub fn append_trace_entries(&mut self, entries: Vec<TraceEntry>) {
+        for t in entries {
+            self.trace.push_back(t);
+        }
+        let overflow = self.trace.len().saturating_sub(120);
+        for _ in 0..overflow {
+            self.trace.pop_front();
+        }
+    }
+
     // --- Обработка событий ---
 
     pub fn handle_event(&mut self, ev: Event) {
+        self.drain_tcp_trace();
         match ev {
             Event::Ticked => {
                 self.tick = self.tick.wrapping_add(1);
@@ -334,16 +504,88 @@ impl App {
                     }
                 }
             }
-            Event::Snapshot { source, devices } => {
+            Event::Snapshot { devices, trace } => {
                 self.snapshot = devices;
                 self.last_poll_at = crate::emulator::now_secs();
                 self.last_poll_error = None;
+                self.append_trace_entries(trace);
             }
             Event::PollError(e) => {
                 self.last_poll_error = Some(e.clone());
-                self.log(3, format!("Poll error: {}", e));
+                // Повторные одинаковые ошибки не засоряют лог «краснотой» —
+                // логируем только смену текста ошибки.
+                if self.last_logged_poll_error.as_deref() != Some(e.as_str()) {
+                    self.last_logged_poll_error = Some(e.clone());
+                    self.log(3, format!("Poll error: {}", e));
+                }
             }
             Event::Log(text) => self.log(0, text),
+            Event::TaskProgress { text } => {
+                self.status_line = format!("⏳ {}", text);
+            }
+            Event::TaskDone { label, result } => {
+                self.busy = None;
+                match result {
+                    Ok(TaskPayload::Master { port, master }) => {
+                        self.runtime.stop_poller();
+                        let shared = master;
+                        self.serial_master = Some(shared.clone());
+                        self.serial_port = Some(port.clone());
+                        if let Some(p) = self.ports.iter_mut().find(|p| p.name == port) {
+                            p.has_firmware = true;
+                        }
+                        self.runtime.set_source(PollSource::Serial {
+                            port: port.clone(),
+                            baud: self.serial_baud,
+                            master: shared,
+                        });
+                        self.log(1, format!("Connected to {}", port));
+                        self.status_line = format!("Connected: {}", port);
+                    }
+                    Ok(TaskPayload::TcpMaster { host, port, master }) => {
+                        self.runtime.stop_poller();
+                        let shared = master;
+                        self.tcp_master = Some(shared.clone());
+                        let addr = format!("{}:{}", host, port);
+                        self.tcp_connected = Some(addr.clone());
+                        self.runtime.set_source(PollSource::Tcp {
+                            host: host.clone(),
+                            port,
+                            master: shared,
+                        });
+                        self.log(
+                            1,
+                            format!(
+                                "TCP master connected to {} (unit {}) — [o] to disconnect",
+                                addr, self.reg_form.slave_id
+                            ),
+                        );
+                        self.status_line = format!("Connected: {}", addr);
+                    }
+                    Ok(TaskPayload::Lines(lines)) => {
+                        if label.starts_with("probe ") {
+                            self.status_line =
+                                lines.first().cloned().unwrap_or_else(|| "probe: done".into());
+                        } else {
+                            self.status_line = format!("{}: done", label);
+                        }
+                        if label == "backup" {
+                            self.refresh_backups();
+                        }
+                        for l in lines {
+                            self.log(1, l);
+                        }
+                    }
+                    Err(e) => {
+                        self.status_line = format!("{}: {}", label, e);
+                        self.log(3, format!("{}: {}", label, e));
+                    }
+                }
+                // После fw-операции возвращаем открытый нами порт обратно.
+                if let Some((p, true)) = self.reconnect_after.take() {
+                    self.connect_serial(&p);
+                }
+            }
         }
     }
 
@@ -405,20 +647,31 @@ impl App {
             return;
         }
 
-        // Иначе — через SerialMaster.
-        let Some(master) = self.serial_master.clone() else {
+        // Иначе — через подключённый мастер: TCP (если есть) или serial.
+        let result = if let Some(master) = self.tcp_master.clone() {
+            let mut m = master.lock().unwrap();
+            match self.reg_form.reg_type {
+                0 => m.read_input_registers(start, count),
+                1 => m.read_holding_registers(start, count),
+                2 => m.read_coils(start, count).map(|b| {
+                    b.into_iter().map(|x| if x { 1 } else { 0 }).collect()
+                }),
+                _ => return,
+            }
+        } else if let Some(master) = self.serial_master.clone() {
+            let mut m = master.lock().unwrap();
+            match self.reg_form.reg_type {
+                0 => m.read_input_registers(start, count),
+                1 => m.read_holding_registers(start, count),
+                2 => m.read_coils(start, count).map(|b| {
+                    b.into_iter().map(|x| if x { 1 } else { 0 }).collect()
+                }),
+                _ => return,
+            }
+        } else {
             self.log(2, "Not connected");
             self.status_line = "Not connected: press [e] for emulator, or [c] in Ports".into();
             return;
-        };
-        let mut m = master.lock().unwrap();
-        let result = match self.reg_form.reg_type {
-            0 => m.read_input_registers(start, count),
-            1 => m.read_holding_registers(start, count),
-            2 => m.read_coils(start, count).map(|b| {
-                b.into_iter().map(|x| if x { 1 } else { 0 }).collect()
-            }),
-            _ => return,
         };
         match result {
             Ok(regs) => {
@@ -468,16 +721,24 @@ impl App {
             return;
         }
 
-        let Some(master) = self.serial_master.clone() else {
+        let result = if let Some(master) = self.tcp_master.clone() {
+            let mut m = master.lock().unwrap();
+            match self.reg_form.reg_type {
+                1 => m.write_single_register(addr, value),
+                2 => m.write_single_coil(addr, value != 0),
+                _ => return,
+            }
+        } else if let Some(master) = self.serial_master.clone() {
+            let mut m = master.lock().unwrap();
+            match self.reg_form.reg_type {
+                1 => m.write_single_register(addr, value),
+                2 => m.write_single_coil(addr, value != 0),
+                _ => return,
+            }
+        } else {
             self.log(2, "Not connected");
             self.status_line = "Not connected: press [e] for emulator, or [c] in Ports".into();
             return;
-        };
-        let mut m = master.lock().unwrap();
-        let result = match self.reg_form.reg_type {
-            1 => m.write_single_register(addr, value),
-            2 => m.write_single_coil(addr, value != 0),
-            _ => return,
         };
         match result {
             Ok(()) => {
@@ -514,6 +775,96 @@ impl App {
         }
     }
 
+    /// Прямой выбор устройства дашборда по клику.
+    pub fn set_selected_device(&mut self, di: usize) {
+        if di < self.snapshot.len() {
+            self.selected_device = di;
+        }
+    }
+
+    /// Постраничный выбор устройства (PgDn/PgUp) — со страницей в 6 строк.
+    pub fn select_dev_paged(&mut self, dir: i8) {
+        if self.snapshot.is_empty() {
+            return;
+        }
+        if dir > 0 {
+            self.selected_device = (self.selected_device + 6).min(self.snapshot.len() - 1);
+        } else {
+            self.selected_device = self.selected_device.saturating_sub(6);
+        }
+    }
+
+    /// Прямой выбор порта по клику.
+    pub fn set_selected_port(&mut self, idx: usize) {
+        if idx < self.ports.len() {
+            self.selected_port = idx;
+        }
+    }
+
+    /// Действие колеса мыши по текущей вкладке: выбор/фокус/скролл.
+    pub fn mouse_scroll(&mut self, dir: i8) {
+        match self.tab {
+            Tab::Dashboard => {
+                // Линейная прокрутка списка устройств/датчиков (см. draw_dashboard:
+                // выбор устройства ↑/↓, а колесо двигает саму страницу).
+                self.dash_scroll = if dir > 0 {
+                    self.dash_scroll + 1
+                } else {
+                    self.dash_scroll.saturating_sub(1)
+                };
+            }
+            Tab::Ports => {
+                if !self.ports.is_empty() {
+                    self.selected_port = if dir > 0 {
+                        (self.selected_port + 1).min(self.ports.len() - 1)
+                    } else {
+                        self.selected_port.saturating_sub(1)
+                    };
+                }
+            }
+            Tab::Registers => self.move_focus(dir),
+            Tab::Sensors => {
+                if self.sensor_manage {
+                    self.sensor_nav(dir);
+                } else {
+                    self.move_focus(dir);
+                }
+            }
+            Tab::Firmware => {
+                if !self.backups.is_empty() {
+                    self.backup_selected = if dir > 0 {
+                        (self.backup_selected + 1).min(self.backups.len() - 1)
+                    } else {
+                        self.backup_selected.saturating_sub(1)
+                    };
+                }
+            }
+            Tab::Bus => {
+                // 0 = «в хвосте» (показаны последние кадры); прокрутка вверх
+                // отходит на страницу вглубь истории, вниз — к живому хвосту.
+                if dir > 0 {
+                    self.bus_scroll = self.bus_scroll.saturating_sub(1);
+                } else {
+                    self.bus_scroll += 1;
+                }
+            }
+            Tab::Log => {
+                self.log_scroll = if dir > 0 {
+                    self.log_scroll + 1
+                } else {
+                    self.log_scroll.saturating_sub(1)
+                };
+            }
+            Tab::Help => {
+                self.help_scroll = if dir > 0 {
+                    self.help_scroll + 1
+                } else {
+                    self.help_scroll.saturating_sub(1)
+                };
+            }
+        }
+    }
+
     /// Переключает катушку (например, насос).
     pub fn toggle_coil(&mut self, device: usize, coil: u16) {
         let slave = self
@@ -534,13 +885,20 @@ impl App {
             }
             return;
         }
-        let Some(master) = self.serial_master.clone() else {
+        // Катушку переключаем через подключённый мастер: TCP (если есть) или serial.
+        let result = if let Some(master) = self.tcp_master.clone() {
+            let mut m = master.lock().unwrap();
+            let current = m.read_coils(coil, 1).map(|v| v[0]).unwrap_or(false);
+            m.write_single_coil(coil, !current)
+        } else if let Some(master) = self.serial_master.clone() {
+            let mut m = master.lock().unwrap();
+            let current = m.read_coils(coil, 1).map(|v| v[0]).unwrap_or(false);
+            m.write_single_coil(coil, !current)
+        } else {
             return;
         };
-        let mut m = master.lock().unwrap();
-        let current = m.read_coils(coil, 1).map(|v| v[0]).unwrap_or(false);
-        match m.write_single_coil(coil, !current) {
-            Ok(()) => self.log(1, format!("Coil {}={}", coil, !current)),
+        match result {
+            Ok(()) => self.log(1, format!("Coil {} toggled", coil)),
             Err(e) => self.log(3, format!("Coil write failed: {}", e)),
         }
     }
@@ -739,6 +1097,7 @@ impl App {
     pub fn begin_edit_focused(&mut self) {
         self.editing = Some(match self.tab {
             Tab::Registers => FieldEdit::Reg(self.reg_focus),
+            Tab::Ports => FieldEdit::Tcp(self.tcp_focus),
             _ => FieldEdit::Sensor(self.sensor_focus),
         });
     }
@@ -751,6 +1110,7 @@ impl App {
         match self.editing {
             Some(FieldEdit::Reg(i)) => reg_form_field_mut(self, i).push(c),
             Some(FieldEdit::Sensor(i)) => sensor_form_field_mut(self, i).push(c),
+            Some(FieldEdit::Tcp(i)) => tcp_form_field_mut(self, i).push(c),
             None => {}
         }
     }
@@ -759,6 +1119,7 @@ impl App {
         let s = match self.editing {
             Some(FieldEdit::Reg(i)) => reg_form_field_mut(self, i),
             Some(FieldEdit::Sensor(i)) => sensor_form_field_mut(self, i),
+            Some(FieldEdit::Tcp(i)) => tcp_form_field_mut(self, i),
             None => return,
         };
         s.pop();
@@ -768,8 +1129,61 @@ impl App {
         self.editing.is_some()
     }
 
+    // --- Фоновые задачи (не блокируют UI) ---
+
+    /// Конвертирует результат firmware-операции в `TaskPayload`.
+    fn fw_result(p: crate::firmware::FwResult) -> Result<TaskPayload, String> {
+        if p.ok {
+            let lines = p.output.lines().map(|s| s.trim_end().to_string()).collect();
+            Ok(TaskPayload::Lines(lines))
+        } else {
+            Err(if p.error.trim().is_empty() {
+                p.output
+            } else {
+                p.error
+            })
+        }
+    }
+
+    /// Живой прогресс из esptool: строка в статус, в лог — каждые 5%.
+fn task_progress(sink: &Sender<Event>, pct: u32, line: String) {
+    let _ = sink.send(Event::TaskProgress { text: line.clone() });
+    if pct.is_multiple_of(5) || pct >= 100 {
+        let _ = sink.send(Event::Log(format!("[{}%] {}", pct, line)));
+    }
+}
+
+/// Запускает фоновую задачу с индикацией спиннера.
+    fn run_task<F>(&mut self, label: &str, job: F)
+    where
+        F: FnOnce(&Sender<Event>) -> Result<TaskPayload, String> + Send + 'static,
+    {
+        if self.busy.is_some() {
+            return; // предыдущая задача ещё выполняется — игнорируем
+        }
+        let tx = self.runtime.events.clone();
+        crate::worker::spawn_task(tx, label.to_string(), job);
+        self.busy = Some(label.to_string());
+        self.status_line = format!("⏳ {}…", label);
+        self.log(0, format!("⏳ {}…", label));
+    }
+
+    /// Перед операцией с прошивкой освобождает занятый нами порт,
+    /// чтобы esptool смог его открыть (иначе EBUSY). После операции
+    /// handle_event сам переподключится, если мы были подключены.
+    fn prepare_serial_task(&mut self, port: &str) {
+        let was_connected = self.serial_port.as_deref() == Some(port);
+        self.reconnect_after = Some((port.to_string(), was_connected));
+        if was_connected {
+            self.disconnect_serial();
+        }
+    }
+
     /// Прошивка: board-info текущего порта.
     pub fn fw_board_info(&mut self) {
+        if self.busy.is_some() {
+            return;
+        }
         let port = self.fw_port.clone().or_else(|| {
             self.serial_port.clone()
         });
@@ -777,33 +1191,38 @@ impl App {
             self.log(2, "No port selected");
             return;
         };
-        let result = crate::firmware::board_info(&port);
-        if result.ok {
-            self.log(1, format!("Board info OK ({}): {}", port, result.output.trim()));
-        } else {
-            self.log(3, format!("Board info failed: {}", result.error.trim()));
-        }
+        self.prepare_serial_task(&port);
+        let fw_port = port.clone();
+        self.run_task("board-info", move |_sink| {
+            Self::fw_result(crate::firmware::board_info(&fw_port))
+        });
     }
 
     pub fn fw_flash_test(&mut self) {
+        if self.busy.is_some() {
+            return;
+        }
         let port = self.fw_port.clone().or_else(|| self.serial_port.clone());
         let Some(port) = port else {
             self.log(2, "No port selected");
             return;
         };
         let Some(bin) = crate::firmware::test_firmware_bin() else {
-            self.log(2, "Test firmware not built. Run cargo build in esp32-fw/ first.");
+            self.log(2, "Firmware image not found (test-bench/firmware/esp32-modbus-fw.bin).");
             return;
         };
-        let result = crate::firmware::flash(&port, &bin);
-        if result.ok {
-            self.log(1, format!("Flash OK on {}", port));
-        } else {
-            self.log(3, format!("Flash failed: {}", result.error.trim()));
-        }
+        self.prepare_serial_task(&port);
+        let fw_port = port.clone();
+        self.run_task("flash", move |sink| {
+            let mut p = |pct: u32, line: String| Self::task_progress(sink, pct, line);
+            Self::fw_result(crate::firmware::flash(&fw_port, &bin, &mut p))
+        });
     }
 
     pub fn fw_backup(&mut self) {
+        if self.busy.is_some() {
+            return;
+        }
         let port = self.fw_port.clone().or_else(|| self.serial_port.clone());
         let Some(port) = port else {
             self.log(2, "No port selected");
@@ -811,16 +1230,19 @@ impl App {
         };
         let stamp = crate::emulator::now_secs() as u64;
         let path = crate::firmware::backup_dir().join(format!("esp32_backup_{}.bin", stamp));
-        let result = crate::firmware::backup(&port, &path, 4);
-        if result.ok {
-            self.log(1, format!("Backup saved: {}", path.display()));
-            self.refresh_backups();
-        } else {
-            self.log(3, format!("Backup failed: {}", result.error.trim()));
-        }
+        self.prepare_serial_task(&port);
+        self.log(0, "backup: reading full flash (up to 16MB) — takes ~1–3 min, spinner stays on until done, don't quit…");
+        let fw_port = port.clone();
+        self.run_task("backup", move |sink| {
+            let mut p = |pct: u32, line: String| Self::task_progress(sink, pct, line);
+            Self::fw_result(crate::firmware::backup(&fw_port, &path, 16, &mut p))
+        });
     }
 
     pub fn fw_restore_selected(&mut self) {
+        if self.busy.is_some() {
+            return;
+        }
         let port = self.fw_port.clone().or_else(|| self.serial_port.clone());
         let Some(port) = port else {
             self.log(2, "No port selected");
@@ -830,13 +1252,13 @@ impl App {
             self.log(2, "No backup selected");
             return;
         };
-        let path = crate::firmware::backup_dir().join(backup);
-        let result = crate::firmware::restore(&port, &path);
-        if result.ok {
-            self.log(1, format!("Restored {} to {}", backup, port));
-        } else {
-            self.log(3, format!("Restore failed: {}", result.error.trim()));
-        }
+        let path = crate::firmware::backup_dir().join(backup.clone());
+        self.prepare_serial_task(&port);
+        let fw_port = port.clone();
+        self.run_task("restore", move |sink| {
+            let mut p = |pct: u32, line: String| Self::task_progress(sink, pct, line);
+            Self::fw_result(crate::firmware::restore(&fw_port, &path, &mut p))
+        });
     }
 
     fn refresh_backups(&mut self) {
@@ -853,6 +1275,28 @@ impl App {
     /// Текущий выбранный порт (из списка Ports).
     pub fn selected_port(&self) -> Option<&PortInfo> {
         self.ports.get(self.selected_port.min(self.ports.len().saturating_sub(1)))
+    }
+
+    /// Проба Modbus-ответа выбранного порта (в фоне).
+    pub fn probe_selected_port(&mut self) {
+        let Some(name) = self.selected_port().map(|p| p.name.clone()) else {
+            self.log(2, "No ports found");
+            return;
+        };
+        // Порт уже опрашивается поллером — щупать его нельзя (сброс платы).
+        if self.runtime.current_source.as_deref() == Some(name.as_str()) {
+            self.log(2, format!("{} is already polled — no need to probe", name));
+            return;
+        }
+        let port_name = name.clone();
+        self.run_task("probe", move |_sink| {
+            let r = crate::discover::probe_modbus(&port_name, 9600);
+            let text = match r {
+                Some(s) => format!("{} responds as slave {}", port_name, s),
+                None => format!("{} no Modbus response", port_name),
+            };
+            Ok(TaskPayload::Lines(vec![text]))
+        });
     }
 }
 
@@ -875,6 +1319,14 @@ fn sensor_form_field_mut(app: &mut App, i: usize) -> &mut String {
         2 => &mut app.sensor_form.base,
         3 => &mut app.sensor_form.amplitude,
         _ => &mut app.sensor_form.period,
+    }
+}
+
+/// Возвращает ссылку на выбранное поле формы Modbus TCP master (вкладка Ports).
+fn tcp_form_field_mut(app: &mut App, i: usize) -> &mut String {
+    match i {
+        0 => &mut app.tcp_host,
+        _ => &mut app.tcp_port_str,
     }
 }
 
@@ -1171,5 +1623,83 @@ mod tests {
         assert_eq!(e.devices().len(), 4);
         let ids: Vec<u8> = e.devices().iter().map(|d| d.slave_id).collect();
         assert_eq!(ids, vec![1, 2, 3, 4]);
+    }
+
+    #[test]
+    fn select_dev_paged_steps_by_page() {
+        let mut app = App::new();
+        app.connect_emulator();
+        app.selected_device = 1;
+        app.select_dev_paged(1); // 1 + 6, но всего 4 → последний
+        assert_eq!(app.selected_device, 3);
+        app.select_dev_paged(-1); // 3 - 6 → 0
+        assert_eq!(app.selected_device, 0);
+    }
+
+    #[test]
+    fn set_selected_device_and_port_clamp() {
+        let mut app = App::new();
+        app.set_selected_device(2);
+        assert_eq!(app.selected_device, 0); // пустой снапшот — игнор
+        app.connect_emulator();
+        app.set_selected_device(99);
+        assert_eq!(app.selected_device, 0); // вне диапазона — игнор
+        app.set_selected_device(2);
+        assert_eq!(app.selected_device, 2);
+        app.set_selected_port(7);
+        assert_eq!(app.selected_port, 0);
+    }
+
+    #[test]
+    fn mouse_scroll_drives_tabs() {
+        let mut app = App::new();
+        app.connect_emulator();
+        app.tab = Tab::Dashboard;
+        // Колесо на Dashboard листает список устройств/датчиков построчно.
+        app.mouse_scroll(1);
+        assert_eq!(app.dash_scroll, 1);
+        app.mouse_scroll(1);
+        assert_eq!(app.dash_scroll, 2);
+        app.mouse_scroll(-1);
+        assert_eq!(app.dash_scroll, 1);
+        app.mouse_scroll(-1);
+        assert_eq!(app.dash_scroll, 0);
+        app.mouse_scroll(-1);
+        assert_eq!(app.dash_scroll, 0); // не уходить в минус
+
+        app.tab = Tab::Ports;
+        app.ports.push(PortInfo {
+            name: "/dev/ttyACM0".into(),
+            description: String::new(),
+            is_esp_like: false,
+            has_firmware: false,
+            product: None,
+        });
+        app.ports.push(PortInfo {
+            name: "/dev/ttyACM1".into(),
+            description: String::new(),
+            is_esp_like: false,
+            has_firmware: false,
+            product: None,
+        });
+        app.mouse_scroll(1);
+        app.mouse_scroll(1);
+        assert_eq!(app.selected_port, 1); // не выходит за границы
+        app.mouse_scroll(-1);
+        app.mouse_scroll(99);
+        assert_eq!(app.selected_port, 1);
+
+        app.tab = Tab::Log;
+        app.log(0, "line");
+        app.mouse_scroll(1);
+        app.mouse_scroll(-1);
+        app.mouse_scroll(-1); // не уходит в минус
+        assert_eq!(app.log_scroll, 0);
+
+        app.tab = Tab::Help;
+        app.mouse_scroll(1);
+        app.mouse_scroll(1);
+        app.mouse_scroll(1);
+        assert_eq!(app.help_scroll, 3);
     }
 }

@@ -2,6 +2,7 @@
 //!
 //! Пул-запросы к slave-устройствам по последовательному порту.
 
+use std::collections::VecDeque;
 use std::io;
 use std::time::{Duration, Instant};
 
@@ -10,27 +11,69 @@ use crate::frames::{self, ModbusError};
 /// Как долго ждём первый байт ответа.
 const RESPONSE_WAIT: Duration = Duration::from_millis(200);
 /// Мин. пауза между кадрами (3.5 символа на 9600 ≈ 4 мс).
-const INTER_FRAME_GAP: Duration = Duration::from_millis(10);
+/// Сколько последних транзакций держим в «логе шины» (вкладка Bus).
+const TRACE_CAP: usize = 100;
+
+/// Одна Modbus-транзакция master→slave→master (для вкладки Bus/обучения).
+#[derive(Debug, Clone)]
+pub struct TraceEntry {
+    /// Транспорт: "RTU" (кабель+CRC) или "TCP" (MBAP, без CRC).
+    pub transport: &'static str,
+    /// Имя функции Modbus (например, "READ INPUT REGISTERS").
+    pub fc: String,
+    /// Запрос, ушедший в шину (hex, с CRC).
+    pub req: String,
+    /// Ответ устройства (hex, с CRC); пусто при ошибке/таймауте.
+    pub resp: String,
+    /// Успех транзакции.
+    pub ok: bool,
+    /// Tекст ошибки при неудаче (timeout, bad CRC, exception...).
+    pub err: Option<String>,
+    /// Время транзакции, мс.
+    pub ms: u64,
+}
+
+/// Человекочитаемое имя функции Modbus.
+pub fn fc_name(fc: u8) -> String {
+    match fc {
+        frames::FC_READ_COILS => "READ COILS (0x01)".into(),
+        frames::FC_READ_DISCRETE_INPUTS => "READ DISCRETE INPUTS (0x02)".into(),
+        frames::FC_READ_HOLDING => "READ HOLDING REGISTERS (0x03)".into(),
+        frames::FC_READ_INPUT => "READ INPUT REGISTERS (0x04)".into(),
+        frames::FC_WRITE_SINGLE_COIL => "WRITE SINGLE COIL (0x05)".into(),
+        frames::FC_WRITE_SINGLE_REG => "WRITE SINGLE REGISTER (0x06)".into(),
+        frames::FC_WRITE_MULTI_COILS => "WRITE MULTIPLE COILS (0x0F)".into(),
+        frames::FC_WRITE_MULTI_REGS => "WRITE MULTIPLE REGISTERS (0x10)".into(),
+        other => format!("FUNCTION 0x{:02X}", other),
+    }
+}
 
 /// Обёртка над открытым последовательным портом.
 pub struct SerialMaster {
     port: Box<dyn serialport::SerialPort>,
     slave_id: u8,
+    /// Кольцо последних транзакций — «лог шины» для вкладки Bus.
+    trace: VecDeque<TraceEntry>,
 }
 
 impl SerialMaster {
     /// Открывает порт и настраивает 8N1 с заданной скоростью.
     pub fn open(port_name: &str, baud: u32, slave_id: u8) -> Result<Self, ModbusError> {
-        let port = serialport::new(port_name, baud)
+        let mut port = serialport::new(port_name, baud)
             .timeout(RESPONSE_WAIT)
             .data_bits(serialport::DataBits::Eight)
             .stop_bits(serialport::StopBits::One)
             .parity(serialport::Parity::None)
             .open()
             .map_err(|e| ModbusError::Io(e.to_string()))?;
+        // Снимаем DTR/RTS: на этих платах они дёргают auto-reset (перезагрузка
+        // чипа при каждом открытии порта). Для Modbus по UART0 они не нужны.
+        let _ = port.write_request_to_send(false);
+        let _ = port.write_data_terminal_ready(false);
         Ok(Self {
-            port: Box::from(port),
+            port,
             slave_id,
+            trace: VecDeque::new(),
         })
     }
 
@@ -42,9 +85,32 @@ impl SerialMaster {
         self.slave_id = id;
     }
 
+    /// Забирает все накопленные транзакции (опрашивающий поток шлёт их в UI).
+    pub fn drain_trace(&mut self) -> Vec<TraceEntry> {
+        self.trace.drain(..).collect()
+    }
+
+    /// Добавляет запись в «лог шины».
+    fn push_trace(&mut self, fc: u8, req: &[u8], resp: Option<&[u8]>, ok: bool, err: Option<ModbusError>, ms: u64) {
+        if self.trace.len() >= TRACE_CAP {
+            self.trace.pop_front();
+        }
+        self.trace.push_back(TraceEntry {
+            transport: "RTU",
+            fc: fc_name(fc),
+            req: crate::crc::to_hex(req),
+            resp: resp.map(crate::crc::to_hex).unwrap_or_default(),
+            ok,
+            err: err.as_ref().map(|e| e.to_string()),
+            ms,
+        });
+    }
+
     /// Выполняет один Modbus-запрос и возвращает PDU ответа.
+    /// Каждая транзакция попадает в [`Self::trace`] (вкладка Bus).
     pub fn transact(&mut self, fc: u8, pdu: &[u8]) -> Result<Vec<u8>, ModbusError> {
         let frame = frames::build_request(self.slave_id, fc, pdu);
+        let t0 = Instant::now();
 
         self.port
             .flush()
@@ -62,10 +128,9 @@ impl SerialMaster {
         let mut len = 0usize;
         loop {
             // Первый байт ждём до дедлайна.
-            if len == 0 {
-                if Instant::now() >= deadline {
-                    return Err(ModbusError::Timeout);
-                }
+            if len == 0 && Instant::now() >= deadline {
+                self.push_trace(fc, &frame, None, false, Some(ModbusError::Timeout), t0.elapsed().as_millis() as u64);
+                return Err(ModbusError::Timeout);
             }
             match self.port.read(&mut buf[len..]) {
                 Ok(0) => continue,
@@ -73,7 +138,7 @@ impl SerialMaster {
                     len += n;
                     // Сколько ждём продолжения кадра: дедлайн от последнего байта
                     // уже обеспечен таймаутом порта (RESPONSE_WAIT), поэтому после
-                    // паузы INTER_FRAME_GAP считаем кадр завершённым.
+                    // паузы между кадрами считаем кадр завершённым.
                 }
                 Err(e) if e.kind() == io::ErrorKind::TimedOut || e.kind() == io::ErrorKind::WouldBlock => {
                     break; // пауза между байтами — кадр завершён
@@ -90,17 +155,22 @@ impl SerialMaster {
         }
 
         if len == 0 {
+            self.push_trace(fc, &frame, None, false, Some(ModbusError::Timeout), t0.elapsed().as_millis() as u64);
             return Err(ModbusError::Timeout);
         }
 
-        let frame = &buf[..len];
-        if !crate::crc::verify(frame) {
+        let f = &buf[..len];
+        if !crate::crc::verify(f) {
             // Возможно, прилипли хвосты от предыдущего кадра — попробуем найти
             // кадр в буфере.
+            self.push_trace(fc, &frame, Some(f), false, Some(ModbusError::BadCrc), t0.elapsed().as_millis() as u64);
             return Err(ModbusError::BadCrc);
         }
 
-        frames::parse_response(frame, self.slave_id, fc)
+        let parsed = frames::parse_response(f, self.slave_id, fc);
+        let ms = t0.elapsed().as_millis() as u64;
+        self.push_trace(fc, &frame, Some(f), parsed.is_ok(), parsed.as_ref().err().cloned(), ms);
+        parsed
     }
 
     // --- Высокоуровневые функции чтения/записи ---
@@ -145,33 +215,5 @@ impl SerialMaster {
             return Err(ModbusError::Io("short coil echo".into()));
         }
         Ok(())
-    }
-
-    pub fn write_multiple_registers(
-        &mut self,
-        start: u16,
-        values: &[u16],
-    ) -> Result<(), ModbusError> {
-        let pdu = frames::write_multi_regs_pdu(start, values);
-        let resp = self.transact(frames::FC_WRITE_MULTI_REGS, &pdu)?;
-        if resp.len() < 4 {
-            return Err(ModbusError::Io("short multi write echo".into()));
-        }
-        Ok(())
-    }
-
-    pub fn write_multiple_coils(&mut self, start: u16, values: &[bool]) -> Result<(), ModbusError> {
-        let pdu = frames::write_multi_coils_pdu(start, values);
-        let resp = self.transact(frames::FC_WRITE_MULTI_COILS, &pdu)?;
-        if resp.len() < 4 {
-            return Err(ModbusError::Io("short coil write echo".into()));
-        }
-        Ok(())
-    }
-
-    /// Читает float32 из пары input registers.
-    pub fn read_input_float(&mut self, start: u16) -> Result<f32, ModbusError> {
-        let regs = self.read_input_registers(start, 2)?;
-        Ok(frames::float_from_regs(regs[0], regs[1]))
     }
 }

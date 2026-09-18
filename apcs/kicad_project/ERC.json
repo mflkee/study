@@ -1,0 +1,195 @@
+{
+    "$schema": "https://schemas.kicad.org/erc.v1.json",
+    "coordinate_units": "mils",
+    "date": "2026-09-14T00:27:30",
+    "ignored_checks": [
+        {
+            "description": "Global label only appears once in the schematic",
+            "key": "single_global_label"
+        },
+        {
+            "description": "Four connection points are joined together",
+            "key": "four_way_junction"
+        },
+        {
+            "description": "SPICE model issue",
+            "key": "simulation_model_issue"
+        },
+        {
+            "description": "Assigned footprint doesn't match footprint filters",
+            "key": "footprint_filter"
+        }
+    ],
+    "included_severities": [
+        "error",
+        "warning"
+    ],
+    "kicad_version": "10.0.6",
+    "sheets": [
+        {
+            "path": "/",
+            "uuid_path": "/4ed381b5-7d75-4e85-b8c8-84ffd3fa3a0c",
+            "violations": [
+                {
+                    "description": "Label not connected",
+                    "items": [
+                        {
+                            "description": "Hierarchical Label 'IN-'",
+                            "pos": {
+                                "x": 17.5,
+                                "y": 34.5
+                            },
+                            "uuid": "7baef6a0-7f1a-4bf8-b72f-6737073af30e"
+                        }
+                    ],
+                    "severity": "error",
+                    "type": "label_dangling"
+                },
+                {
+                    "description": "Hierarchical label 'IN-' in root sheet cannot be connected to non-existent parent sheet",
+                    "items": [
+                        {
+                            "description": "Hierarchical Label 'IN-'",
+                            "pos": {
+                                "x": 17.5,
+                                "y": 34.5
+                            },
+                            "uuid": "7baef6a0-7f1a-4bf8-b72f-6737073af30e"
+                        }
+                    ],
+                    "severity": "error",
+                    "type": "pin_not_connected"
+                },
+                {
+                    "description": "Hierarchical label 'IN+' in root sheet cannot be connected to non-existent parent sheet",
+                    "items": [
+                        {
+                            "description": "Hierarchical Label 'IN+'",
+                            "pos": {
+                                "x": 17.5,
+                                "y": 35.5
+                            },
+                            "uuid": "01c852b8-d0bf-4b50-9226-3155d84e99ca"
+                        }
+                    ],
+                    "severity": "error",
+                    "type": "pin_not_connected"
+                },
+                {
+                    "description": "Pin not connected",
+                    "items": [
+                        {
+                            "description": "Symbol F1 Pin 2 [Passive, Line]",
+                            "pos": {
+                                "x": 29.5,
+                                "y": 33.0
+                            },
+                            "uuid": "aa5b3cf9-5c44-48fe-80d8-d8ee969367e9"
+                        }
+                    ],
+                    "severity": "error",
+                    "type": "pin_not_connected"
+                },
+                {
+                    "description": "Pin not connected",
+                    "items": [
+                        {
+                            "description": "Symbol R1 Pin 2 [Passive, Line]",
+                            "pos": {
+                                "x": 39.5,
+                                "y": 33.0
+                            },
+                            "uuid": "9ad90711-0d8b-4810-9c47-6dc534176214"
+                        }
+                    ],
+                    "severity": "error",
+                    "type": "pin_not_connected"
+                },
+                {
+                    "description": "Pin not connected",
+                    "items": [
+                        {
+                            "description": "Symbol R3 Pin 2 [Passive, Line]",
+                            "pos": {
+                                "x": 59.0,
+                                "y": 37.0
+                            },
+                            "uuid": "afea4cae-e8cd-4e63-8acd-ce6202e2f88f"
+                        }
+                    ],
+                    "severity": "error",
+                    "type": "pin_not_connected"
+                },
+                {
+                    "description": "Pin not connected",
+                    "items": [
+                        {
+                            "description": "Symbol R4 Pin 2 [Passive, Line]",
+                            "pos": {
+                                "x": 71.0,
+                                "y": 33.0
+                            },
+                            "uuid": "9ec9e375-818c-4533-8c03-4313f64a6378"
+                        }
+                    ],
+                    "severity": "error",
+                    "type": "pin_not_connected"
+                },
+                {
+                    "description": "Hierarchical label 'AGND' in root sheet cannot be connected to non-existent parent sheet",
+                    "items": [
+                        {
+                            "description": "Hierarchical Label 'AGND'",
+                            "pos": {
+                                "x": 71.0,
+                                "y": 40.0
+                            },
+                            "uuid": "a3d779d2-f0a6-4190-8bc2-b0be00cad5df"
+                        }
+                    ],
+                    "severity": "error",
+                    "type": "pin_not_connected"
+                },
+                {
+                    "description": "Hierarchical label 'MUX_OUT' in root sheet cannot be connected to non-existent parent sheet",
+                    "items": [
+                        {
+                            "description": "Hierarchical Label 'MUX_OUT'",
+                            "pos": {
+                                "x": 71.0,
+                                "y": 43.0
+                            },
+                            "uuid": "fc996e27-20ab-4beb-9f2b-c4f3936eb022"
+                        }
+                    ],
+                    "severity": "error",
+                    "type": "pin_not_connected"
+                },
+                {
+                    "description": "Both AGND and IN+ are attached to the same items; AGND will be used in the netlist",
+                    "items": [
+                        {
+                            "description": "Label 'AGND'",
+                            "pos": {
+                                "x": 71.0,
+                                "y": 43.0
+                            },
+                            "uuid": "1fd18dc5-dc5e-413f-b740-5d6a5005bc71"
+                        },
+                        {
+                            "description": "Hierarchical Label 'IN+'",
+                            "pos": {
+                                "x": 17.5,
+                                "y": 35.5
+                            },
+                            "uuid": "01c852b8-d0bf-4b50-9226-3155d84e99ca"
+                        }
+                    ],
+                    "severity": "warning",
+                    "type": "multiple_net_names"
+                }
+            ]
+        }
+    ],
+    "source": "analog_channel.kicad_sch"
+}

@@ -1,0 +1,43 @@
+ERC report (2026-09-14T00:26:35, Encoding UTF8)
+Report includes: Errors, Warnings
+
+***** Sheet /
+[label_dangling]: Label not connected
+    ; error
+    @(1750 mils, 3450 mils): Hierarchical Label 'IN-'
+[pin_not_connected]: Hierarchical label 'IN-' in root sheet cannot be connected to non-existent parent sheet
+    ; error
+    @(1750 mils, 3450 mils): Hierarchical Label 'IN-'
+[pin_not_connected]: Hierarchical label 'IN+' in root sheet cannot be connected to non-existent parent sheet
+    ; error
+    @(1750 mils, 3550 mils): Hierarchical Label 'IN+'
+[pin_not_connected]: Pin not connected
+    ; error
+    @(2950 mils, 3300 mils): Symbol F1 Pin 2 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(3950 mils, 3300 mils): Symbol R1 Pin 2 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(5900 mils, 3700 mils): Symbol R3 Pin 2 [Passive, Line]
+[pin_not_connected]: Pin not connected
+    ; error
+    @(7100 mils, 3300 mils): Symbol R4 Pin 2 [Passive, Line]
+[pin_not_connected]: Hierarchical label 'AGND' in root sheet cannot be connected to non-existent parent sheet
+    ; error
+    @(7100 mils, 4000 mils): Hierarchical Label 'AGND'
+[pin_not_connected]: Hierarchical label 'MUX_OUT' in root sheet cannot be connected to non-existent parent sheet
+    ; error
+    @(7100 mils, 4300 mils): Hierarchical Label 'MUX_OUT'
+[multiple_net_names]: Both AGND and IN+ are attached to the same items; AGND will be used in the netlist
+    ; warning
+    @(7100 mils, 4300 mils): Label 'AGND'
+    @(1750 mils, 3550 mils): Hierarchical Label 'IN+'
+
+ ** ERC messages: 10  Errors 9  Warnings 1
+
+ ** Ignored checks:
+    - Global label only appears once in the schematic
+    - Four connection points are joined together
+    - SPICE model issue
+    - Assigned footprint doesn't match footprint filters

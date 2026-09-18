@@ -1,0 +1,10 @@
+[workspace]
+resolver = "2"
+members = ["core", "fw"]
+
+# workspace-wide defaults: ничего лишнего, dev тоже оптимизируем по размеру
+[profile.dev]
+opt-level = "s"
+
+[profile.release]
+opt-level = "s"

@@ -110,7 +110,7 @@ pub fn read_pdu(start: u16, count: u16) -> Vec<u8> {
 
 /// Разбор ответа Read Registers: [byte_count, ...data]. Возвращает регистры BE.
 pub fn parse_read_registers(pdu: &[u8], expected: usize) -> Result<Vec<u16>, ModbusError> {
-    if pdu.len() < 1 {
+    if pdu.is_empty() {
         return Err(ModbusError::Io("empty read response".into()));
     }
     let byte_count = pdu[0] as usize;
@@ -122,15 +122,16 @@ pub fn parse_read_registers(pdu: &[u8], expected: usize) -> Result<Vec<u16>, Mod
         )));
     }
     let mut regs = Vec::with_capacity(expected);
-    for chunk in pdu[1..1 + byte_count].chunks_exact(2) {
-        regs.push(u16::from_be_bytes([chunk[0], chunk[1]]));
+    let (data, _) = pdu[1..1 + byte_count].as_chunks::<2>();
+    for pair in data {
+        regs.push(u16::from_be_bytes([pair[0], pair[1]]));
     }
     Ok(regs)
 }
 
 /// Разбор ответа Read Coils: [byte_count, ...bits].
 pub fn parse_read_bits(pdu: &[u8], expected: usize) -> Result<Vec<bool>, ModbusError> {
-    if pdu.len() < 1 {
+    if pdu.is_empty() {
         return Err(ModbusError::Io("empty bits response".into()));
     }
     let byte_count = pdu[0] as usize;
@@ -158,8 +159,12 @@ pub fn write_single_pdu(addr: u16, value: u16) -> Vec<u8> {
 }
 
 /// PDU для Write Multiple Coils (0x0F).
+///
+/// Не используется в TUI напрямую (интерфейс оперирует одной катушкой), но
+/// остаётся в справочнике функций — на него ссылаются лабораторные и тесты.
+#[allow(dead_code)]
 pub fn write_multi_coils_pdu(start: u16, values: &[bool]) -> Vec<u8> {
-    let byte_count = (values.len() + 7) / 8;
+    let byte_count = values.len().div_ceil(8);
     let mut pdu = Vec::with_capacity(5 + byte_count);
     pdu.extend_from_slice(&start.to_be_bytes());
     pdu.extend_from_slice(&(values.len() as u16).to_be_bytes());
@@ -178,6 +183,9 @@ pub fn write_multi_coils_pdu(start: u16, values: &[bool]) -> Vec<u8> {
 }
 
 /// PDU для Write Multiple Registers (0x10).
+///
+/// Не используется в TUI напрямую — справочный строитель для лабораторных/тестов.
+#[allow(dead_code)]
 pub fn write_multi_regs_pdu(start: u16, values: &[u16]) -> Vec<u8> {
     let mut pdu = Vec::with_capacity(5 + values.len() * 2);
     pdu.extend_from_slice(&start.to_be_bytes());

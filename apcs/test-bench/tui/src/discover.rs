@@ -3,8 +3,6 @@
 //! Работает через `serialport::available_ports()` — на Linux это /dev/tty*,
 //! macOS /dev/cu.*, Windows COM*. Платформо-независимо.
 
-use crate::emulator::now_secs;
-
 /// Известные VID производителей чипов USB-UART, встречающихся на ESP dev-платах.
 const ESP_USB_VENDORS: &[u16] = &[
     0x10C4, // Silicon Labs CP210x
@@ -27,12 +25,8 @@ pub struct PortInfo {
     pub is_esp_like: bool,
     /// TRUE если на порту найден отклик Modbus slave (прошивка загружена).
     pub has_firmware: bool,
-    /// Время последней проверки.
-    pub last_check: f64,
-    /// Производитель от USB (если есть).
-    pub manufacturer: Option<String>,
+    /// Продукт из USB-дескриптора (например, "USB JTAG/serial debug unit").
     pub product: Option<String>,
-    pub serial: Option<String>,
 }
 
 impl PortInfo {
@@ -57,18 +51,15 @@ pub fn list_ports() -> Vec<PortInfo> {
 }
 
 fn to_port_info(p: &serialport::SerialPortInfo) -> PortInfo {
-    let (is_esp, manufacturer, product, serial) = match &p.port_type {
+    let (is_esp, product) = match &p.port_type {
         serialport::SerialPortType::UsbPort(usb) => {
             let esp = ESP_USB_VENDORS.contains(&usb.vid);
             (
                 esp,
-                usb.manufacturer.clone(),
                 Some(usb.product.clone().unwrap_or_default()).filter(|s| !s.is_empty()),
-                Some(usb.serial_number.clone().unwrap_or_default())
-                    .filter(|s| !s.is_empty()),
             )
         }
-        _ => (false, None, None, None),
+        _ => (false, None),
     };
 
     let name_lower = p.port_name.to_lowercase();
@@ -79,10 +70,7 @@ fn to_port_info(p: &serialport::SerialPortInfo) -> PortInfo {
         description: describe_port(p),
         is_esp_like: is_esp || esp_by_name,
         has_firmware: false,
-        last_check: 0.0,
-        manufacturer,
         product,
-        serial,
     }
 }
 
@@ -119,14 +107,38 @@ pub fn probe_modbus(port_name: &str, baud: u32) -> Option<u8> {
 #[derive(Debug, Clone)]
 pub struct ScanResult {
     pub ports: Vec<PortInfo>,
-    pub checked_at: f64,
 }
 
 impl ScanResult {
     pub fn new(ports: Vec<PortInfo>) -> Self {
-        Self {
-            ports,
-            checked_at: now_secs(),
+        Self { ports }
+    }
+}
+#[cfg(test)]
+mod live_tests {
+    use super::*;
+
+    #[test]
+    #[ignore]
+    fn ports_live_check() {
+        let t0 = std::time::Instant::now();
+        let ports = list_ports();
+        eprintln!("list_ports -> {} ports in {}ms", ports.len(), t0.elapsed().as_millis());
+        for p in &ports {
+            eprintln!("  {} esp_like={} name={}", p.name, p.is_esp_like, p.description);
+        }
+        for p in ports.iter().filter(|p| p.is_esp_like) {
+            let t1 = std::time::Instant::now();
+            // Проба может зависнуть в драйвере — ограничиваем watchdog'ом.
+            let (tx, rx) = std::sync::mpsc::channel();
+            let name = p.name.clone();
+            std::thread::spawn(move || {
+                let _ = tx.send(probe_modbus(&name, 9600));
+            });
+            match rx.recv_timeout(std::time::Duration::from_secs(10)) {
+                Ok(r) => eprintln!("probe {} -> {:?} in {}ms", p.name, r, t1.elapsed().as_millis()),
+                Err(_) => eprintln!("probe {} TIMEOUT (>10s)", p.name),
+            }
         }
     }
 }

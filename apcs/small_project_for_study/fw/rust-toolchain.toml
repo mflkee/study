@@ -1,0 +1,15 @@
+# Зафиксированная цепочка для прошивки.
+#
+# Зачем это здесь: без этого файла `cargo check` в этой папке пытался бы
+# использовать стабильный rust (без -Zbuild-std) и падал бы с
+# "can't find crate for core". Файл заставляет cargo переключиться на
+# nightly-тулчейн `esp` (тот, что устанавливает espup/project):
+#
+#     rustup toolchain install esp --profile minimal
+#
+# и собрать требуемый target. Итог: команда `cargo +esp check` и просто
+# `cargo check` теперь дают одно и то же.
+
+[toolchain]
+channel = "esp"
+targets = ["xtensa-esp32s3-espidf"]

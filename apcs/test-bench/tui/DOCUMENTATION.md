@@ -1,129 +1,151 @@
-# ESP32 Modbus Test-Bench — Extended Documentation
+# Тестовый стенд Modbus ESP32 — расширенная документация
 
-## Table of Contents
+> Русская редакция. Оригинальные упражнения и разделы сохранены и дополнены;
+> спорные места (коды функций, CRC-примеры) сверены с `src/crc.rs` и `src/frames.rs`.
 
-1. [Architecture Overview](#1-architecture-overview)
-2. [File Map](#2-file-map)
-3. [How to Build and Run](#3-how-to-build-and-run)
-4. [UI Guide — What Each Tab Shows](#4-ui-guide--what-each-tab-shows)
-5. [Modbus Fundamentals](#5-modbus-fundamentals)
-6. [Emulator — How It Works Internally](#6-emulator--how-it-works-internally)
-7. [The Register Editor (Registers Tab)](#7-the-register-editor-registers-tab)
-8. [The Sensor Factory (Sensors Tab)](#8-the-sensor-factory-sensors-tab)
-9. [Architecture Diagrams](#9-architecture-diagrams)
-10. [Pedagogical Exercises](#10-pedagogical-exercises)
-11. [Debugging Tips](#11-debugging-tips)
-12. [Pitfalls and Common Mistakes](#12-pitfalls-and-common-mistakes)
-13. [Glossary](#13-glossary)
+## Оглавление
+
+1. [Обзор архитектуры](#1-обзор-архитектуры)
+2. [Карта файлов](#2-карта-файлов)
+3. [Сборка и запуск](#3-сборка-и-запуск)
+4. [Руководство по интерфейсу (что показывает каждая вкладка)](#4-руководство-по-интерфейсу-что-показывает-каждая-вкладка)
+5. [Основы Modbus](#5-основы-modbus)
+6. [Эмулятор (как устроен внутри)](#6-эмулятор-как-устроен-внутри)
+7. [Редактор регистров (вкладка Registers)](#7-редактор-регистров-вкладка-registers)
+8. [Фабрика датчиков (вкладка Sensors)](#8-фабрика-датчиков-вкладка-sensors)
+9. [Диаграммы архитектуры](#9-диаграммы-архитектуры)
+10. [Учебные упражнения](#10-учебные-упражнения)
+11. [Советы по отладке](#11-советы-по-отладке)
+12. [Грабли и частые ошибки](#12-грабли-и-частые-ошибки)
+13. [Глоссарий](#13-глоссарий)
+14. [Вкладка Bus (читаем провод в реальном времени)](#14-вкладка-bus-читаем-провод-в-реальном-времени)
+15. [От стенда к реальной системе (Zynq-мастер, MAX485, настоящие датчики)](#15-от-стенда-к-реальной-системе-zynq-мастер-max485-настоящие-датчики)
+16. [Modbus TCP (та же карта регистров по Ethernet)](#16-modbus-tcp-та-же-карта-регистров-по-ethernet)
+17. [Утилиты и работа с железом](#17-утилиты-и-работа-с-железом)
 
 ---
 
-## 1. Architecture Overview
+## 1. Обзор архитектуры
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    esp32-tui (this binary)               │
+│                    esp32-tui (этот бинарник)               │
 │                                                         │
-│  main.rs ─── keyboard events ──► app.rs (state)          │
+│  main.rs ─── события клавиатуры ──► app.rs (состояние)    │
 │                                       │                 │
 │                         ┌─────────────┤                 │
 │                         ▼             ▼                 │
-│                   ui.rs (draw)   worker.rs (threads)     │
+│                   ui.rs (отрисовка)   worker.rs (потоки) │
 │                                    │                    │
-│                        ┌───────────┼───────────┐        │
-│                        ▼           ▼           ▼        │
-│                   discover.rs  master.rs  emulator.rs    │
-│                   (hotplug)   (Modbus)   (virtual)      │
+│                        ┌───────────┼──────────────┐   │
+│                        ▼           ▼              ▼   │
+│                   discover.rs  master.rs  tcp_master.rs◄┐
+│                   (hotplug)   (RTU)      (TCP мастер)  │
+│                        │               ┌───────────────┘
+│                        │               ▼
+│                   emulator.rs      tcp_server.rs
+│                   (виртуальный)    (TCP slave)
 │                                                         │
-│                         firmware.rs (espflash CLI)       │
+│                         firmware.rs (CLI espflash)       │
 └─────────────────────────────────────────────────────────┘
 ```
 
-**Data flow (every frame, ~16ms):**
+**Поток данных (каждые ~16 мс — цикл отрисовки):**
 
-1. `worker.rs` polls the backend every 500ms: if emulator is ON → `emulator.tick()` → `snapshot()` → sends `Event::Snapshot` via channel; if real device connected → `serial_master.read_holding_regs(0,10)` → sends snapshot.
-2. `app.rs` receives the event and updates `app.snapshot: Vec<DeviceInfo>`.
-3. `ui.rs` reads `app.snapshot` and renders every draw cycle.
+1. `worker.rs` опрашивает источник данных каждые 500 мс: если включён
+   эмулятор → `emulator.tick()` → `snapshot()` → шлёт `Event::Snapshot` через
+   канал; если подключено реальное устройство → `serial_master.read_holding_regs(0,16)`
+   → шлёт snapshot; если подключён Modbus TCP-мастер → тот же запрос карты
+   регистров, только поверх MBAP.
+2. `app.rs` получает событие и обновляет `app.snapshot: Vec<DeviceInfo>`.
+3. `ui.rs` читает `app.snapshot` и рендерит каждый цикл отрисовки.
 
-**Threading model:** There are 4 thread types:
+**Модель потоков.** Потоков в программе несколько типов:
 
-| Thread | Purpose | Lifetime |
-|--------|---------|----------|
-| **Main thread** (tokio) | Draws TUI, handles keyboard | Entire run |
-| **Poll thread** (spawned by worker) | Reads registers/coils, sends snapshots | Runs while connected |
-| **Scanner thread** (spawned by worker) | Watches `/dev/serial/by-id` every 2s | While enabled (default on) |
-| **Firmware thread** (spawned on [i]/[f]/[b]/[o]) | Runs espflash/esptool.py | One-shot |
-
----
-
-## 2. File Map
-
-| File | Lines | What it does |
-|------|-------|--------------|
-| `src/main.rs` | 224 | Terminal setup (alternate screen, raw mode), tick loop (60fps), keyboard dispatch |
-| `src/app.rs` | 1175 | **Core state machine.** All mutations to `App` go through methods here. Forms, log, snapshot, emulator connection, sensor & device management. |
-| `src/ui.rs` | 837 | Pure render logic. 7 functions, one per tab. No mutation (except `app.scroll_*`). |
-| `src/worker.rs` | 180 | Backend multiplexer. Manages scanner/poll threads, dispatches `Event::PortFound/Connected/Disconnected/Snapshot` |
-| `src/master.rs` | 200 | Serial Modbus client (wraps `serialport` + `crc16` crate). Read/write coils, input regs, holding regs. |
-| `src/discover.rs` | 90 | Reads `/dev/serial/by-id` symlinks, matches against ESP32 keywords |
-| `src/emulator.rs` | 450 | In-process Modbus emulator. 4 devices, 12 virtual sensors, `VirtualMachine` trait, add/remove sensor |
-| `src/firmware.rs` | 140 | Best-effort espflash backup/restore/board-info |
-| `src/crc.rs` | 45 | CRC-16 Modbus (for unit tests) |
-| `src/frames.rs` | 55 | PDU frame builder/parser (for unit tests) |
-| `tests/integration.rs` | 30 | 6 integration tests against emulator |
+| Поток | Назначение | Время жизни |
+|-------|-----------|-------------|
+| **Главный** (`std::thread`) | Рисует TUI, обрабатывает клавиатуру | Всё время работы |
+| **Опрос** (создаёт worker) | Читает регистры/катушки, шлёт snapshots | Пока подключён источник |
+| **Сканер** (создаёт worker) | Следит за `/dev/serial/by-id` каждые 2 с | Пока включён (по умолчанию включён) |
+| **Прошивка** (по `[i]/[f]/[b]/[o]`) | Запускает espflash/esptool.py | Одноразовый |
+| **TCP-сервер** (Ports→`[t]`) | Принимает Modbus TCP-клиентов; каждый клиент обслуживает свой поток | Пока включён (`[t]` переключает) |
+| **TCP-мастер** (Ports→`[y]`) | Опрашивает внешнее Modbus TCP-устройство (AI-32) по MBAP | Пока подключён TCP-мастер |
 
 ---
 
-## 3. How to Build and Run
+## 2. Карта файлов
+
+| Файл | Строк | Что делает |
+|------|-------|------------|
+| `src/main.rs` | 321 | Настройка терминала (альтернативный экран, raw mode + **захват мыши**), цикл отрисовки (60 fps), диспетчер клавиатуры и мыши (`handle_mouse`, клики/скролл с хит-тестингом — hit-testing, проверкой попадания координат) |
+| `src/app.rs` | 1705 | **Ядро — машина состояний** (state machine). Все изменения состояния `App` идут через методы здесь: формы, лог, snapshot, подключение эмулятора, управление датчиками/устройствами, прокрутка клавишами и колесом мыши (`mouse_scroll`, `select_dev_paged`), подключение/отключение TCP-мастера |
+| `src/ui.rs` | 1302 | Чистая логика отрисовки: одна функция на вкладку + геометрические хелперы (helpers — помощники; `tab_at_col`, `dashboard_rows_for_devices`, `list_index_at`), чтобы клики мыши попадали точно в элемент. Колонка дашборда авто-скроллится до выбранного устройства. На вкладке Ports справа — панель **Modbus TCP-мастера** |
+| `src/worker.rs` | 626 | Мультиплексор источников данных (multiplexer — «переключатель»). Управляет потоками сканера/опроса, рассылает `Event::PortFound/Connected/Disconnected/Snapshot`. Источники опроса: эмулятор, serial RTU (60 input-регистров), TCP (64 input-регистра → при исключении 0x02 откат на 60) |
+| `src/master.rs` | 218 | Последовательный Modbus RTU-клиент (поверх `serialport` + крейт `crc16`). Чтение/запись катушек, input- и holding-регистров. RTU-кадры завершаются CRC |
+| `src/tcp_master.rs` | 300 | **Modbus TCP-мастер** на `std::net` (без tokio). MBAP-клиент: `transact` шлёт `[tid][proto=0][len][unit][fc][pdu]`, разбирает ответ, переводит исключения 0x01–0x0B в `ModbusError`, ведёт собственную трассу Bus с `transport = "TCP"`. Чтение input/holding/катушек, запись одного регистра/катушки. **Интеграционный тест против собственного TCP-сервера** TUI (`tcp_master::tests`) |
+| `src/tcp_server.rs` | 464 | **Modbus TCP-сервер** на `std::net` (без tokio). Разбор заголовка MBAP, диспетчеризация по той же карте регистров эмулятора, исключения 0x01–0x04, по потоку на соединение, таймаут простоя 60 с, трассы в Bus с `transport = "TCP"`. Собственные тесты в `tcp_server::tests` |
+| `src/discover.rs` | 144 | Читает симлинки `/dev/serial/by-id`, ищет по ключевым словам ESP32 |
+| `src/emulator.rs` | 473 | Встроенный эмулятор Modbus: 4 устройства, 12 виртуальных датчиков, трейт `VirtualMachine`, добавление/удаление датчиков |
+| `src/firmware.rs` | 356 | Обёртка над espflash: резервная копия/восстановление/информация о плате |
+| `src/crc.rs` | 68 | CRC-16 Modbus |
+| `src/frames.rs` | 244 | Сборщики/парсеры PDU-кадров + коды исключений Modbus |
+| `tools/portscheck` | 64 | Мини-CLI на Rust: отправляет в порт одну команду READ INPUT (0x04, 60 regs, CRC) и выводит сырые байты ответа — самый быстрый способ проверить «отвечает ли мой ESP32?». Раздел 17 |
+| `scripts/modbus_tcp_client.py` | 169 | Чистый-stdlib Python Modbus TCP-клиент (`socket`+`struct`, без pymodbus) — те же тесты, что в `scripts/modbus_client.py`, но по MBAP. Раздел 16 |
+
+---
+
+## 3. Сборка и запуск
 
 ```bash
 cd test-bench/tui
 
-# Debug build (fast compile, slower runtime)
+# Отладочная сборка (быстрая компиляция, медленнее рантайм)
 cargo run
 
-# Release build (slower compile, faster runtime)
+# Release-сборка (дольше компилируется, быстрее работает)
 cargo run --release
 
-# Run tests
+# Запуск тестов
 cargo test
 
-# Run on a different terminal size
+# Запуск с другим размером терминала
 stty cols 120 rows 40
 cargo run --release
 ```
 
-**First launch behavior:**
-- The emulator starts in OFF state (nothing to show).
-- Press `e` to enable the emulator — 2 devices with 10 virtual sensors appear.
-- The scanner immediately detects `/dev/ttyS*` ports (on this machine).
-- Press `c` to connect to a port, or just stay with the emulator for learning.
+**Поведение при первом запуске:**
+- Эмулятор стартует в состоянии OFF (показывать нечего).
+- Нажмите `e` — появится эмулятор: 2 устройства с 10 виртуальными датчиками.
+- Сканер сразу обнаружит порты `/dev/ttyS*` (на этой машине).
+- Нажмите `c`, чтобы подключиться к порту, либо останьтесь на эмуляторе для учёбы.
 
-**Requirements:** Rust 1.75+, no ESP32 needed for emulator mode.
+**Требования:** Rust 1.75+, для режима эмулятора ESP32 не нужен.
 
 ---
 
-## 4. UI Guide — What Each Tab Shows
+## 4. Руководство по интерфейсу (что показывает каждая вкладка)
 
-### Tab Bar (top line)
+### Панель вкладок (верхняя строка)
 
 ```
  Dashboard    Ports    Registers    Sensors    Firmware    Log    Help
              ───────
-             active tab (black on cyan)
+             активная вкладка (чёрный на голубом)
 ```
 
-The active tab is highlighted. Use `[Tab]` to cycle right, `[Shift+Tab]` (not implemented — use `[Tab]` multiple times) to cycle through.
+Активная вкладка подсвечена. `[Tab]` переключает вправо (или клик мышью по
+вкладке — координаты клика сопоставляются с реальной раскладкой `Tabs`,
+включая левый отступ и 4-пробельные разделители).
 
-### Dashboard (default)
+### Dashboard (по умолчанию)
 
-Shows live sensor values from all connected devices:
+Живые значения датчиков всех подключённых устройств:
 
 ```
- ▸ Slave 1 · Pump Station                     ← active device
-     T-101 Inlet   Temperature (°C)   25.12°C        ← input register @0
-     T-202 Outlet  Temperature (°C)   46.27°C        ← input register @2
-     P-101 Disch.  Pressure (kPa)     98.33 kPa      ← input register @4
+ ▸ Slave 1 · Pump Station                     ← активное устройство
+     T-101 Inlet   Temperature (°C)   25.12°C        ← input-регистр @0
+     T-202 Outlet  Temperature (°C)   46.27°C        ← input-регистр @2
+     P-101 Disch.  Pressure (kPa)     98.33 kPa      ← input-регистр @4
 
    Slave 2 · Test Device
      Sine A    25.59
@@ -131,13 +153,19 @@ Shows live sensor values from all connected devices:
      Flow C    125.46 %
 ```
 
-- `▸` marks the **active device** (selected with `↑/↓`).
-- `[Space]` toggles pump 0 coil of the active device.
-- Values update every 500ms.
+- `▸` отмечает **активное устройство** (выбирается `↑/↓`).
+- `[Space]` переключает катушку 0 активного устройства (рядом с ней на экране
+  появляется подсказка `[space]  ◀ toggles this coil`).
+- Значения обновляются каждые 500 мс.
+- **Длинные списки устройств листаются автоматически** — список авто-скроллится
+  так, чтобы заголовок активного устройства всегда был на экране; `[PgUp]/[PgDn]`
+  листают список по 6 устройств, колесо мыши листает тот же список.
+- **Мышь:** клик по строке устройства (левые 3/5 ширины экрана) выбирает его.
+  Катушки мышью не переключаются — для этого есть `Space`.
 
 ### Ports
 
-Lists `/dev/serial/by-id/*` symlinks with descriptions:
+Список симлинков `/dev/serial/by-id/*` с описаниями:
 
 ```
  ┌ Ports ───────────────────────┐  ┌ Port detail ──────────────┐
@@ -145,57 +173,73 @@ Lists `/dev/serial/by-id/*` symlinks with descriptions:
  │ 2. /dev/ttyUSB0  FT232       │  │ Desc:      USB Modem       │
  │         [Connected]          │  │ Baud:      9600            │
  └──────────────────────────────┘  │ Status:    Connected       │
-                                   └────────────────────────────┘
+                                    └────────────────────────────┘
 ```
 
-`[p] probe` sends a probe request to the selected port and shows latency.
+`[p] probe` отправляет пробный запрос на выбранный порт и показывает задержку.
+
+`[t] TCP-server` включает/выключает **Modbus TCP-сервер** на `127.0.0.1:1502`.
+Пока он запущен:
+
+- в строке состояния под вкладками появляется `| TCP:127.0.0.1:1502`;
+- он обслуживает **ту же карту регистров**, что сейчас у эмулятора
+  (датчики slave 1, катушки, holding-регистры) — ровно то, что позже Zynq
+  будет читать по Ethernet вместо RS-485;
+- каждый TCP-запрос/ответ показывается на вкладке Bus с пометкой
+  `TCP (MBAP, no CRC)`;
+- клиенты обязаны говорить по MBAP (transaction id, protocol id 0, length,
+  unit — фрейминг объяснён в разделе 16); RTU-клиент против него не сработает.
+
+Запустите эмулятор `[e]` (на любой вкладке) — и программист/партнёр по
+лабораторной уже может опрашивать карту регистров по Ethernet:
+`python3 scripts/modbus_tcp_client.py 127.0.0.1 1502`.
 
 ### Registers
 
-Split into two panels:
+Разбита на две панели:
 
-**Left panel — Register Editor:**
+**Левая панель — Редактор регистров:**
 ```
  Reg type : HOLDING   [t] change   [↑↓] focus  [enter] edit
        Slave ID : 1
     Start addr : 0
          Count : 10
-    Write addr : 0          ← write target address
-   Write value : 0          ← write target value
+    Write addr : 0          ← адрес для записи
+   Write value : 0          ← значение для записи
 
  [r] read  [w] write value
 ```
 
-**Right panel — Live snapshot:** Shows current values from emulator or real device.
+**Правая панель — Живой snapshot:** текущие значения эмулятора или реального
+устройства.
 
-**How to use:**
-1. Press `↑/↓` to focus a field (highlighted yellow).
-2. Press `[Enter]` to start editing — field turns cyan with `■` cursor.
-3. Type numbers. Press `[Backspace]` to delete.
-4. Press `[Enter]` to finish, `[Esc]` to cancel.
-5. Press `[r]` to read, `[w]` to write.
+**Как пользоваться:**
+1. `↑/↓` — выбрать поле (подсвечено жёлтым).
+2. `[Enter]` — начать редактирование (поле становится голубым, появляется `■`).
+3. Ввести цифры. `[Backspace]` — удалить.
+4. `[Enter]` — подтвердить, `[Esc]` — отменить.
+5. `[r]` — читать, `[w]` — записать.
 
-**Result feedback:** the outcome of every read/write is shown in
-"Current result" on the panel (including the error code). If nothing is
-connected, the panel shows a red hint: `! no target: press [e] for
-emulator, or connect in Ports` — that's why `[w]`/`[r]` may seem to do
-nothing when you don't have a target.
+**Обратная связь:** результат каждого чтения/записи показывается в строке
+"Current result" на панели (включая код ошибки). Если источник не подключён,
+на панели красная подсказка: `! no target: press [e] for emulator, or connect
+in Ports` — поэтому `[w]`/`[r]` могут «не работать», когда цели нет.
 
 ### Sensors
 
-**Left panel — Sensor factory:**
+**Левая панель — Фабрика датчиков:**
 ```
- Device idx : 0    ← index of device to add to
+ Device idx : 0    ← индекс устройства, куда добавляем
         Name : New Sensor
    Type      : Temperature (°C)   [1..6] change
- Base value  : 25.0
+  Base value : 25.0
   Amplitude  : 3.0
   Period (s) : 8.0
 
  [a] add   [↑↓] focus  [enter] edit  [m] manage
 ```
 
-**Right panel — Existing devices and sensors (by device):**
+**Правая панель — Существующие устройства и датчики (по устройствам):**
 ```
  ◆ Slave 1 — Pump Station
    ●  T-101 Inlet   Temperature (°C)  base=22.0 amp=4.0 T=8s ⇒ ...
@@ -204,109 +248,272 @@ nothing when you don't have a target.
    ●  Sine A ...
 ```
 
-**Managing devices and sensors (manage mode):**
-1. Press `[m]` to enter **manage mode** — the list becomes active and the
-   title changes to "Manage: [↑↓] move [d] delete [esc] done".
-2. Press `↑/↓` (or `k/j`) to move the grey highlight. The cursor walks **all**
-   rows — both device headers (`◆ Slave N`) and sensors (`●`), wrapping over
-   the edge (one step below the last sensor lands on the next device header,
-   and vice versa).
-3. Press `[d]` (or `Delete`) to delete the row under the cursor:
-   - on a sensor → deletes the sensor;
-   - on a device header → deletes the **whole slave** together with its sensors
-     (the last device is protected — the emulator must serve something).
-4. Press `[esc]` or `[m]` to leave manage mode.
+**Управление устройствами и датчиками (режим manage):**
+1. `[m]` — войти в режим **manage**: список становится активным, заголовок
+   меняется на "Manage: [↑↓] move [d] delete [esc] done".
+2. `↑/↓` (или `k/j`) — перемещать серую подсветку. Курсор ходит по **всем**
+   строкам — и по заголовкам устройств (`◆ Slave N`), и по датчикам (`●`),
+   с заворотом через край (на шаг ниже последнего датчика попадаете на
+   заголовок следующего устройства, и наоборот).
+3. `[d]` (или `Delete`) — удалить строку под курсором:
+   - на датчике → удаляется датчик;
+   - на заголовке устройства → удаляется **весь слайв** вместе с датчиками
+     (последнее устройство защищено — эмулятор обязан что-то обслуживать).
+4. `[esc]` или `[m]` — выйти из режима manage.
 
-**Creating a new slave:** press `[n]` on the Sensors tab — a new empty
-device `Device N` (unique slave id) is added; its sensors start appearing
-from the first input register. Create as many as you need.
+**Новое устройство:** на вкладке Sensors нажмите `[n]` — добавится пустое
+устройство `Device N` (уникальный slave id); его датчики начнут появляться с
+первого input-регистра. Создавайте столько, сколько нужно.
 
-**Types:** 1=T°C, 2=Pressure, 3=Flow, 4=Test, 5=Level (m), 6=Humidity (%).
+**Типы:** 1=T°C, 2=Pressure, 3=Flow, 4=Test, 5=Level (m), 6=Humidity (%).
 
-**Built-in devices:** 4 slaves by default — Pump Station (1),
-Test Device (2), Electric Boiler (3), Weather Station (4). Switch the
-"Device idx" field to add sensors to a different slave (0..=N).
+**Встроенные устройства:** по умолчанию 4 слайва — Pump Station (1),
+Test Device (2), Electric Boiler (3), Weather Station (4). Поле "Device idx"
+переключает слайв для добавления датчиков (0..=N).
 
 ### Firmware
 
-Calls `espflash` (or `esptool.py`) CLI. **Requires physical ESP32** — not functional in emulator mode. See `test-bench/README.md` for hardware setup.
+Вызывает CLI `espflash` (или `esptool.py`). **Требуется физический ESP32** —
+в режиме эмулятора не работает. Настройки железа — в `test-bench/README.md`.
+
+### Bus (инспектор Modbus-кадров)
+
+Показывает каждую транзакцию Modbus (transaction) как «сырые» байты провода —
+*те самые байты, которые реальный мастер (ПЛК / PLC / Zynq) увидит на своём
+UART*. Это самый быстрый способ понять, как на самом деле выглядят
+Modbus-запрос и ответ.
+
+```
+┌ Bus — Modbus frame log (RTU hex + TCP MBAP) (12) (↑↓/wheel) ─┐
+│  ▸ READ INPUT REGISTERS (0x04)   req 8 B → resp 125 B · 5 ms · CRC ok │
+│    → 01 04 00 00 00 3C F0 1B                                      │
+│    ← 01 04 7A 42 C8 A6 66 42 C9 99 9A … (125 bytes)             │
+│  ▸ READ COILS (0x01)           req 8 B → resp 5 B · 4 ms · CRC ok   │
+│    → 01 01 00 00 00 02 BD CB                                      │
+│    ← 01 01 01 01 90 48                                          │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+- `→` — запрос, который мастер записал в порт; `←` — ответ устройства.
+  Байты показаны в порядке, в котором они идут по проводу, включая два байта
+  CRC в конце (little-endian).
+- Строка сводки даёт имя функции, размеры кадров, время в обе стороны и
+  результат проверки CRC. Упавшие транзакции (таймаут, битый CRC или
+  Modbus-исключение вида `✖ 0x83 ILLEGAL DATA ADDRESS`) рисуются красным.
+- В **режиме эмулятора** кадры генерируются из *реального состояния
+  эмулятора*, поэтому байты выглядят как на настоящей шине — можно
+  тренироваться читать кадры без железа. На **подключённом ESP32** вы
+  наблюдаете реальный обмен запрос/ответ на `/dev/ttyACM1`.
+- Каждый опрос выполняет **3 транзакции подряд**: READ INPUT REGISTERS
+  (температуры + давления парами float32), READ COILS (насосы), READ
+  HOLDING REGISTERS (конфигурация). `↑/↓` или колесо мыши листают историю;
+  прокрутка вниз возвращает к «живому хвосту».
+- Когда запущен **Modbus TCP-сервер** (Ports → `[t]`), его запросы
+  добавляются в тот же журнал, а в строке сводки вместо `CRC ok` будет
+  `TCP (MBAP, no CRC)`. Тот же PDU, только обёрнут в заголовок MBAP вместо
+  CRC-хвоста — см. раздел 16.
 
 ### Log
 
-Scrollable event log. Shows probe results, Modbus read/write confirmations, firmware messages. Press `[Enter]` to clear.
+Прокручиваемый журнал событий: результаты probe, подтверждения чтения/записи
+Modbus, сообщения прошивки. `[Enter]` очищает, `↑/↓` или колесо **мыши**
+листает (в заголовке появляется `[scrolled]`, пока контент прокручен).
 
 ### Help
 
-Shows full key reference. Scroll with `↑/↓`.
+Полная шпаргалка по клавишам. Листается `↑/↓` или колесом **мыши**.
+
+### Поддержка мыши
+
+Пока приложение работает, терминал входит в режим **захвата мыши**; каждая
+вкладка реагирует на клики и колесо:
+
+| Где | Клик | Колесо |
+|-----|------|--------|
+| Панель вкладок | переключить вкладку | — |
+| Dashboard | выбрать устройство | листать список устройств/датчиков |
+| Ports | выбрать порт | листать список |
+| Registers | сфокусировать поле / толкнуть строку списка | — |
+| Sensors | выбрать устройство или датчик / двигать курсор manage / сфокусировать поле формы | — |
+| Firmware | выбрать резервную копию прошивки | — |
+| Bus | — | листать историю кадров (вниз = к живому хвосту) |
+| Log / Help | — | листать текст |
+
+Координаты пересчитываются с терминала на отрисованные ячейки
+(`tab_at_col`, `dashboard_rows_for_devices`, `list_index_at`), поэтому
+клики попадают точно в элемент под курсором.
 
 ---
 
-## 5. Modbus Fundamentals
+## 5. Основы Modbus
 
-This section explains the concepts the Register Editor teaches.
+Этот раздел объясняет понятия, которым учит редактор регистров.
 
-### What is Modbus?
+> Если раздел покажется слишком базовым — сразу переходите к разделу 14,
+> там те же понятия разобраны на реальных байтах шины.
 
-Modbus is a serial communication protocol (1979). A **master** (your software) sends requests to **slaves** (devices). Each slave has a numeric address (1–247).
+### Что такое Modbus
 
-### Register Types
+Modbus — один из старейших промышленных протоколов последовательной связи
+(serial communication; англ. Modicon BUS) (создан в 1979 году компанией
+Modicon для своих ПЛК) и фактический стандарт индустрии благодаря простоте.
+**Мастер** (master, ваш софт) отправляет запросы **ведомым** (slave,
+устройствам). У каждого ведомого — числовой адрес (slave address) от 1 до 247.
 
-| Type | Name | Range | Typical Use |
-|------|------|-------|-------------|
-| 0 | **Input** (read-only) | 0–65535 | Sensor readings (temperature, pressure) |
-| 1 | **Holding** (read/write) | 0–65535 | Configuration, setpoints, control |
-| 2 | **Coil** | 0 or 1 | Digital on/off (pump, valve, LED) |
+Правила ролей запомните сразу:
+- **Мастер на одной шине всегда один.** Ведомые никогда не начинают разговор
+  сами и отвечают только на запрос, адресованный им.
+- **Адрес 0 — широковещательный (broadcast).** Запросы с `slave_id = 0`
+  получают все ведомые, но **никто не отвечает**. Применяется для команд
+  вроде «всем: записать уставку», когда ответ не нужен.
+- Ведомый отвечает **только если** первые два байта кадра (frame) совпали с
+  его адресом и известной ему функцией. Иначе ответа нет вообще (таймаут у
+  мастера) либо приходит кадр-исключение (exception frame; см. ниже).
 
-### PDU Structure
+### Типы регистров
 
-**Request frame:**
+| Тип | Название | Диапазон | Типичное применение |
+|-----|----------|----------|---------------------|
+| 0 | **Input** (только чтение) | 0–65535 | Показания датчиков (температура, давление) |
+| 1 | **Holding** (чтение/запись) | 0–65535 | Конфигурация, уставки, управление |
+| 2 | **Coil** (катушка) | 0 или 1 | Дискретный вкл/выкл (насос, клапан, светодиод) |
+
+В классических ПЛК эти области принято нумеровать с префиксами по истории
+Modicon: **катушки 0x**, дискретные входы **1x**, input-регистры **3x**,
+holding-регистры **4x**. Помните: физически это четыре независимые «памяти»
+внутри устройства — адрес 10 input-регистра и адрес 10 holding-регистра это
+**разные** регистры. В этом файле «Reg type = input» значит именно input-регистры.
+
+Важное следствие для работы с реальными датчиками: **0x03 и 0x04 — разные
+функции** (holding и input соответственно). Очень частая ошибка начинающих —
+прочитать holding там, где датчик держит данные в input, и наоборот. Отсюда
+и пустые/битые показания.
+
+### Структура PDU (Protocol Data Unit — «полезная нагрузка»)
+
+**Запрос (request):**
 ```
 [slave_id] [function_code] [start_hi] [start_lo] [count_hi] [count_lo] [crc_lo] [crc_hi]
 ```
 
-**Response frame:**
+**Ответ (response; успех):**
 ```
-[slave_id] [function_code] [byte_count] [data...] [crc_lo] [crc_hi]
-```
-
-Examples from the emulator:
-
-```
-Read 10 input registers from slave 1:
-  TX: 01 03 00 00 00 0A C5 CD    ← function 0x03, count=10
-  RX: 01 03 14 00 FA 01 F4 00 ... 20 bytes data + CRC
-
-Write holding register 0 = 42 on slave 1:
-  TX: 01 06 00 00 00 2A 88 0B    ← function 0x06, value=42 (0x002A)
-  RX: 01 06 00 00 00 2A 88 0B    ← echo = success
-
-Toggle coil 0 on slave 1:
-  TX: 01 05 00 00 FF 00 8C 3A    ← function 0x05, value=0xFF00=ON
-  RX: 01 05 00 00 FF 00 8C 3A    ← echo
+[slave_id] [function_code] [byte_count] [данные...] [crc_lo] [crc_hi]
 ```
 
-### CRC-16 Modbus
+**Ответ (исключение, exception):**
+```
+[slave_id] [function_code | 0x80] [код_исключения] [crc_lo] [crc_hi]
+```
 
-Every frame ends with a CRC-16 (polynomial 0xA001, init 0xFFFF). The `crc.rs` module implements this; `frames.rs` builds and parses frames.
+Обратите внимание: в запросе фигурируют *адрес начала* и *количество* по два
+байта (big-endian, BE — старший байт первым), а в ответ — *число байт данных*
+(byte count) одним байтом. Подробный разбор байт за байтом — в разделе 14.
 
-Exercise: use `cargo test -- crc` to see the CRC tests, then modify the test input and predict the output before running.
+Примеры из эмулятора (CRC посчитан кодом из `crc.rs` — сверьте их сами
+сам: `python3` или `cargo test -- crc`):
 
-### Function Codes Used
+```
+Чтение 10 input-регистров у slave 1 (FC04):
+  TX: 01 04 00 00 00 0A 70 0D    ← функция 0x04, count = 10 (0x000A)
+      │  │  └─┴─┴─ start=0x0000 ┴─ count=0x000A
+      │  └─ 0x04 = READ INPUT REGISTERS
+      └─ 0x01 = адрес ведомого
+  RX: 01 04 14 <20 байт данных> <crc_lo> <crc_hi>   ← 0x14 = 20 байт
 
-| Code | Name | Modbus Name |
-|------|------|-------------|
-| 0x01 | Read coils | FC01 |
-| 0x03 | Read holding/input registers | FC03 |
-| 0x05 | Write single coil | FC05 |
-| 0x06 | Write single register | FC06 |
-| 0x0F | Write multiple coils | FC15 |
-| 0x10 | Write multiple registers | FC16 |
+Чтение 10 holding-регистров у slave 1 (FC03):
+  TX: 01 03 00 00 00 0A C5 CD
+  RX: 01 03 14 <20 байт данных> <crc>
+
+Запись holding-регистра 0 = 42 у slave 1 (FC06):
+  TX: 01 06 00 00 00 2A 08 15    ← функция 0x06, значение = 42 (0x002A)
+  RX: 01 06 00 00 00 2A 08 15    ← эхо-ответ (echo) = успех
+
+Переключение катушки 0 у slave 1 (FC05):
+  TX: 01 05 00 00 FF 00 8C 3A    ← функция 0x05, значение 0xFF00 = ON
+  RX: 01 05 00 00 FF 00 8C 3A    ← эхо-ответ
+```
+
+> **Почему запись отвечает эхом?** Протокол так задуман: ведомый повторяет
+> запрос, чтобы мастер мог убедиться, что кадр дошёл без искажений (CRC
+> ответа при этом — свой). Полное совпадение «запрос == ответ» и считается
+> признаком успеха. Если вы что-то записали и получили эхо — запись прошла.
+
+### CRC-16 Modbus (Cyclic Redundancy Check — циклический избыточный код)
+
+Каждый кадр завершается CRC-16 (полином 0xA001, стартовое значение 0xFFFF).
+Модуль `crc.rs` реализует эту функцию; `frames.rs` собирает и разбирает кадры.
+
+Алгоритм «своими руками»:
+
+```
+crc = 0xFFFF
+для каждого байта кадра:
+    crc = crc XOR байт
+    повторяем 8 раз:
+        если младший бит crc = 1:
+            crc = (crc >> 1) XOR 0xA001
+        иначе:
+            crc = crc >> 1
+```
+
+Итог записывается на шину **сначала младший байт** (little-endian):
+для `01 04 00 00 00 3C` получается `0x1BF0`, на проводе будет `F0 1B`.
+
+Два факта, которые часто спрашивают на экзамене:
+- Полином классического CRC-16 — `0x8005`. `0xA001` — это **побитово
+  отражённый** `0x8005`: реализация, которая обрабатывает биты с младшего,
+  использует отражённый полином. Поэтому в исходниках встречаются оба числа,
+  и это одно и то же.
+- CRC **не защищает от злонамеренных изменений**, он ловит случайные ошибки
+  передачи (перебитый бит, сдвиг). Этого для промышленной шины достаточно.
+
+Упражнение: `cargo test -- crc` — посмотрите CRC-тесты, затем измените
+входные данные теста и предскажите результат до запуска.
+
+### Используемые коды функций
+
+| Код | Имя (в TUI) | Имя в спецификации | Направление |
+|-----|-------------|--------------------|-------------|
+| 0x01 | Read coils | FC01 — Read Coils | мастер → slave |
+| 0x02 | Read discrete inputs | FC02 — Read Discrete Inputs | мастер → slave |
+| 0x03 | Read holding registers | FC03 — Read Holding Registers | мастер → slave |
+| 0x04 | Read input registers | FC04 — Read Input Registers | мастер → slave |
+| 0x05 | Write single coil | FC05 — Write Single Coil | мастер → slave |
+| 0x06 | Write single register | FC06 — Write Single Register | мастер → slave |
+| 0x0F | Write multiple coils | FC15 — Write Multiple Coils | мастер → slave |
+| 0x10 | Write multiple registers | FC16 — Write Multiple Registers | мастер → slave |
+
+Проверьте себя: код функции лежит в PDU и никогда не меняется в пути.
+Ответ с тем же кодом = успех; код с выставленным старшим битом (0x80) = отказ.
+
+### Исключения Modbus (exceptions)
+
+Когда запрос корректен по кадру, но выполнить его нельзя, ведомый отвечает
+не ответом, а **исключением**: старший бит кода функции + код причины.
+
+| Код | Имя | Когда возникает |
+|-----|-----|-----------------|
+| 0x01 | ILLEGAL FUNCTION | Функция не поддерживается устройством / не для этого типа регистров |
+| 0x02 | ILLEGAL DATA ADDRESS | Регистр за пределами карты (например, адрес 100 при максимуме 63) |
+| 0x03 | ILLEGAL DATA VALUE | Значение вне допустимого диапазона (например, запись 300 в поле «0..100») |
+| 0x04 | SERVER DEVICE FAILURE | Необрабатываемая ошибка устройства (в TUI — «отравленный» мьютекс эмулятора) |
+| 0x05 | ACKNOWLEDGE | Принято в работу, ответ позже |
+| 0x06 | SERVER DEVICE BUSY | Занято (типично во время записи flash) |
+| 0x0A–0x0B | GATEWAY PATH/TARGET | Шлюз Modbus/MBTP не нашёл путь или цель |
+
+В TUI эти коды маппятся (map — сопоставляются) на `ModbusError`
+(см. `frames.rs`), а на вкладке Bus строки с исключениями рисуются красным с
+расшифровкой имени. Наиболее частые в практике — **0x01 (не та функция для
+типа регистров)** и **0x02 (адрес вне карты)**: именно их вы увидите, если в
+упражнениях запросите «несуществующий» слайв или регистр.
 
 ---
 
-## 6. Emulator — How It Works Internally
+## 6. Эмулятор (как устроен внутри)
 
-The emulator (`emulator.rs`) implements a `VirtualMachine` trait that mirrors the serial master API:
+Эмулятор (emulator) (`emulator.rs`) реализует трейт (trait — признак/интерфейс)
+`VirtualMachine`, повторяющий API последовательного мастера:
 
 ```rust
 pub trait VirtualMachine {
@@ -318,9 +525,11 @@ pub trait VirtualMachine {
 }
 ```
 
-Both `Emulator` (virtual) and `SerialMaster` (real) implement this trait. This is why the same `handle_key` code works for both modes.
+И `Emulator` (виртуальный), и `SerialMaster` (настоящий) реализуют этот трейт.
+Именно поэтому один и тот же код `handle_key` работает в обоих режимах —
+разница лишь в том, к какой реализации обращаются.
 
-### Default Scenario
+### Сценарий по умолчанию
 
 ```rust
 pub fn default_scenario() -> Emulator {
@@ -343,97 +552,139 @@ pub fn default_scenario() -> Emulator {
 }
 ```
 
-### Time Model
+Каждый «датчик» — это **синусоида** (sine wave), то есть значение плавно
+колеблется вокруг `base` с размахом `amp`. Формула из
+`VirtualSensor::value` (`emulator.rs:54-60`) такая:
 
-- `Emulator::new()` sets `last_tick = 0.0` (not `now_secs()`).
-- First `tick()` call: elapsed = `now_secs() - 0.0` = large value → sine clamps at exactly `base` (phase wraps).
-- Subsequent ticks: ~500ms apart → smooth sine progression.
-- `now_secs()` returns monotonic seconds from process start.
+```
+value(t) = base + amp · sin(t / T)      // t = now_secs (секунды с момента старта)
+```
 
-### Key Point: Register Addresses
+Обратите внимание: аргумент синуса — это `t / T` **без** множителя `2π`.
+Sin в Rust принимает радианы, поэтому реальный период колебания получается
+`2π · T` секунд (например, T=8 с → полный цикл ≈ 50 с), а не `T` секунд.
+«Период» в форме датчика — по сути масштаб времени, а не строгий период.
+Формула удобна для демонстрации и совпадает с реальным кодом байт-в-байт.
 
-In the emulator, input register addresses map directly:
-- Address 0 → `input_regs[0]`
-- Address 1 → `input_regs[1]`
+Хитрость, на которую стоит обратить внимание: один датчик занимает **пару**
+регистров (чётный + нечётный), потому что float32 = 2 слова по 16 бит,
+старшее слово первым (big-endian). Поэтому первый датчик Slave 1 читается из
+регистров 0–1, второй — из 2–3, третий — из 4–5 и т.д.
 
-The Register Editor's **Start addr** field uses these addresses directly. For example, `Start addr = 4, Count = 3` reads `input_regs[4..7]`.
+### Модель времени
 
-### How Add Sensor Works
+- `Emulator::new()` ставит `last_tick = 0.0` (а не `now_secs()`).
+- Первый вызов `tick()`: elapsed = `now_secs() - 0.0` — это не «почти нулевое»,
+  а реальное время с момента старта процесса (например, 1.2 с). Синус берётся
+  в этом фазовом положении; значение не обязано быть в точности `base`, но
+  «прыжка из неизвестности» не возникает.
+- `tick()` сам ограничивает частоту продвижения: если с последнего шага прошло
+  менее 50 мс (`emulator.rs:219`), он возвращается без обновления (троттлинг —
+  throttling, «не чаще 20 Гц»). Фактический темп задаёт вызывающая сторона —
+  цикл опроса (polling loop) worker (раз в 500 мс `worker.rs:148`).
+- `now_secs()` — монотонные секунды от старта процесса.
 
-1. Finds the first unused register pair (even+odd) across all devices.
-2. Creates a `VirtualSensor` with that address.
-3. Pushes to `devices[dev_idx].sensors`.
-4. On next `tick()`, sine values are written to those addresses.
+**Это осознанное упрощение.** Если бы в конструкторе стоял `now_secs()`,
+первый тик дал бы взятое «с потолка» значение и не совпал бы по смыслу с
+последующими. С `0.0` логика первого тика единообразна — меньше особых случаев.
+
+### Ключевой момент: адресация регистров
+
+В эмуляторе адреса input-регистров напрямую отображаются на память:
+- адрес 0 → `input_regs[0]`
+- адрес 1 → `input_regs[1]`
+
+Поле **Start addr** редактора регистров использует именно эти адреса.
+Например, `Start addr = 4, Count = 3` прочитает `input_regs[4..7]`.
+
+> Практическое следствие: если вы добавили датчик и ему автоматически
+> достался адрес 6, то `Start addr = 6, Count = 2` покажет именно его
+> значение. Это же адрес, который в реальном устройстве указан в параметре
+> «MAP / Offset» из даташита датчика.
+
+### Как работает добавление датчика
+
+1. Находится первая **свободная пара регистров** (чётный+нечётный) по всем
+   устройствам.
+2. Создаётся `VirtualSensor` с этим адресом.
+3. Запись в `devices[dev_idx].sensors`.
+4. На следующем `tick()` значения синуса записываются в эти адреса.
 
 ---
 
-## 7. The Register Editor (Registers Tab)
+## 7. Редактор регистров (вкладка Registers)
 
-### Fields
+### Поля
 
-| Field | Description | Editable |
-|-------|-------------|----------|
-| Reg type | 0=input, 1=holding, 2=coil | Cycle with `[t]` or `[1]/[2]/[3]` |
-| Slave ID | Target slave address | `[↑/↓]` focus + `[Enter]` edit |
-| Start addr | First register address | (same) |
-| Count | Number of registers to read | (same) |
-| Write addr | Target address for `[w]` | (same) |
-| Write value | Value to write for `[w]` | (same) |
+| Поле | Описание | Редактируется |
+|------|----------|---------------|
+| Reg type | 0=input, 1=holding, 2=coil | Цикл через `[t]` или `[1]/[2]/[3]` |
+| Slave ID | Адрес ведомого | `[↑/↓]` фокус + `[Enter]` редактирование |
+| Start addr | Адрес первого регистра | (так же) |
+| Count | Сколько регистров читать | (так же) |
+| Write addr | Адрес для записи `[w]` | (так же) |
+| Write value | Значение для записи `[w]` | (так же) |
 
-### Editing Workflow
+### Процесс редактирования
 
 ```
-Focus field:     [↑] or [↓]
-Start editing:   [Enter]
-Type:            any digit, ., -, letter
-Delete:          [Backspace]
-Commit:          [Enter]
-Cancel:          [Esc]
+Фокусировка поля:  [↑] или [↓]
+Начать правку:     [Enter]
+Ввод:              любая цифра, ., -, буква
+Удалить:           [Backspace]
+Подтвердить:       [Enter]
+Отменить:          [Esc]
 ```
 
-While editing, the field shows a blinking `■` cursor (cyan background).
+Во время редактирования в поле мигающий курсор `■` (голубой фон).
 
-### Read Operation
+### Операция чтения
 
-1. Select type (input/holding).
-2. Set Slave ID, Start addr, Count.
-3. Press `[r]`.
-4. Result appears in "Current result" on the left panel and in the Log.
+1. Выберите тип (input/holding).
+2. Задайте Slave ID, Start addr, Count.
+3. Нажмите `[r]`.
+4. Результат появится в "Current result" на левой панели и в логе.
 
-### Write Operation
+### Операция записи
 
-1. Select type (holding or coil).
-2. Set Write addr and Write value.
-3. Press `[w]`.
-4. For holding: writes a single 16-bit value.
-5. For coil: writes ON (value≠0) or OFF (value=0).
+1. Выберите тип (holding или coil).
+2. Задайте Write addr и Write value.
+3. Нажмите `[w]`.
+4. Для holding: записывается одно 16-битное значение.
+5. Для coil: пишется ON (значение ≠ 0) или OFF (значение = 0).
+
+> Нюанс катушек: для включения Modbus требует ровно `0xFF00`, для выключения
+> — `0x0000`. Любое другое значение формально некорректно, но многие
+> устройства (и наш эмулятор) трактуют «любое ненулевое» как ON. Здесь значение
+> `[w]` преобразуется: `value != 0` → ON.
 
 ---
 
-## 8. The Sensor Factory (Sensors Tab)
+## 8. Фабрика датчиков (вкладка Sensors)
 
-### Fields
+### Поля
 
-| Field | Default | Description |
-|-------|---------|-------------|
-| Device idx | 0 | Zero-based index of target device |
-| Name | New Sensor | Human-readable name |
+| Поле | По умолчанию | Описание |
+|------|--------------|----------|
+| Device idx | 0 | Индекс устройства (с нуля), куда добавлять |
+| Name | New Sensor | Человекочитаемое имя |
 | Type | Temperature (°C) | 1=T°C, 2=Pressure, 3=Flow, 4=Test, 5=Level, 6=Humidity |
-| Base value | 25.0 | Sine wave center |
-| Amplitude | 3.0 | Sine wave peak deviation |
-| Period (s) | 8.0 | Full cycle time |
+| Base value | 25.0 | Центр синусоиды |
+| Amplitude | 3.0 | Размах синусоиды (отклонение от центра) |
+| Period (s) | 8.0 | Время полного цикла |
 
-### Adding a Sensor
+### Добавление датчика
 
-1. Set Device idx (0=Pump Station, 1=Test Device, 2=Electric Boiler, 3=Weather Station, 4..=N — added devices).
-2. Set Name and parameters.
-3. Choose type with `[1..6]`.
-4. Press `[a]`.
-5. Wait 500ms for next snapshot — the new sensor appears in the list.
+1. Задайте Device idx (0=Pump Station, 1=Test Device, 2=Electric Boiler,
+   3=Weather Station, 4..=N — добавленные устройства).
+2. Задайте Name и параметры.
+3. Выберите тип `[1..6]`.
+4. Нажмите `[a]`.
+5. Подождите 500 мс до следующего snapshot — новый датчик появится в списке.
 
-The sensor uses the first free register pair on the target device.
+Датчик занимает первую свободную пару регистров на целевом устройстве.
 
-### Managing Devices and Sensors (manage mode)
+### Управление устройствами и датчиками (режим manage)
 
 | Клавиша | Действие |
 |---------|----------|
@@ -445,13 +696,13 @@ The sensor uses the first free register pair on the target device.
 
 Последнее оставшееся устройство удалить нельзя — эмулятору нужно кого-то
 обслуживать. Пример: удалить Test Device целиком → приборная панель
-показывает 3 устройства, слэвы 1, 3, 4.
+показывает 3 устройства, слайвы 1, 3, 4.
 
 ---
 
-## 9. Architecture Diagrams
+## 9. Диаграммы архитектуры
 
-### Event Flow
+### Поток событий
 
 ```
 User presses key
@@ -479,17 +730,17 @@ app.draw()
 ui.rs reads app.snapshot, draws to frame
 ```
 
-### Poll Thread Loop
+### Цикл потока опроса
 
 ```
 loop {
-    snapshot = read_all_devices();   // ~5-10ms for emulator
+    snapshot = read_all_devices();   // ~5-10ms для эмулятора
     tx.send(Event::Snapshot { snapshot });
     sleep(500ms);
 }
 ```
 
-### Serial Communication Chain
+### Цепочка последовательной связи
 
 ```
 app.write_single_coil()
@@ -503,227 +754,681 @@ app.write_single_coil()
 
 ---
 
-## 10. Pedagogical Exercises
+## 10. Учебные упражнения
 
-### Exercise 1: Modbus Register Addressing
+### Упражнение 1: адресация регистров Modbus
 
-**Goal:** Understand the difference between holding and input registers.
+**Цель:** понять разницу между holding- и input-регистрами.
 
-1. Open the Registers tab (press `e` then `Tab` twice).
-2. Set type to INPUT, Start addr = 0, Count = 5. Press `[r]`.
-3. Note the values (they change every 500ms — sine wave).
-4. Switch to HOLDING (press `[t]`). Press `[r]`.
-5. Compare: holding registers are initially fixed (set by `default_scenario`).
-6. Write `42` to holding register 0 (set Write addr = 0, Write value = 42, press `[w]`).
-7. Read holding register 0 again — it should now be 42.
-8. **Question:** Why don't input register values change when you write to them?
+1. Откройте вкладку Registers (нажмите `e`, затем `Tab` дважды).
+2. Установите тип INPUT, Start addr = 0, Count = 5. Нажмите `[r]`.
+3. Обратите внимание на значения (они меняются каждые 500 мс — синусоида).
+4. Переключите на HOLDING (нажмите `[t]`). Нажмите `[r]`.
+5. Сравните: holding-регистры изначально фиксированы (заданы в
+   `default_scenario`).
+6. Запишите `42` в holding-регистр 0 (Write addr = 0, Write value = 42, `[w]`).
+7. Снова прочитайте holding-регистр 0 — теперь там 42.
+8. **Вопрос:** почему значения input-регистров не меняются, когда вы в них
+   пишете?
 
-**Answer:** Input registers are read-only in Modbus. The emulator enforces this: `write_input_reg()` returns `Err(0x02)`.
+**Ответ:** input-регистры в Modbus только для чтения. Эмулятор это
+контролирует: `write_input_reg()` возвращает `Err(0x02)` (ILLEGAL DATA
+ADDRESS). Так устроено намеренно: показания датчика нельзя «подкрутить»
+командой по шине — это вопрос безопасности технологического процесса.
 
-### Exercise 2: Coils and the Dashboard
+### Упражнение 2: катушки и приборная панель
 
-**Goal:** See how coil writes affect the live view.
+**Цель:** увидеть, как запись катушек влияет на живой вид.
 
-1. On the Dashboard, press `Space` to toggle pump 0 of Slave 1.
-2. Look at the log — it should say "Coil 0=true (slave 1)".
-3. Press `Space` again — "Coil 0=false".
-4. Now open the Registers tab, set type to COIL, Start addr = 0, Count = 8.
-5. Press `[r]` — you'll see the coil states as `true`/`false`.
-6. **Question:** What happens if you press `[w]` with a coil and value = 5?
+1. На Dashboard нажмите `Space` — переключится катушка 0 насоса Slave 1.
+2. Посмотрите в лог — там "Coil 0=true (slave 1)".
+3. Снова `Space` — "Coil 0=false".
+4. Теперь откройте вкладку Registers, тип COIL, Start addr = 0, Count = 8.
+5. Нажмите `[r]` — увидите состояния катушек как `true`/`false`.
+6. **Вопрос:** что произойдёт, если нажать `[w]` с типом COIL и значением 5?
 
-**Answer:** In the emulator, `write_coil(slave, addr, value != false)` — any non-zero value turns it ON.
+**Ответ:** в эмуляторе `write_coil(slave, addr, value != false)` — любое
+ненулевое значение включает катушку. На реальной шине повторите тот же фокус
+с `0xFF00` (ON) и `0x0000` (OFF) — протокол строго требует именно этих
+значений для записи катушки.
 
-### Exercise 3: CRC-16 Verification
+### Упражнение 3: проверка CRC-16
 
-**Goal:** Understand how CRC protects Modbus frames.
+**Цель:** понять, как CRC защищает кадры Modbus.
 
-1. Run `cargo test -- crc`.
-2. Look at the test for `[0x01, 0x03, 0x00, 0x00, 0x00, 0x0A]`.
-3. The CRC is `0x0A84` (little-endian: `0x84, 0x0A`).
-4. Try adding a byte to the input (e.g., `0x01` at the end) and predict the new CRC.
-5. Run the test — did your prediction match?
-6. **Study:** The CRC polynomial is `0xA001` (bit-reversed `0x8005`). Each bit is XOR'd with the LSB of the accumulator.
+1. Запустите `cargo test -- crc`.
+2. Посмотрите тест для `[0x01, 0x03, 0x00, 0x00, 0x00, 0x01]` (чтение одного
+   holding-регистра).
+3. CRC равен `0x0A84` (little-endian: `84 0A`). Сверьтесь с разделом 5:
+   для `01 03 00 00 00 0A` (10 регистров) CRC уже другой — `C5 CD`;
+   для `01 04 00 00 00 3C` (60 input-регистров) — `F0 1B`.
+4. Добавьте байт во вход (например, `0x01` в конец) и предскажите новый CRC.
+5. Запустите тест — совпало ли предсказание?
+6. **Изучение:** полином CRC — `0xA001` (отражённый `0x8005`). Каждый бит
+   связывается XOR с младшим битом аккумулятора. Смысл упражнения — понять,
+   что CRC зависит от *каждого* байта кадра: изменение одного бита меняет
+   результат, и мастер, посчитав CRC по-своему и не сойдясь с принятым,
+   отбросит кадр.
 
-### Exercise 4: Adding Virtual Sensors
+### Упражнение 4: добавление виртуальных датчиков
 
-**Goal:** See how the emulator generates data.
+**Цель:** увидеть, как эмулятор генерирует данные.
 
-1. Open the Sensors tab (`Tab` to Sensors).
-2. Add a new sensor: Name = "My Sine", Type = Test, Base = 50, Amplitude = 20, Period = 5.
-3. Press `[a]` — it appears in the sensor list immediately.
-4. Switch to the Dashboard — the new sensor appears on Slave 1 (device 0) with fluctuating values.
-5. Change Device idx to 1 (Test Device) and add another sensor.
-6. **Question:** What register address did the emulator assign? (Hint: watch the Dashboard — channel addresses are shown there.)
+1. Откройте вкладку Sensors (`Tab` до Sensors).
+2. Добавьте датчик: Name = "My Sine", Type = Test, Base = 50, Amplitude = 20,
+   Period = 5.
+3. Нажмите `[a]` — датчик сразу появляется в списке.
+4. Переключитесь на Dashboard — новый датчик появился на Slave 1 (device 0)
+   и колеблется.
+5. Поменяйте Device idx на 1 (Test Device) и добавьте ещё один датчик.
+6. **Вопрос:** какой адрес регистра эмулятор назначил? (Подсказка: следите
+   за Dashboard — там показаны адреса каналов.)
 
-### Exercise 7: Managing Devices and Sensors
+Ответ: каждый датчик занял первую свободную чётную пару регистров
+(например, 10–11, если до этого свободные были после девятого). Один датчик
+= 2 регистра под float32, адрес = номер канала × 2.
 
-**Goal:** Learn manage mode — navigation over all rows, deleting both.
+### Упражнение 5: редактор регистров — запись и чтение обратно
 
-1. Open the Sensors tab.
-2. Add 2–3 sensors (e.g. `[a]` a few times with different Device idx).
-3. Press `[m]` — the list becomes active (title changes to "Manage: …").
-4. Move with `↑/↓`: the highlight walks **all** rows — device headers `◆`
-   and sensors `●` — and wraps over the edge. Confirm you can reach the
-   `◆ Slave 4 — Weather Station` header from the top.
-5. Position the cursor on one of the new sensors and press `[d]` — the sensor
-   is deleted and the cursor jumps to a valid neighbor.
-6. Now move the cursor onto the `◆ Slave …` header of a device you added and
-   press `[d]` — the **whole slave** disappears (with its sensors).
-7. Press `[esc]` to leave manage mode. Press `[n]` to create a new slave and
-   `[a]` to add a sensor into it (set Device idx to the new index).
-8. Switch to the Dashboard — deleted devices/sensors are gone from the poll snapshot.
+**Цель:** проверить, что запись-затем-чтение даёт согласованный результат.
 
-**Question:** Why can't you delete the last remaining device?
+1. Откройте вкладку Registers.
+2. Установите тип = HOLDING, Slave ID = 1, Start addr = 0, Count = 10.
+3. Прочитайте: `[r]` → запомните значения.
+4. Установите Write addr = 0, Write value = 999.
+5. Запишите: `[w]`.
+6. Прочитайте снова: `[r]`.
+7. Первое значение должно быть 999, остальные без изменений.
+8. **Дополнительно:** запишите разные значения в адреса 0, 1, 2 и прочитайте
+   все три. Все ли они сохраняются? (Да — holding-регистры независимы и
+   остаются, пока их не перезапишут.)
 
-### Exercise 8: Understanding Why Write "Does Nothing"
+### Упражнение 6: редактирование полей форм
 
-**Goal:** Learn to read the status feedback.
+**Цель:** отработать сценарий редактирования полей.
 
-1. Do NOT press `[e]` and do not connect any port.
-2. Go to the Registers tab — the panel shows the red hint
+1. Перейдите на вкладку Registers.
+2. `[↓]` — сфокусировать Slave ID (жёлтая подсветка).
+3. `[Enter]` → голубой фон с курсором `■`.
+4. Введите `5` → поле покажет `15` (дописалось к умолчанию `1`).
+5. `[Backspace]` → `5` (удалён последний символ).
+6. `[Esc]` → отмена, поле вернулось к `1`.
+7. Снова `[Enter]`, введите `3`, `[Enter]` → теперь поле = `3`.
+8. Прочитайте `[r]` — заметьте: slave 3 в эмуляторе не существует → в логе
+   ошибка.
+9. **Урок:** поля форм — это строки; разбор в число происходит в момент
+   использования. Корректен ли ввод (запятую в адрес, буквы в значение) —
+   покажет только результат.
+
+### Упражнение 7: управление устройствами и датчиками
+
+**Цель:** изучить режим manage — перемещение по всем строкам, удаление всех.
+
+1. Откройте вкладку Sensors.
+2. Добавьте 2–3 датчика (несколько раз `[a]` с разным Device idx).
+3. Нажмите `[m]` — список станет активным (заголовок "Manage: …").
+4. Двигайтесь `↑/↓`: подсветка ходит по **всем** строкам — заголовкам
+   устройств `◆` и датчикам `●` — с заворотом через край. Убедитесь, что
+   с верхней позиции можно добраться до `◆ Slave 4 — Weather Station`.
+5. Наведите курсор на один из новых датчиков и нажмите `[d]` — датчик удалён,
+   курсор перепрыгнул на валидного соседа.
+6. Теперь переведите курсор на заголовок `◆ Slave …` добавленного вами
+   устройства и нажмите `[d]` — **весь слайв** исчезнет вместе с датчиками.
+7. `[esc]` — выйти из manage. `[n]` — создать новый слайв, `[a]` — добавить в
+   него датчик (поставить Device idx на новый индекс).
+8. Переключитесь на Dashboard — удалённые устройства/датчики исчезли из
+   snapshot опроса.
+
+**Вопрос:** почему нельзя удалить последнее оставшееся устройство?
+
+**Ответ:** эмулятор обязан что-то обслуживать по шине. С нулём устройств
+не работали бы ни опрос, ни чтение/запись, ни TCP-сервер — теряется весь
+смысл стенда. Это защита от «сломанного» состояния.
+
+### Упражнение 8: почему запись «ничего не делает»
+
+**Цель:** научиться читать обратную связь состояния.
+
+1. НЕ нажимайте `[e]` и не подключайте порт.
+2. Перейдите на вкладку Registers — на панели красная подсказка
    `! no target: press [e] for emulator, or connect in Ports`.
-3. Press `[w]` — "Current result" now shows the same hint (it was previously
-   only in the Log tab, which is why it seemed like the button was broken).
-4. Press `[e]` to enable the emulator. The red hint disappears.
-5. Press `[w]` again — "Current result" shows `Wrote 42 -> 0 holding reg`.
-6. Read back with `[r]` — the value persists.
+3. Нажмите `[w]` — "Current result" теперь покажет ту же подсказку (раньше
+   она была только на вкладке Log, поэтому казалось, что кнопка сломана).
+4. Нажмите `[e]` — включится эмулятор. Красная подсказка исчезнет.
+5. Снова `[w]` — "Current result" покажет `Wrote 42 -> 0 holding reg`.
+6. Прочитайте обратно `[r]` — значение сохранилось.
 
-**Lesson:** the Registers editor targets whichever source is active
-(emulator on → emulator; serial connected → ESP32). Without a source it
-reports it plainly in the panel instead of silently dying.
+**Урок:** редактор регистров обращается к тому источнику, который активен
+(эмулятор включён → эмулятор; подключён порт → ESP32). Без источника он
+честно сообщает об этом на панели, а не молча «умирает».
 
-### Exercise 5: Register Editor — Writing and Reading Back
+### Упражнение 9: та же карта регистров по Ethernet (Modbus TCP)
 
-**Goal:** Verify that write-then-read gives consistent results.
+**Цель:** увидеть, что Modbus TCP несёт те же PDU, что и RTU, просто обёрнутые
+в заголовок MBAP. Именно такой вызов будущий мастер на Zynq будет делать
+по Ethernet.
 
-1. Open the Registers tab.
-2. Set type = HOLDING, Slave ID = 1, Start addr = 0, Count = 10.
-3. Read: `[r]` → note the values.
-4. Set Write addr = 0, Write value = 999.
-5. Write: `[w]`.
-6. Read again: `[r]`.
-7. The first value should be 999, the rest unchanged.
-8. **Challenge:** Write different values to addresses 0, 1, 2, then read all three. Do they all persist?
-
-### Exercise 6: Editing Form Fields
-
-**Goal:** Practice the field editing workflow.
-
-1. Go to the Registers tab.
-2. Press `[↓]` to focus Slave ID (yellow highlight).
-3. Press `[Enter]` → cyan background with `■` cursor.
-4. Type `5` → field shows `15` (appended to default `1`).
-5. Press `[Backspace]` → `5` (deletes last char).
-6. Press `[Esc]` → edit cancelled, field reverts to `1`.
-7. Press `[Enter]` again, type `3`, press `[Enter]` → field is now `3`.
-8. Read with `[r]` — notice slave 3 doesn't exist in emulator → error in log.
-9. **Lesson:** Form fields are strings; parsing happens at the moment of use.
+1. Запустите TUI, нажмите `[e]`, затем `1`, чтобы запустить эмулятор.
+2. Перейдите на вкладку **Ports** и нажмите `[t]` — в строке состояния
+   появится `| TCP:127.0.0.1:1502`.
+3. Во втором терминале:
+   `python3 scripts/modbus_tcp_client.py 127.0.0.1 1502`.
+4. Следите за вкладкой **Bus** — TCP-запросы появляются с `TCP (MBAP, no CRC)`.
+5. Сравните с RTU-кадрами собственных опросов эмулятора: те же коды функций,
+   те же адреса регистров, но RTU заканчивается 2 байтами CRC, а TCP
+   начинается с 7-байтного заголовка MBAP (`tid proto len unit`).
+6. **Дополнительно:** соберите запрос руками через `nc`/`socat`/`socket` —
+   отправьте `00 01 00 00 00 06 01 04 00 00 00 0C` (чтение 12 input-регистров)
+   и разберите ответ байт за байтом так же, как разбирали RTU-кадры на Bus.
 
 ---
 
-## 11. Debugging Tips
+## 11. Советы по отладке
 
-### TUI doesn't render correctly
+### TUI рендерится неправильно
 
-- Ensure your terminal supports Unicode and at least 80×24 characters.
-- `script` + `stty cols ROWS` can simulate specific sizes.
-- Box-drawing characters require UTF-8 locale.
+- Убедитесь, что терминал поддерживает Unicode и минимум 80×24 символа.
+- `script` + `stty cols ROWS` могут имитировать конкретные размеры.
+- Символы псевдографики требуют UTF-8 локали.
 
-### "Port not found" or no ports listed
+### «Порт не найден» или портов нет
 
-- Check `/dev/serial/by-id/` exists: `ls -la /dev/serial/by-id/`.
-- If no ports listed, there may be no ESP32 connected, or udev rules block access.
-- The scanner runs every 2 seconds. Press `[R]` to force rescan.
+- Проверьте, что существует `/dev/serial/by-id/`: `ls -la /dev/serial/by-id/`.
+- Если портов нет — ESP32 не подключён либо правила udev запрещают доступ.
+- Сканер запускается каждые 2 секунды. `[R]` — принудительный повторный скан.
 
-### Emulator shows 0 devices after pressing [e]
+### После `[e]` эмулятор показывает 0 устройств
 
-- This shouldn't happen. If it does, the emulator was likely not initialized. Check stderr output.
+- Такого быть не должно. Если случилось — эмулятор скорее всего не
+  инициализировался. Посмотрите вывод stderr.
 
-### Read returns empty array or error code
+### Чтение возвращает пустой массив или код ошибки
 
-- **Error 0x01 (ILLEGAL FUNCTION):** Wrong register type for the function code.
-- **Error 0x02 (ILLEGAL DATA ADDRESS):** Register address out of range for that device.
-- **Error 0x03 (ILLEGAL DATA VALUE):** Value out of range.
-- In the emulator, these are logged: "Read failed (0xNN)".
+- **Ошибка 0x01 (ILLEGAL FUNCTION):** не тот тип регистров для кода функции.
+- **Ошибка 0x02 (ILLEGAL DATA ADDRESS):** адрес регистра вне карты устройства.
+- **Ошибка 0x03 (ILLEGAL DATA VALUE):** значение вне диапазона.
+- В эмуляторе это логируется: "Read failed (0xNN)".
 
-### Build fails with "cannot find value `AppTab`"
+Расшифровку всех кодов и рекомендации см. в разделе 5 (таблица исключений).
 
-- This was a known bug (Tab name collision with crossterm's `Tab`). It's fixed in the current code via alias: `use app::Tab as AppTab`.
+### Сборка падает с «cannot find value `AppTab`»
 
-### Console output corrupts the terminal
+- Это была известная ошибка (конфликт имени `Tab` с `crossterm::Tab`). В
+  текущем коде исправлено алиасом: `use app::Tab as AppTab`.
 
-- If the TUI crashes, run `reset` to restore terminal state.
-- The `Drop` impl for `App` should clean up `disable_raw_mode()` and `LeaveAlternateScreen`, but force-killing (SIGKILL) skips destructors.
+### Вывод в консоль портит терминал
+
+- Если TUI упал, выполните `reset`, чтобы вернуть терминал.
+- `Drop` для `App` должен выполнить `disable_raw_mode()` и
+  `LeaveAlternateScreen`, но убийство через SIGKILL деструкторы пропускает.
+
+### Почему на Bus красные строки, если провода на месте
+
+- Красный цвет в Bus означает одно из трёх: **таймаут** (ответа нет), **битый
+  CRC** (кадр искажён на линии) или **Modbus-исключение**. Исключение — это
+  не ошибка передачи: кадр дошёл корректно, устройство отказало по смыслу
+  запроса (см. раздел 5).
+- Акроним в сводке `CRC ok` отвечает только за проверку контрольной суммы
+  ответа, а не за «успех операции». Операция может быть успешной и без него
+  не связана: CRC может быть ок, но прийти исключение 0x02.
 
 ---
 
-## 12. Pitfalls and Common Mistakes
+## 12. Грабли и частые ошибки
 
-### 1. Space key is not `KeyCode::Space`
+### 1. Space — это не `KeyCode::Space`
 
-In crossterm, `KeyCode::Space` doesn't exist. The space bar generates `KeyCode::Char(' ')`. This is the most common mistake when handling keyboard input.
+В crossterm нет `KeyCode::Space`. Пробел генерирует `KeyCode::Char(' ')`.
+Это самая частая ошибка при обработке клавиатуры.
 
 ```rust
-// WRONG:
+// ПЛОХО:
 KeyCode::Space => { ... }
 
-// CORRECT:
+// ХОРОШО:
 KeyCode::Char(' ') => { ... }
 ```
 
-### 2. Borrow checker fights with emulator lock
+### 2. Борьба с borrow checker при замке эмулятора
 
-The emulator is behind `Arc<Mutex<Emulator>>`. You **cannot** hold the lock while calling `self.log()` because `self.log()` borrows `self` mutably:
+Эмулятор обёрнут в `Arc<Mutex<Emulator>>`. Нельзя удерживать замок, вызывая
+`self.log()`, потому что `self.log()` берёт `self` мутабельно:
 
 ```rust
-// WRONG — E0502:
+// ПЛОХО — E0502:
 let emu = self.emu.lock().unwrap();
 let result = emu.read_holding_regs(0, 0, 5);
-self.log(1, format!("..."));  // ← self is already borrowed
+self.log(1, format!("..."));  // ← self уже занят
 
-// CORRECT — scope the lock:
+// ХОРОШО — ограничить область замка:
 let result = {
     let mut emu = self.emu.lock().unwrap();
     emu.read_holding_regs(0, 0, 5)
 };
-self.log(1, format!("..."));  // ← lock is dropped, self is free
+self.log(1, format!("..."));  // ← замок снят, self свободен
 ```
 
-### 3. `use Tab as AppTab` alias
+### 3. Алиас `use Tab as AppTab`
 
-`crossterm::event::KeyCode::Tab` shadows `app::Tab`. Use an alias:
+`crossterm::event::KeyCode::Tab` затеняет `app::Tab`. Используйте алиас:
 
 ```rust
 use app::Tab as AppTab;
-// Now KeyCode::Tab (key) and AppTab::Registers (enum) coexist
+// Теперь KeyCode::Tab (клавиша) и AppTab::Registers (enum) сосуществуют
 ```
 
-### 4. Emulator `last_tick = 0.0`
+### 4. `last_tick = 0.0` в эмуляторе
 
-Setting `last_tick = now_secs()` in the constructor means the first `tick()` computes a large elapsed time, clamping sine to `base`. Setting it to `0.0` makes the first tick also compute a large value but from a known anchor, so subsequent ticks are smooth. Both work; `0.0` is simpler.
+Если в конструкторе поставить `last_tick = now_secs()`, первый `tick()`
+посчитает большое elapsed и упрётся синусом в `base`. `0.0` даёт тот же
+эффект, но с известной точкой отсчёта — последующие тики плавные. Работают
+оба варианта; `0.0` проще.
 
-### 5. Register vs. sensor address confusion
+### 5. Путаница «адрес регистра» и «номер датчика»
 
-The "Start addr" in the Register Editor is the **Modbus address**, not the sensor index. The emulator maps addresses directly to `input_regs[addr]`. If you add a sensor and it gets assigned address 6, then `Start addr = 6` will read that sensor's value.
+"Start addr" в редакторе регистров — это **адрес Modbus**, а не индекс
+датчика. Эмулятор отображает адреса напрямую в `input_regs[addr]`. Если
+датчику достался адрес 6, то `Start addr = 6` прочитает его значение.
+
+### 6. Запись в input-регистр «молча» не работает
+
+В Modbus запись в input-регистр запрещена. Запрос с FC06 на input-адрес
+вернёт исключение 0x02, а не тихий успех. Если пишете и «не пишется» —
+проверьте тип регистра (см. упражнение 1).
+
+### 7. Путаница между FC03 и FC04
+
+FC03 = holding, FC04 = input. Если датчик публикует показания в input, а вы
+читаете их как holding (или наоборот), получите нули/ой, мусор — либо
+исключение, если устройство строгое. Сверяйтесь с картой регистров
+конкретного устройства.
+
+### 8. RTU-клиент против TCP-сервера
+
+TCP-сервер TUI (`[t]`) понимает только MBAP. Если послать в него RTU-кадр с
+CRC, он прочитает первые 7 байт как заголовок `tid proto len`, увидит
+бессмысленное `len` и молча оборвёт соединение или вернёт бред. Это не баг —
+это разные виды транспорта (раздел 16).
 
 ---
 
-## 13. Glossary
+## 13. Глоссарий
 
-| Term | Definition |
-|------|-----------|
-| **Slave** | A Modbus device (addressed 1–247) |
-| **Master** | The device that initiates requests (this software) |
-| **Register** | A 16-bit (0–65535) value stored in a device |
-| **Coil** | A single-bit (0/1) value stored in a device |
-| **Holding register** | Read/write register (function codes 0x03/0x06) |
-| **Input register** | Read-only register (function code 0x03) |
-| **PDU** | Protocol Data Unit — the raw Modbus frame |
-| **CRC** | Cyclic Redundancy Check — error-detection checksum |
-| **CRC-16 Modbus** | CRC algorithm with polynomial 0xA001, init 0xFFFF |
-| **Polling** | Periodically reading registers (every 500ms in this tool) |
-| **Hotplug** | Automatic detection of USB devices appearing/disappearing |
-| **Raw mode** | Terminal mode where each keystroke is delivered individually |
-| **Alternate screen** | A secondary terminal buffer (like `less`/`vim` use) |
-| **Virtual sensor** | A sine-wave generator in the emulator, assigned to register addresses |
-| **Pump station** | A real-world device type; in the emulator, it's a slave with coils controlling pump motors |
+| Термин | Определение |
+|--------|-------------|
+| **Slave** (ведомый) | Устройство Modbus (адрес 1–247), отвечающее на запросы |
+| **Master** (мастер) | Устройство, инициирующее запросы (в TUI — этот софт) |
+| **Register** | 16-битное значение (0–65535) внутри устройства |
+| **Coil** | Битовое значение (0/1) внутри устройства |
+| **Holding register** | Регистр чтения/записи (FC03/FC06, классическая область 4x) |
+| **Input register** | Регистр только для чтения (FC04, классическая область 3x) |
+| **Discrete input** | Битовый вход, только чтение (FC02, область 1x) |
+| **PDU** | Protocol Data Unit — «полезная нагрузка» Modbus (код функции + данные) |
+| **ADU** | Application Data Unit — PDU + адрес устройства + CRC (RTU) или MBAP (TCP) |
+| **MBAP** | Modbus Application Protocol (TCP): заголовок `tid + proto + len + unit` вместо адреса и CRC |
+| **CRC** | Cyclic Redundancy Check — контрольная сумма обнаружения ошибок |
+| **CRC-16 Modbus** | Алгоритм CRC с полиномом 0xA001 (отражённый 0x8005), init 0xFFFF |
+| **Big-endian** | Порядок «старший байт первым» — так кодируются адреса/счётчики в Modbus |
+| **Float32 / IEEE-754** | 32-битное число с плавающей точкой; в Modbus занимает 2 регистра (старшее слово первым) |
+| **T1.5 / T3.5** | Интервалы тишины для разделения кадров (см. раздел 14) |
+| **Baud (бод)** | Скорость сигнальных изменений в секунду; для 8N1 ≈ бит/с на байт см. раздел 14 |
+| **RS-485** | Полудуплексная дифференциальная шина A/B, многоточечная (до 32 устройств) |
+| **DE / RE** | Выводы MAX485: enable передатчика / приёмника; на мастере переключаются вокруг отправки |
+| **Termination** | 120 Ом между A и B на обоих концах линии — согласование волнового сопротивления |
+| **Bias resistors** | Подтяжка A к + и B к − (~390–680 Ом), чтобы свободная шина читалась как «1» |
+| **Polling** | Периодическое чтение регистров (в этом стенде каждые 500 мс) |
+| **Hotplug** | Автоматическое обнаружение появляющихся/исчезающих USB-устройств |
+| **Raw mode** | Режим терминала, где каждая клавиша доставляется отдельно |
+| **Alternate screen** | Вторичный буфер терминала (как в `less`/`vim`) |
+| **Virtual sensor** | Генератор синусоиды в эмуляторе, привязанный к адресам регистров |
+| **Pump station** | Тип реального устройства; в эмуляторе это слайв с катушками насосов |
+| **Frame (кадр)** | Законченный пакет байт на шине: RTU `[addr][fc][pdu][crc]` или TCP `[mbap][pdu]` |
+| **Request / Response (запрос/ответ)** | Кто спрашивает (мастер) и кто отвечает (слайв) |
+| **Exception (исключение)** | Ответ `[fc\|0x80][code]` — отчёт об ошибке вместо данных |
+| **Transaction (транзакция)** | Полный обмен «запрос → ответ/ошибка», логируемый во вкладке Bus |
+| **Snapshot (снапшот/срез)** | Снимок состояния устройств на один момент опроса |
+| **Echo (эхо)** | Ответ write-функции, повторяющий запрос = подтверждение записи |
+| **Trace (трейс)** | Журнал транзакций вкладки Bus (кольцо из `TraceEntry`) |
+| **Setpoint (уставка)** | Целевое значение регулирования, хранится в holding-регистре |
+| **Poller (поллер)** | Фоновый поток worker.rs, опрашивающий активный источник |
+| **Scanner (сканер)** | Фоновый поток worker.rs, следящий за появлением/исчезновением портов |
+| **Tab (вкладка)** | Раздел интерфейса (Dashboard, Ports, Registers, …) |
+| **Tick (тик)** | Квант времени в главном цикле; продвигает анимацию и дренаж событий |
+| **TUI** | Terminal User Interface — интерфейс в терминале (этот стенд) |
+| **CLI** | Command Line Interface — командная строка (`espflash`, скрипты) |
+
+---
+
+## 14. Вкладка Bus (читаем провод в реальном времени)
+
+Вкладка **Bus** — учебный инструмент: она отлавливает каждый запрос мастера
+(request) и каждый ответ устройства (response), байт в байт, как они идут по
+UART. Если подключено железо — здесь не симуляция, это буквальные байты
+провода.
+
+### Анатомия кадра Modbus RTU
+
+Каждый кадр, запрос или ответ:
+
+```
+ [ slave_id ] [ function_code ] [ ...данные/payload... ] [ crc_lo ] [ crc_hi ]
+```
+
+Байты CRC — little-endian (младший первым). Всё между кодом функции и CRC —
+это **PDU** («полезная нагрузка»).
+
+### Реальный след этого стенда (slave 1, 9600 бод, 8N1)
+
+Цикл опроса шлёт три запроса подряд. Вот точные байты (CRC-хвост посчитан
+кодом из `crc.rs` — попробуйте проверить):
+
+```
+ READ INPUT REGISTERS — 15 температур + 15 давлений парами float32:
+   → 01 04 00 00 00 3C F0 1B
+   ← 01 04 78 42 C8 A6 66 42 C9 99 9A ...   (slave, fc=0x04, 120 байт данных, CRC)
+         │  │  └─ 0x78 = 120 → 60 регистров
+         │  └─ 0x04 = READ INPUT REGISTERS
+         └─ 0x01 = адресованный slave = 1
+
+ READ COILS — два насоса:
+   → 01 01 00 00 00 02 BD CB
+   ← 01 01 01 01 90 48
+             │  └─ 1 байт данных: bit0 = катушка 0 (ON), остальное дополнено
+             └─ 0x01 = счётчик байт
+```
+
+Разбор запросов по полям:
+
+| Запрос | slave | fc | start (hi lo) | count (hi lo) | CRC |
+|--------|-------|-----|----------------|----------------|-----|
+| `01 04 00 00 00 3C F0 1B` | 01 | 04 | `00 00` | `00 3C` = 60 | `F0 1B` |
+| `01 01 00 00 00 02 BD CB` | 01 | 01 | `00 00` | `00 02` = 2 | `BD CB` |
+| `01 03 00 00 00 10 44 06` | 01 | 03 | `00 00` | `00 10` = 16 | `44 06` |
+
+Обратите внимание, как **big-endian** кодируются адреса/счётчики: `00 3C`
+означает `0x003C` = 60. И что `0x04` — это *функция* «Read Input Registers»,
+а `0x7A`/`120` в ответе — *счётчик байт*; две разные вещи в одном обмене.
+
+### Как выглядит запись (вкладка Registers, тип holding)
+
+```
+   WRITE SINGLE REGISTER:  slave 1, адрес 0, значение 42
+   → 01 06 00 00 00 2A 08 15
+   ← 01 06 00 00 00 2A 08 15     ← эхо-ответ = успех
+```
+
+### Как выглядит исключение (чтение несуществующего адреса)
+
+```
+   → 01 04 00 00 00 3C F0 1B     (запрос)
+   ← 01 84 02 C2 C1              ← fc | 0x80 = 0x84 => ИСКЛЮЧЕНИЕ
+         │  └─ 0x02 = ILLEGAL DATA ADDRESS
+         └─ эхо кода функции мастера с выставленным битом исключения
+```
+
+Обратите внимание: CRC исключения считается по самому кадру исключения
+(`01 84 02` → `C2 C1`), а не заимствуется из запроса.
+
+Bus рисует такие строки красным и показывает имя исключения.
+
+### Что происходит по электрике, шаг за шагом
+
+```
+ master (TUI)                       slave (ESP32)
+     │  1. собрать байты кадра         │
+     │  2. написать 01 04 00 00 00 3C F0 1B│
+     ├──────────────────────────────────►│
+     │                                   │ 3. разобрать: addr=1? fc=0x04?
+     │                                   │ 4. выработать 60 регистров
+     │  5. прочитать обратно, 8 символов │ 5. записать 01 04 7A ... <crc>
+     │◄──────────────────────────────────┤
+     │  6. собрать, проверить CRC, разобрать
+```
+
+### Тайминги и почему колонка `ms` на Bus такая
+
+При 9600 бод один байт занимает **10 бит** (8N1 = 1 старт + 8 данных + 1
+стоп) → `10 / 9600 ≈ 1.04 мс`. Целиком float32-пара (4 байта данных) —
+это ~4 мс только на передачу данных. Полный ответ на чтение 60 input-регистров
+(125 байт) — около 130 мс на самой физической шине. В TUI вы увидите куда
+меньшие значения `ms`: эмулятор и встроенный мастер «летают» по памяти, без
+реального UART. Следите за колонкой `ms` на **подключённом ESP32**: там уже
+реальные задержки настоящего обмена.
+
+Правило, которое важно при разработке мастера: кадры разделяются молчанием
+**T3.5** (время передачи 3.5 символов), а внутри кадра между байтами — не
+более **T1.5**. На 9600 бод: `T3.5 ≈ 3.5 · 1.04 мс ≈ 3.6 мс`. Мастер знает,
+что кадр закончился, когда на линии тишина дольше T3.5 (либо просто по
+таймауту чтения — так сделано в `master.rs`: 200 мс на первый байт).
+
+### Упражнение: читаем Bus, как будущий мастер
+
+1. Нажмите `e` (эмулятор), затем откройте Bus. Посмотрите на повторяющийся
+   из опроса паттерн из 3 запросов.
+2. Возьмите строку READ INPUT. Посчитайте байты: запрос `01 04 00 00 00 3C F0
+   1B` → 8 байт; ответ `01 04 7A ...` → 1+1+1+120+2 = 125 байт.
+3. Возьмите её запрос и проверьте CRC через `cargo test -- crc` (добавьте
+   байты, предскажите `F0 1B`).
+4. Поменяйте первый байт на `02` — добавьте в эмуляторе второго слайва
+   (`[n]` на Sensors → новое устройство) и проследите, что ответ придёт от
+   slave 2.
+5. Нажмите `[r]` на вкладке Registers: новый кадр — и строка Bus станет
+   красной только если слайв ответит исключением.
+
+---
+
+## 15. От стенда к реальной системе (Zynq-мастер, MAX485, настоящие датчики)
+
+### Почему стенд — точная репетиция
+
+На этом стенде **SerialMaster ПК играет ровно ту роль, что будет играть Zynq**
+в реальном изделии. Каждый кадр, что вы читаете на вкладке Bus, побайтово
+совпадает с тем, что будет передавать и принимать UART вашего Zynq. Если вы
+умеете читать кадры здесь — вы уже понимаете проводной протокол финальной
+системы.
+
+| Аспект | Этот стенд (сейчас) | Реальная система (потом) |
+|--------|---------------------|--------------------------|
+| Мастер | TUI `SerialMaster` на ПК | **Zynq** (PS UART / PL soft-UART) |
+| Слайв | ESP32-S3 (USB→UART0) | тот же ESP32-S3 или датчики по RS-485 |
+| Линия | точка-точка, TTL через USB-COM, 9600 8N1 | дифференциальная RS-485 через **MAX485/MAX3485**, те же 9600 8N1 |
+| Кадры | ровно Modbus RTU со вкладки Bus | идентичные — протокол не меняется |
+
+### Что Zynq будет повторять в каждом опросе (скопируйте эту логику)
+
+Софт Zynq делает ровно то, что `worker.rs poll_serial`:
+
+1. Открыть UART: 9600, 8 бит данных, без чётности, 1 стоп **или** использовать
+   опрос и держать конфигурацию постоянной для всей сети.
+2. `READ INPUT REGISTERS (0x04)` addr 0, count 60 → температуры/давления.
+3. `READ COILS (0x01)` addr 0, count 2 → состояния насосов.
+4. `READ HOLDING REGISTERS (0x03)` addr 0, count 16 → конфигурация.
+5. Ждать `response timeout` (здесь 200 мс на первый байт плюс пауза
+   межкадрового молчания), собрать, **проверить CRC**, разобрать.
+6. Запланировать следующий опрос (здесь каждые 500 мс).
+
+Закодировано теми же формами, что `master.rs` → `frames.rs` → `crc.rs`:
+собрать `[slave][fc][start_hi][start_lo][count_hi][count_lo][crc]`, записать,
+прочитать, проверить, разобрать. На Zynq это ложится 1:1 на драйвер UART:
+те же байты в обе стороны. `frames.rs`/`crc.rs` можно перенести почти дословно.
+
+### Физический уровень: что меняется с MAX485
+
+Modbus RTU работает поверх **RS-485**: полудуплексная дифференциальная пара
+**A/B**, по которой может передавать любой узел, но одновременно — только один.
+
+То, что сейчас неявно, а на RS-485 — явно:
+
+- **Управление направлением.** У MAX485 есть `DE` (enable передатчика) и `RE`
+  (enable приёмника), часто соединённые вместе. Перед отправкой запроса мастер
+  обязан поднять DE; после последнего байта — опустить, чтобы услышать ответ.
+  На Zynq это один GPIO, переключаемый вокруг каждого `write()`.
+  Тонкость: поднимать DE нужно **до** первого байта (несколько микросекунд
+  раньше, дать драйверу «войти в режим»), а опускать — **после** передачи
+  последнего стоп-бита и выдержки T3.5, иначе оборвёте собственный кадр или
+  не услышите ответ.
+- **Терминация.** 120 Ом между A и B на **обоих** концах кабеля. Это
+  согласование с волновым сопротивлением витой пары (~120 Ом); без него —
+  отражения и искажённые фронты на длинных линиях.
+- **Bias-резисторы.** Подтяжки ~390–680 Ом: А → к питанию, B → к земле, чтобы
+  свободная (неподжатая) шина читалась как определённая «1». Без них мастера
+  в паузах ловят мусор — «кадры, которых не было» (симптом на Bus: красные
+  строки с битым CRC, хотя по проводу в этот момент никто ничего не слал).
+- **Адресация нескольких устройств.** Много устройств делят одну пару
+  проводов; первый байт кадра (`slave_id`) выбирает того, кто ответит.
+  Прошивка ESP32 отвечает только на кадры с её ID (по умолчанию 1,
+  `SLAVE_ID` в `esp32-fw/src/main.rs`).
+
+Всё остальное — формат кадра, CRC, коды функций, адресация регистров —
+**не меняется** при переходе с USB-TTL стенда на RS-485.
+
+### Настоящие датчики против стенда
+
+- `T-00…T-14 / P-00…P-14` стенда — это float32-значения, лежащие в *input-
+  регистрах* ровно так, как реальный прибор хранит показания. Возьмите
+  настоящий датчик и прочитайте его даташит: там будет карта регистров, и вы
+  настраиваете `start`/`count` в TUI (вкладка Registers) под эти значения.
+  Обратите внимание: датчики часто хранят значения как целые с масштабом
+  (например, 10-кратным) или как 32-битные целые — сверьтесь с даташитом,
+  иначе «температура 255 неожиданно» окажется просто неверной интерпретацией.
+- В holding-регистрах реальное устройство хранит уставки/настройки
+  (setpoints — целевые значения; чтение/запись). В катушках живут ваши
+  управляющие выходы (насос, клапан, нагреватель).
+- Когда реальный датчик висит на RS-485 со своим ID (например, 9), кадр
+  начинается с `09` вместо `01`, а мастер опрашивает каждый датчик по кругу
+  (round-robin) — один запрос, один ответ, следующий датчик. Это тот же цикл
+  из 3 транзакций, что на вкладке Bus, просто размазанный по нескольким
+  slave_id и перед каждым датчиком опрос вставлен в общий цикл.
+
+### Чек-лист при разводке реальной сети
+
+1. Бод, чётность, стоп-биты одинаковы на каждом узле (например, 9600-8-N-1).
+2. У каждого устройства уникальный `slave_id`; мастер опрашивает их по одному.
+3. CRC проверяется на каждом звене (любой перебитый бит → кадр отбрасывается).
+4. GPIO направления (DE/RE) переключается вокруг отправки на мастере Zynq.
+5. Терминация на обоих концах; bias-резисторы присутствуют; экран заземлён
+   один раз (в одной точке).
+6. Таймауты подобраны под самое медленное устройство (~200 мс здесь);
+   повторы с задержкой.
+
+---
+
+## 16. Modbus TCP (та же карта регистров по Ethernet)
+
+### Зачем вообще TCP
+
+RS-485 — это то, как Zynq общается с полевыми датчиками (field devices; одна
+пара проводов, много устройств). Ethernet — то, как до самого Zynq добираются
+инженеры/SCADA. Прикладной уровень Modbus (application layer) **одинаков в
+обоих случаях** — отличается только транспортная обёртка (framing —
+обрамление кадров). Сервер `[t]` TUI это доказывает: он обслуживает карту
+регистров эмулятора по TCP с **теми же байтами PDU**, что на вкладке Bus.
+
+### Заголовок MBAP (единственная реальная разница с RTU)
+
+| Поле | Байты | Смысл |
+|------|-------|-------|
+| Transaction ID | 2 | Выбирает клиент; сервер копирует его в ответ. Позволяет сопоставлять ответы запросам при быстрых пересылках (несколько запросов «в полёте») |
+| Protocol ID | 2 | Всегда `0x0000` (Modbus). Другие значения отвергаются |
+| Length | 2 | Число следующих за ним байт: **unit id + PDU** (макс `0xFF`) |
+| Unit ID | 1 | Тот же `slave_id`, что в RTU (адрес устройства в поле) |
+| PDU | … | Код функции + данные — побитово тот же, что у RTU |
+
+Итак, `READ INPUT 12 regs` выглядит так:
+
+- **RTU (на проводе):** `01 04 00 00 00 0C F0 0F`
+- **TCP (MBAP):** `00 01 00 00 00 06 01 04 00 00 00 0C`
+
+PDU `01 04 00 00 00 0C` идентичен; CRC заменён четырьмя полями заголовка,
+доставку «без ошибок» обеспечивает TCP. RTU разделяет кадры паузой в 3.5
+символа; TCP использует поле длины — пауза не нужна.
+
+Почему `len = 0x0006`, если видимых «6 байт»? Потому что длина считает
+**unit id + PDU** = `01` + `01 04 00 00 00 0C` = 1 + 5 = 6. Сам заголовок в
+length не входит. Это важно учесть при ручной сборке кадра.
+
+Стандартный порт Modbus TCP — **502** (требует прав root, поэтому TUI
+слушает **1502**). На реальном Zynq, слушающем порт 502, всё остальное
+не меняется.
+
+### Как это реализовано (`src/tcp_server.rs`)
+
+- Один поток-слушатель на `127.0.0.1:1502`, неблокирующий цикл accept.
+- Каждое принятое соединение — свой поток с таймаутом простоя 60 с.
+- Каждый запрос идёт через **тот же эмулятор**, который тикает в worker, —
+  поэтому живые данные совпадают с тем, что уже показывает Bus.
+- Поддерживаются функции: `0x01/0x02/0x03/0x04/0x05/0x06/0x0F/0x10`. Лимиты
+  по спецификации: мульти-запись катушек ≤ 1968, мульти-запись регистров ≤ 123.
+- Ошибки — настоящие Modbus-исключения: `0x01` illegal function, `0x02`
+  illegal data address/value, `0x04` server failure (например, «отравленный»
+  мьютекс эмулятора).
+- Каждый запрос публикуется в общую трассу и рисуется на Bus с пометкой
+  `TCP (MBAP, no CRC)`.
+
+Почему «нет CRC» так важно понимать: CRC в RTU защищал кадр от шумов провода.
+В TCP защиту гарантирует сетевой стек (Ethernet FCS + повторная передача TCP),
+поэтому второй CRC был бы избыточен — протокол его просто не предусматривает.
+
+### Клиентская сторона (`src/tcp_master.rs` + `scripts/modbus_tcp_client.py`)
+
+Две реализации клиента для самостоятельного изучения:
+
+- **`src/tcp_master.rs`** — собственный Modbus TCP **мастер** TUI (правая
+  панель вкладки Ports). Это замыкает цикл: TUI может быть одновременно и
+  slave (`[t]`), и мастером (`[y]`). Укажите HOST/PORT на любое Modbus TCP-
+  устройство — ваш AI-32 в сети или собственный TCP-сервер TUI
+  (`127.0.0.1:1502`) — и смотрите те же float/катушки/holding, что по
+  RTU-кабелю, только в обёртке MBAP. `transact()` собирает
+  `tid + 0000 + len + unit + pdu`, проверяет `tid/proto/unit` в ответе и
+  маппит исключения 0x01–0x0B. Интеграционный тест гоняет TCP-мастер против
+  TCP-сервера TUI, доказывая, что оба MBAP-пути (наружу и внутрь) сходятся.
+- **`scripts/modbus_tcp_client.py`** — чистая stdlib (`socket`+`struct`)
+  замена `pymodbus` — вы сами читаете каждый байт. Запустите, пока TUI на
+  эмуляторе:
+
+```bash
+cd test-bench
+python3 scripts/modbus_tcp_client.py 127.0.0.1 1502
+```
+
+Скрипт возвращает float из input-регистров, читает/пишет катушку и holding-
+регистр, затем провоцирует исключение на несуществующем адресе. Два чтения с
+интервалом 2 с показывают дрейф температуры: значения эмулятора — это
+синусоиды от реального времени, они продвигаются при каждом опросе (раз в
+500 мс), так что два отсчёта почти наверняка разойдутся.
+
+### Будущее использование на Zynq
+
+Ровно одно изменение против логики раздела 15 (RS-485): вместо
+`write(frame + crc)` + переключение DE + чтение до паузы молчания Zynq-
+сокет-клиент
+
+1. `.connect(ip:1502)`,
+2. собирает `tid + 0000 + len + unit + pdu`,
+3. `.send()` / `.recv()` (сверяет `tid + 0000`, читает `len` байт),
+4. разбирает PDU той же логикой `frames.rs`, что и для RTU.
+
+Карта регистров, float и исключения не меняются, поэтому логика, выученная
+на стенде, переносится 1:1.
+
+---
+
+## 17. Утилиты и работа с железом
+
+Небольшие автономные инструменты, которые не вписываются внутрь TUI:
+
+| Инструмент | Где | Язык | Что делает |
+|------------|-----|------|------------|
+| `rawmon.py` | `scripts/` | Python | «Сырой» монитор порта: выводит каждый байт, который шлёт ESP32, и свой вердикт по CRC |
+| `modbus_client.py` | `scripts/` | Python | Полноценный RTU-тест-клиент (FC01/03/04/05/06) поверх pyserial |
+| `modbus_tcp_client.py` | `scripts/` | Python | Те же тесты, но по TCP/MBAP — см. раздел 16 |
+| `simulator.py` | `scripts/` | Python | Последовательный симулятор регистров для отработки мастера без железа |
+| `zynq_simulator.py` | `scripts/` | Python | Имитирует будущий мастер Zynq, опрашивающий ESP32 |
+| `portscheck` | `tools/` | Rust | Одноразовый сырой probe: `cargo run --release -- [port]` читает 60 input-регистров и дамп-гекса ответ |
+
+`portscheck` — самый быстрый тест здоровья сразу после прошивки: он печатает
+сырые байты ответа и CRC, добавленный устройством (например, 125 байт для 60
+float32-регистров). Прошивка стенда сейчас **обновляет значения датчиков
+вживую** (сотые доли градуса с периодом синуса ~16–30 с), поэтому два запуска
+`portscheck` с интервалом несколько секунд покажут, что данные «движутся» —
+в этом суть упражнения раздела 14: реальные полевые данные никогда не статичны.

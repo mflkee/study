@@ -295,6 +295,19 @@ impl Emulator {
         Ok(out)
     }
 
+    pub fn read_discrete_inputs(&mut self, slave: u8, start: u16, count: u16) -> Result<Vec<bool>, u8> {
+        let dev = self
+            .devices
+            .iter()
+            .find(|d| d.slave_id == slave)
+            .ok_or(0x02)?;
+        let mut out = Vec::with_capacity(count as usize);
+        for i in 0..count {
+            out.push(dev.discrete.get(&(start + i)).copied().unwrap_or(false));
+        }
+        Ok(out)
+    }
+
     pub fn write_coil(&mut self, slave: u8, addr: u16, value: bool) -> Result<(), u8> {
         let dev = self
             .devices
@@ -302,6 +315,18 @@ impl Emulator {
             .find(|d| d.slave_id == slave)
             .ok_or(0x02)?;
         dev.coils.insert(addr, value);
+        Ok(())
+    }
+
+    pub fn write_coils(&mut self, slave: u8, start: u16, values: &[bool]) -> Result<(), u8> {
+        let dev = self
+            .devices
+            .iter_mut()
+            .find(|d| d.slave_id == slave)
+            .ok_or(0x02)?;
+        for (i, v) in values.iter().enumerate() {
+            dev.coils.insert(start + i as u16, *v);
+        }
         Ok(())
     }
 }

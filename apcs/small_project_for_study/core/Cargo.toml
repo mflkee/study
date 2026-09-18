@@ -1,0 +1,7 @@
+[package]
+name = "mini-core"
+version = "0.1.0"
+edition = "2021"
+description = "Чистая логика мини-полигона: CRC16, карта регистров, диспетчер Modbus RTU"
+
+[dependencies]

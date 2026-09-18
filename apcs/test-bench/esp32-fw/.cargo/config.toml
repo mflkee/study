@@ -1,9 +1,10 @@
 [build]
 target = "xtensa-esp32s3-espidf"
-rustflags = [
-    "-C", "link-arg=-Tesp32s3.ld",
-]
+
+[target.'cfg(target_os = "espidf")']
+linker = "ldproxy"
+rustflags = ["--cfg", "espidf_time64"]
 
 [unstable]
-build-std = ["core", "alloc", "std"]
+build-std = ["std", "panic_abort"]
 build-std-features = []

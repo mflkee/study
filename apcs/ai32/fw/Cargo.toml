@@ -1,0 +1,46 @@
+# Манифест прошивки AI-32.
+#
+# КЛЮЧЕВОЙ ПРИЁМ — фича `sim` (режим по умолчанию!):
+# с ней прошивка собирается в «симуляционный» вариант, где АЦП заменяет
+# SimAdc, а весь реальный SPI/GPIO-код отсекается через `#[cfg(...)]`.
+# Отключение фичи (`--no-default-features`) даёт настоящие 3×ADS1256
+# (24 бита) на общей SPI-шине + Modbus RTU по RS-485.
+#
+#     cargo +esp check                       # sim (без железа)
+#     cargo +esp check --no-default-features # реальное железо
+#
+# Про тулчейн: `rust-toolchain.toml` в этой папке автоматически подхватывает
+# цепочку `esp` (nightly с build-std) — обычная команда `cargo check` тоже
+# работает, без ручного `+esp`.
+
+[package]
+name = "ai32-fw"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = ["sim"]   # по умолчанию — симуляция, чтобы всё работало без платы
+sim = []            # маркер: собрать «виртуальный АЦП» вместо реального
+
+[dependencies]
+# Чистое ядро: калибровка, карта регистров, CRC. ОТДЕЛЬНЫЙ крейт,
+# чтобы `cargo test` (в core/) проверял всю логику без embedded-тулчейна.
+ai32-core = { path = "../core" }
+anyhow = "1"
+# Хал esp-idf: драйверы SPI/GPIO/UART/таймеров поверх ESP-IDF C-API.
+esp-idf-hal = "0.44"
+# Сырые (FFI) привязки C ESP-IDF. `binstart` — встроенный стартап для
+# прошивки (без него `.bss`/`.data` не инициализируются).
+esp-idf-sys = { version = "0.35", features = ["binstart"] }
+log = "0.4"
+
+[profile.release]
+# Размер вместо скорости — прошивка живёт во flash, скорость узкого места нет.
+opt-level = "s"
+
+[profile.dev]
+opt-level = "s"
+
+[build-dependencies]
+# embuild сшивает C-конфиг и линковку ESP-IDF внутрь cargo (см. build.rs).
+embuild = "0.33"

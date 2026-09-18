@@ -8,12 +8,71 @@ use ratatui::Frame;
 
 use crate::app::{App, Tab};
 
+/// Высота шапки: строка вкладок + 2 строки статуса.
+pub const HEADER_ROWS: u16 = 3;
+/// Высота подвала: 2 строки подсказок + рамка.
+pub const FOOTER_ROWS: u16 = 4;
+
+/// Вкладка под колонкой `col` (клик по строке вкладок). Повторяет раскладку
+/// ratatui `Tabs` (0.30): `padding_left=" "` перед каждым заголовком,
+/// `padding_right=" "` и делитель `"  "` после него. Итог между заголовками —
+/// 4 пробела; заголовки идут с отступа 1.
+pub fn tab_at_col(col: u16) -> Option<usize> {
+    let mut x: u16 = 1; // padding_left первого заголовка
+    for (i, t) in Tab::ALL.iter().enumerate() {
+        let w = t.title().len() as u16;
+        if col >= x && col < x + w {
+            return Some(i);
+        }
+        x += w + 4; // padding_right + divider + padding_left
+    }
+    None
+}
+
+/// Для каждой строки левой колонки Dashboard: индекс устройства или None.
+/// Зеркалит вёрстку draw_dashboard (заголовок устройства, каналы, насосы),
+/// чтобы клик мыши попадал точно в устройство.
+pub fn dashboard_rows_for_devices(app: &App) -> Vec<Option<usize>> {
+    let mut map: Vec<Option<usize>> = Vec::new();
+    if app.snapshot.is_empty() && !app.is_connected() {
+        return map; // окошко "No data" — выбирать нечего
+    }
+    for (di, dev) in app.snapshot.iter().enumerate() {
+        map.push(None); // пустая строка-разделитель
+        map.push(Some(di)); // заголовок "◆ Slave N: name"
+        for _ in dev.channels.iter() {
+            map.push(None);
+        }
+        if !dev.coils.is_empty() {
+            map.push(None); // ""
+            map.push(None); // "Pumps:"
+            for _ in dev.coils.iter() {
+                map.push(None);
+            }
+        }
+    }
+    map
+}
+
+/// Какой строке простого списка (bordered List) соответствует тела-строка `y`.
+pub fn list_index_at(y: u16, len: usize) -> Option<usize> {
+    if y == 0 {
+        return None; // верхняя рамка
+    }
+    let idx = (y - 1) as usize;
+    if idx < len {
+        Some(idx)
+    } else {
+        None
+    }
+}
+
 pub fn draw(frame: &mut Frame, app: &mut App) {
     let area = frame.area();
     let [header, body, footer] = Layout::vertical([
-        Constraint::Length(3),
+        Constraint::Length(HEADER_ROWS),
         Constraint::Min(0),
-        Constraint::Length(4),
+        Constraint::Length(FOOTER_ROWS),
     ])
     .areas(area);
 
@@ -26,12 +85,13 @@ pub fn draw(frame: &mut Frame, app: &mut App) {
         Tab::Registers => draw_registers(frame, app, body),
         Tab::Sensors => draw_sensors(frame, app, body),
         Tab::Firmware => draw_firmware(frame, app, body),
+        Tab::Bus => draw_bus(frame, app, body),
         Tab::Log => draw_log(frame, app, body),
         Tab::Help => draw_help(frame, app, body),
     }
 }
 
-fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
+fn draw_header(frame: &mut Frame, app: &mut App, area: Rect) {
     let [tabs_area, status_area] =
         Layout::vertical([Constraint::Length(1), Constraint::Length(2)]).areas(area);
 
@@ -50,26 +110,47 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
     frame.render_widget(tabs, tabs_area);
 
     // Статус-строка под табами.
-    let status = format!(
+    let pipeline = if app.is_emu() {
+        "EMULATOR".to_string()
+    } else if let Some(addr) = &app.tcp_connected {
+        format!("TCP master → {}", addr)
+    } else if app.is_connected() {
+        app.serial_port.clone().unwrap_or_else(|| "SERIAL".into())
+    } else {
+        "NOT CONNECTED".to_string()
+    };
+    let mut status = format!(
         " {} — {} | tick={} | poll: {}",
         app.tab.title(),
-        if app.is_emu() {
-            "EMULATOR"
-        } else if app.is_connected() {
-            app.serial_port.as_deref().unwrap_or("SERIAL")
-        } else {
-            "NOT CONNECTED"
-        },
+        pipeline,
         app.tick,
         app.last_poll_error
             .clone()
             .unwrap_or_else(|| format!("{} devices", app.snapshot.len()))
     );
+    if let Some(st) = &app.tcp_server {
+        status.push_str(&format!(" | TCP server:{}", st.addr));
+    }
+
+    // Индикатор фоновой задачи с анимированным спиннером.
+    let busy_style = if let Some(label) = &app.busy {
+        app.spin = app.spin.wrapping_add(1);
+        const SPINNER: [char; 10] = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+        let c = SPINNER[app.spin % SPINNER.len()];
+        status.push_str(&format!(" ⏳ {} {}…", c, label));
+        Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+    } else {
+        Style::default()
+    };
+
     let block = Block::bordered().title(Span::styled(
         " ESP32 Modbus Test-Bench ",
         Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
     ));
-    frame.render_widget(Paragraph::new(status).block(block), status_area);
+    frame.render_widget(
+        Paragraph::new(Line::from(Span::styled(status, busy_style))).block(block),
+        status_area,
+    );
 }
 
 fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
@@ -93,8 +174,8 @@ fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
     let hint = format!(
         "   {}",
         match app.tab {
-            Tab::Dashboard => "[↑↓] select device  [space] toggle pump",
-            Tab::Ports => "[↑↓] select  [c] connect  [d] disconnect  [p] probe",
+            Tab::Dashboard => "[↑↓] select  [PgUp/PgDn ▾] page  [space] pump",
+            Tab::Ports => "[↑↓] select  [c] connect  [d] disconnect  [p] probe  [t] TCP-server",
             Tab::Registers => "[↑↓] focus  [enter] edit  [r] read  [w] write  [t] type",
             Tab::Sensors if app.sensor_manage => {
                 "[↑↓] move  [d] delete device (◆) or sensor (●)  [esc] done"
@@ -103,8 +184,9 @@ fn draw_footer(frame: &mut Frame, app: &App, area: Rect) {
                 "[↑↓] focus  [enter] edit  [1..6] type  [a] add  [n] new slave  [m] manage  [d] delete"
             }
             Tab::Firmware => "[i] board-info  [f] flash  [b] backup  [o] restore",
-            Tab::Log => "[enter] clear",
-            Tab::Help => "[↑↓] scroll",
+            Tab::Bus => "[↑↓/wheel] scroll history (auto-follows newest)",
+            Tab::Log => "[↑↓/wheel] scroll  [enter] clear",
+            Tab::Help => "[↑↓/wheel] scroll",
         }
     );
     frame.render_widget(
@@ -183,11 +265,11 @@ fn draw_dashboard(frame: &mut Frame, app: &mut App, area: Rect) {
             )));
         }
 
-        // Насосы/coils.
+        // Coils (дискретные выходы/включение каналов).
         if !dev.coils.is_empty() {
             lines.push(Line::from(""));
             lines.push(Line::from(Span::styled(
-                "   Pumps:",
+                "   Coils:",
                 Style::default().fg(Color::Yellow),
             )));
             for (ci, c) in dev.coils.iter().enumerate() {
@@ -197,12 +279,12 @@ fn draw_dashboard(frame: &mut Frame, app: &mut App, area: Rect) {
                 } else {
                     ("○ OFF", Color::Red)
                 };
-                let lbl = format!("   Pump {}: {}", ci, sym);
+                let lbl = format!("   Coil {}: {}", ci, sym);
                 lines.push(Line::from(vec![
                     Span::styled(lbl, Style::default().fg(col).add_modifier(Modifier::BOLD)),
                     Span::styled(
                         if selected_now && ci == 0 {
-                            "  [space]  ◀ toggles this pump"
+                            "  [space]  ◀ toggles this coil"
                         } else {
                             ""
                         },
@@ -213,11 +295,46 @@ fn draw_dashboard(frame: &mut Frame, app: &mut App, area: Rect) {
         }
     }
 
+    // Автоскролл левой колонки. Ручная прокрутка (колесо/→ в app.mouse_scroll)
+    // не перебивается: заголовок выбранного устройства подтягиваем на экран
+    // только когда выбор сменился. Нижняя граница держится всегда,
+    // чтобы выбранное устройство нельзя было «увести» вниз.
+    let map = dashboard_rows_for_devices(app);
+    let mut header_at = 0usize;
+    for (i, r) in map.iter().enumerate() {
+        if *r == Some(selected) {
+            header_at = i;
+            break;
+        }
+    }
+    let page = left.height.saturating_sub(2) as usize;
+    let max_scroll = lines.len().saturating_sub(page);
+    let mut scroll = if map.is_empty() {
+        0
+    } else {
+        app.dash_scroll.min(max_scroll)
+    };
+    if header_at >= scroll + page {
+        scroll = header_at + 1 - page;
+    }
+    if app.dash_sel_seen != selected {
+        if header_at < scroll {
+            scroll = header_at;
+        }
+        app.dash_sel_seen = selected;
+    }
+    app.dash_scroll = scroll;
+    let render: Vec<Line> = lines[scroll..(scroll + page).min(lines.len())].to_vec();
+    let device_title = if scroll > 0 {
+        format!(" Devices [scrolled {}..] ", scroll + page)
+    } else {
+        " Devices ".to_string()
+    };
     let device_block = Block::bordered().title(Span::styled(
-        " Devices ",
+        device_title,
         Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
     ));
-    frame.render_widget(Paragraph::new(lines).block(device_block), left);
+    frame.render_widget(Paragraph::new(render).block(device_block), left);
 
     // Правая колонка: карта/статус пайплайна.
     draw_pipeline(frame, app, right);
@@ -325,6 +442,9 @@ fn draw_pipeline(frame: &mut Frame, app: &App, area: Rect) {
 // --- PORTS ---
 
 fn draw_ports(frame: &mut Frame, app: &mut App, area: Rect) {
+    let [serial_area, tcp_area] =
+        Layout::horizontal([Constraint::Percentage(60), Constraint::Percentage(40)]).areas(area);
+
     let rows: Vec<ListItem> = app
         .ports
         .iter()
@@ -366,7 +486,97 @@ fn draw_ports(frame: &mut Frame, app: &mut App, area: Rect) {
     let list = List::new(rows)
         .block(block)
         .highlight_style(Style::default().bg(Color::DarkGray).add_modifier(Modifier::BOLD));
-    frame.render_stateful_widget(list, area, &mut app.port_state());
+    frame.render_stateful_widget(list, serial_area, &mut app.port_state());
+
+    draw_tcp_master(frame, app, tcp_area);
+}
+
+/// Правая панель вкладки Ports: Modbus TCP master (клиент).
+/// Подключает TUI к внешнему устройству по Ethernet — второй путь к тем же
+/// данным (рядом с RTU-опросом): входные float32, coils, holding.
+fn draw_tcp_master(frame: &mut Frame, app: &mut App, area: Rect) {
+    let editing = app.is_editing();
+    let inner = area;
+    let mut lines = vec![
+        Line::from(Span::styled(
+            " Modbus TCP master",
+            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+        )),
+        Line::from(""),
+    ];
+    match &app.tcp_connected {
+        Some(addr) => {
+            let unit = app.reg_form.slave_id.parse::<u8>().ok();
+            let unit_str = unit.map(|u| format!("unit {} ", u)).unwrap_or_default();
+            lines.push(Line::from(vec![
+                Span::styled(" ● ", Style::default().fg(Color::Green)),
+                Span::styled(
+                    format!("Connected to {} ({})", addr, unit_str.trim()),
+                    Style::default().fg(Color::Green).add_modifier(Modifier::BOLD),
+                ),
+            ]));
+            lines.push(Line::from(Span::styled(
+                " [o] disconnect",
+                Style::default().fg(Color::DarkGray),
+            )));
+        }
+        None => {
+            lines.push(Line::from(vec![
+                Span::styled(" ○ ", Style::default().fg(Color::Red)),
+                Span::styled(
+                    "No TCP connection",
+                    Style::default().fg(Color::Red),
+                ),
+            ]));
+            lines.push(Line::from(Span::styled(
+                " [y] connect after editing host/port below",
+                Style::default().fg(Color::DarkGray),
+            )));
+        }
+    };
+    lines.push(Line::from(""));
+    lines.push(Line::from(Span::styled(
+        " Target device (host:port):",
+        Style::default().fg(Color::Yellow),
+    )));
+    lines.push(field_line(
+        "Host",
+        &app.tcp_host,
+        app.tcp_focus == 0,
+        editing && matches!(app.editing, Some(crate::app::FieldEdit::Tcp(0))),
+    ));
+    lines.push(field_line(
+        "Port",
+        &app.tcp_port_str,
+        app.tcp_focus == 1,
+        editing && matches!(app.editing, Some(crate::app::FieldEdit::Tcp(1))),
+    ));
+    lines.push(Line::from(Span::styled(
+        " ←/→ focus   [enter] edit   [y] connect   [o] disconnect",
+        Style::default().fg(Color::DarkGray),
+    )));
+    lines.push(Line::from(""));
+    let poll_style = if app.is_emu() {
+        Color::DarkGray
+    } else if app.tcp_connected.is_some() {
+        Color::Green
+    } else {
+        Color::DarkGray
+    };
+    lines.push(Line::from(Span::styled(
+        "Polled map: input 0..63 (32×float32), coils, holding.",
+        Style::default().fg(poll_style),
+    )));
+    lines.push(Line::from(Span::styled(
+        "Slave ID in MBAP header = register editor's 'Slave ID'.",
+        Style::default().fg(Color::DarkGray),
+    )));
+
+    let block = Block::bordered().title(Span::styled(
+        " Modbus TCP master ",
+        Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+    ));
+    frame.render_widget(Paragraph::new(lines).block(block), inner);
 }
 
 // --- REGISTERS ---
@@ -662,7 +872,9 @@ fn draw_firmware(frame: &mut Frame, app: &mut App, area: Rect) {
         .or_else(|| app.serial_port.clone())
         .unwrap_or_else(|| "(select in Ports tab)".into());
 
-    let tool = crate::firmware::find_tool()
+    let tool = app
+        .fw_tool
+        .clone()
         .unwrap_or_else(|| "(no esptool — install espflash or esptool)".into());
 
     let lines = vec![
@@ -726,12 +938,141 @@ fn draw_firmware(frame: &mut Frame, app: &mut App, area: Rect) {
     frame.render_widget(list, right);
 }
 
+// --- BUS ---
+
+/// Обрезает длинную hex-строку до ширины терминала (кадр ответа читаемого
+/// регистра — 125 байт → 374 hex-символа, в строку не влезает).
+fn clip_hex(s: &str, max: usize) -> String {
+    if s.len() <= max {
+        s.to_string()
+    } else if max <= 4 {
+        format!("{}…", &s[..max.clamp(1, 2)])
+    } else {
+        format!("{}…", &s[..max - 1])
+    }
+}
+
+fn draw_bus(frame: &mut Frame, app: &mut App, area: Rect) {
+    let page_h = area.height.saturating_sub(2) as usize;
+    let total = app.trace.len();
+    let page = page_h.max(1);
+
+    // 0 = живой хвост (последние кадры); N>0 = «на N экранов вглубь истории».
+    let max_start = total.saturating_sub(page_h);
+    let start = if app.bus_scroll == 0 {
+        max_start
+    } else {
+        max_start.saturating_sub(app.bus_scroll * page).min(max_start)
+    };
+
+    let hex_max = (area.width.saturating_sub(6)) as usize;
+    let mut lines: Vec<Line> = Vec::new();
+    let transport_label = |t: &str| if t == "TCP" { "TCP (MBAP, no CRC)".to_string() } else { "CRC ok".to_string() };
+
+    if total == 0 {
+        lines.push(Line::from(Span::styled(
+            " No Modbus traffic yet.",
+            Style::default().fg(Color::DarkGray),
+        )));
+        let hint = if app.is_emu() {
+            " Emulator: кадры появляются при каждом опросе (или после [e])."
+        } else if app.is_connected() {
+            " Ждём первый опрос — откройте вкладку Dashboard и подождите 0.5 сек."
+        } else {
+            " Запустите эмулятор ([e]) или подключите порт ([c] на вкладке Ports)."
+        };
+        lines.push(Line::from(Span::styled(hint, Style::default().fg(Color::DarkGray))));
+        lines.push(Line::from(Span::styled(
+            " Каждый опрос = 3 транзакции по шине: READ INPUT (T/P), READ COILS, READ HOLDING.",
+            Style::default().fg(Color::DarkGray),
+        )));
+        lines.push(Line::from(Span::styled(
+            " TCP-запросы от клиентов (вкладка Ports → [t]) тоже попадают сюда, помеченные TCP.",
+            Style::default().fg(Color::DarkGray),
+        )));
+    }
+
+    // Каждая транзакция занимает 2–3 строки (заголовок, request, response).
+    let block_lines = (page_h.saturating_sub(2) / 2).min(total.max(1));
+    for entry in app.trace.iter().skip(start).take(block_lines) {
+        if entry.ok {
+            lines.push(Line::from(vec![
+                Span::styled(
+                    format!(" ▸ {}", entry.fc),
+                    Style::default().fg(Color::Green).add_modifier(Modifier::BOLD),
+                ),
+                Span::styled(
+                    format!(
+                        "   req {} B → resp {} B · {} ms · {}",
+                        (entry.req.len() + 1) / 3,
+                        (entry.resp.len() + 1) / 3,
+                        entry.ms,
+                        transport_label(entry.transport),
+                    ),
+                    Style::default().fg(Color::DarkGray),
+                ),
+            ]));
+        } else {
+            lines.push(Line::from(vec![
+                Span::styled(
+                    format!(" ✖ {}", entry.fc),
+                    Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+                ),
+                Span::styled(
+                    format!(
+                        "   req {} B → {} · {} ms",
+                        (entry.req.len() + 1) / 3,
+                        entry.err.as_deref().unwrap_or("no response"),
+                        entry.ms
+                    ),
+                    Style::default().fg(Color::Red),
+                ),
+            ]));
+        }
+
+        lines.push(Line::from(vec![
+            Span::styled("   → ", Style::default().fg(Color::DarkGray)),
+            Span::styled(clip_hex(&entry.req, hex_max), Style::default().fg(Color::Cyan)),
+        ]));
+        if !entry.resp.is_empty() {
+            lines.push(Line::from(vec![
+                Span::styled("   ← ", Style::default().fg(Color::DarkGray)),
+                Span::styled(clip_hex(&entry.resp, hex_max), Style::default().fg(Color::Yellow)),
+            ]));
+        }
+    }
+
+    let title = if total > 0 {
+        format!(
+            " Bus — Modbus frame log (RTU hex + TCP MBAP) ({}) (↑↓/wheel){} ",
+            total,
+            if app.bus_scroll > 0 {
+                format!(" [scrolled {} screens]", app.bus_scroll)
+            } else {
+                String::new()
+            }
+        )
+    } else {
+        " Bus — Modbus frame log (RTU hex + TCP MBAP) ".to_string()
+    };
+    let block = Block::bordered().title(Span::styled(
+        title,
+        Style::default().fg(Color::Magenta).add_modifier(Modifier::BOLD),
+    ));
+    frame.render_widget(Paragraph::new(lines).block(block), area);
+}
+
 // --- LOG ---
 
 fn draw_log(frame: &mut Frame, app: &mut App, area: Rect) {
+    let page_h = area.height.saturating_sub(2) as usize;
+    let total = app.logs.len();
+    let start = app.log_scroll.min(total.saturating_sub(page_h));
     let rows: Vec<ListItem> = app
         .logs
         .iter()
+        .skip(start)
+        .take(page_h)
         .map(|l| {
             let color = match l.level {
                 0 => Color::Gray,
@@ -742,14 +1083,31 @@ fn draw_log(frame: &mut Frame, app: &mut App, area: Rect) {
             ListItem::new(Line::from(Span::styled(&l.text, Style::default().fg(color))))
         })
         .collect();
-    let block = Block::bordered().title(format!(" Log ({}) ", app.logs.len()));
+    let block = Block::bordered().title(format!(
+        " Log ({}){} ",
+        total,
+        if start > 0 { format!(" [scrolled {}..{}]", start, start + rows.len()) } else { String::new() }
+    ));
     frame.render_widget(List::new(rows).block(block), area);
 }
 
 // --- HELP ---
 
-fn draw_help(frame: &mut Frame, _app: &mut App, area: Rect) {
-    let text = vec![
+fn draw_help(frame: &mut Frame, app: &mut App, area: Rect) {
+    let text = help_lines();
+    let page_h = area.height.saturating_sub(2) as usize; // рамка блока
+    let start = app.help_scroll.min(text.len().saturating_sub(page_h));
+    let slice = &text[start..(start + page_h).min(text.len())];
+    let block = if start > 0 {
+        Block::bordered().title(" Help [scrolled] ↑↓/wheel ")
+    } else {
+        Block::bordered()
+    };
+    frame.render_widget(Paragraph::new(slice.to_vec()).block(block), area);
+}
+
+fn help_lines() -> Vec<Line<'static>> {
+    vec![
         Line::from(""),
         Line::from(Span::styled(
             " GLOBAL",
@@ -760,13 +1118,16 @@ fn draw_help(frame: &mut Frame, _app: &mut App, area: Rect) {
         Line::from("   [e]                — toggle in-process emulator (test server)"),
         Line::from("   [R]                — rescan ports (hotplug)"),
         Line::from("   [F1]               — this help"),
+        Line::from("   Mouse: click a tab to switch; click a list row/field to select;"),
+        Line::from("          scroll wheel to move selection or scroll Log/Help"),
         Line::from(""),
         Line::from(Span::styled(
             " DASHBOARD",
             Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
         )),
         Line::from("   [↑/↓]  or [k/j]    — select device (▸ marker)"),
-        Line::from("   [space]            — toggle pump 0 of the selected device"),
+        Line::from("   [space]            — toggle coil 0 of the selected device"),
+        Line::from("   Mouse wheel        — scroll the whole sensor list (line by line)"),
         Line::from(""),
         Line::from(Span::styled(
             " PORTS",
@@ -776,6 +1137,17 @@ fn draw_help(frame: &mut Frame, _app: &mut App, area: Rect) {
         Line::from("   [c]                — connect serial port"),
         Line::from("   [d]                — disconnect serial"),
         Line::from("   [p]                — probe Modbus on selected port"),
+        Line::from("   [t]                — toggle Modbus TCP server on 127.0.0.1:1502"),
+        Line::from("                      (serves the emulator register map — the future Zynq"),
+        Line::from("                       can read the same data over Ethernet, no RS-485)"),
+        Line::from("   Modbus TCP master (right pane):"),
+        Line::from("   [←/→]              — focus Host / Port field"),
+        Line::from("   [enter]            — edit focused field"),
+        Line::from("   [y]                — connect to the host:port (unit = Slave ID of"),
+        Line::from("                        register editor)"),
+        Line::from("   [o]                — disconnect TCP master"),
+        Line::from("   (master polls input 0..63 as 32×float32 channels, coils, holding —"),
+        Line::from("    so you can watch your AI-32 over Ethernet instead of RS-485)"),
         Line::from(""),
         Line::from(Span::styled(
             " REGISTERS",
@@ -824,6 +1196,19 @@ fn draw_help(frame: &mut Frame, _app: &mut App, area: Rect) {
         Line::from("   [↑/↓]              — select backup file"),
         Line::from(""),
         Line::from(Span::styled(
+            " BUS (Modbus frame inspector)",
+            Style::default().fg(Color::Magenta).add_modifier(Modifier::BOLD),
+        )),
+        Line::from("   Shows every request (→) and response (←) as raw bytes with the"),
+        Line::from("   parsed function name and round-trip time. RTU frames carry the CRC;"),
+        Line::from("   TCP frames (clients on Ports→[t], traffic of the TCP master too) are"),
+        Line::from("   marked \"TCP\" and shown with their MBAP header instead (tid proto len unit)."),
+        Line::from("   [↑/↓] or wheel     — walk history; scroll down to return to the live tail."),
+        Line::from("   In emulator mode the frames are built from real device state, so the"),
+        Line::from("   wire bytes look identical to the real bus. Read them like the real master"),
+        Line::from("   (Zynq/PLC) will: [slave] [fc] [data...] [crc_lo crc_hi]."),
+        Line::from(""),
+        Line::from(Span::styled(
             " Idea: hot-plug any ESP32 — it appears in Ports, get probed,",
             Style::default().fg(Color::DarkGray),
         )),
@@ -831,8 +1216,7 @@ fn draw_help(frame: &mut Frame, _app: &mut App, area: Rect) {
             " becomes connected, and you see its live registers.",
             Style::default().fg(Color::DarkGray),
         )),
-    ];
-    frame.render_widget(Paragraph::new(text), area);
+    ]
 }
 
 // Состояния списков для render_stateful_widget.
@@ -850,5 +1234,70 @@ impl App {
             s.select(Some(self.sensor_selected));
         }
         s
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn tab_at_col_maps_tabs() {
+        // Реальная раскладка Tabs(ratatui 0.30): padding_left(1) + титул + gap(4).
+        // Dashboard[1,10) Ports[14,19) Registers[23,32) Sensors[36,43)
+        // Firmware[47,55) Bus[59,62) Log[66,69) Help[73,77).
+        assert_eq!(tab_at_col(1), Some(0)); // 'D'
+        assert_eq!(tab_at_col(9), Some(0)); // последний символ Dashboard
+        assert_eq!(tab_at_col(14), Some(1)); // 'P' Ports
+        assert_eq!(tab_at_col(18), Some(1)); // последний символ Ports
+        assert_eq!(tab_at_col(23), Some(2)); // Registers
+        assert_eq!(tab_at_col(36), Some(3)); // Sensors
+        assert_eq!(tab_at_col(47), Some(4)); // 'F' Firmware
+        assert_eq!(tab_at_col(54), Some(4)); // последний символ Firmware
+        assert_eq!(tab_at_col(59), Some(5)); // 'B' Bus
+        assert_eq!(tab_at_col(61), Some(5)); // последний символ Bus
+        assert_eq!(tab_at_col(66), Some(6)); // Log
+        assert_eq!(tab_at_col(73), Some(7)); // Help
+        // Пробелы-отступы/разделители вне заголовков — без вкладки.
+        assert_eq!(tab_at_col(0), None);
+        assert_eq!(tab_at_col(13), None);
+        assert_eq!(tab_at_col(u16::MAX), None);
+    }
+
+    #[test]
+    fn list_index_at_borders() {
+        assert_eq!(list_index_at(0, 5), None); // рамка
+        assert_eq!(list_index_at(1, 5), Some(0));
+        assert_eq!(list_index_at(5, 5), Some(4));
+        assert_eq!(list_index_at(6, 5), None); // ниже списка
+    }
+
+    #[test]
+    fn dashboard_rows_map_has_device_headers() {
+        let mut app = App::new();
+        app.connect_emulator();
+        let map = dashboard_rows_for_devices(&app);
+        let headers: Vec<usize> = map.iter().flatten().copied().collect();
+        assert_eq!(headers, vec![0, 1, 2, 3]);
+        // Снимок паддит coils до 8 на каждое устройство, поэтому у каждого:
+        // 1 разделитель + заголовок + 3 канала + 1 разделитель + "Pumps:" + 8 = 15.
+        assert_eq!(map.len(), 4 * 15);
+        // Первое устройство: разделитель(0), заголовок(1), каналы(2..4),
+        // разделитель(5), "Pumps:"(6), насосы(7..14), разделитель(15).
+        assert_eq!(map[0], None);
+        assert_eq!(map[1], Some(0));
+        assert_eq!(map[2], None);
+        assert_eq!(map[6], None);
+        assert_eq!(map[14], None);
+        assert_eq!(map[15], None);
+        assert_eq!(map[16], Some(1));
+    }
+
+    #[test]
+    fn dashboard_rows_map_none_when_disconnected_empty() {
+        let app = App::new();
+        assert!(!app.is_connected());
+        assert!(app.snapshot.is_empty());
+        assert!(dashboard_rows_for_devices(&app).is_empty());
     }
 }

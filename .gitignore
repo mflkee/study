@@ -1,4 +1,5 @@
 **/target/
+**/.embuild/
 **/__pycache__/
 **/.venv/
 **/env/
