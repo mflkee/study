@@ -21,7 +21,7 @@
 | 09-plpgsql-triggers-notify | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 10-app-patterns | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 11-web-api-axum | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
-| 12-testing | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
+| 12-testing | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 13-ops-reliability | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 14-capstone-historian | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 15-interview-prep | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -135,9 +135,12 @@ _(остальные модули заполняются так же: теори
 
 ### 12-testing
 - [ ] Прочитать `theory.md`, пройти уроки 01–03
-- [ ] testcontainers: интеграционные тесты против контейнера
-- [ ] property-тесты массы нетто
-- [ ] `cargo test` зелёный
+- [ ] `cargo test --test property` зелёный (инварианты массы нетто, proptest)
+- [ ] `cargo test --test pg_integration` зелёный (testcontainers: миграции + функция с фикстурами)
+- [ ] Упражнения 01–02 решены (заготовки → зелёные тесты)
+- [ ] Лаба: тест миграций расширен (история, таблицы, функция, индекс); сломанная миграция → тест падает
+- [ ] `cargo clippy` и `cargo fmt --check` без замечаний
+- [ ] `PROGRESS.md` обновлён
 
 ### 13-ops-reliability
 - [ ] Прочитать `theory.md`, пройти уроки 01–04
