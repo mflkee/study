@@ -20,7 +20,7 @@
 | 08-timeseries-partitioning | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 09-plpgsql-triggers-notify | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 10-app-patterns | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
-| 11-web-api-axum | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
+| 11-web-api-axum | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 12-testing | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 13-ops-reliability | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 14-capstone-historian | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -126,9 +126,12 @@ _(остальные модули заполняются так же: теори
 
 ### 11-web-api-axum
 - [ ] Прочитать `theory.md`, пройти уроки 01–03
-- [ ] Сервер запущен, curl к эндпоинтам работает
-- [ ] Упражнение «Добавь эндпоинт трендов»
-- [ ] `cargo test` зелёный
+- [ ] `00-setup.sql` применён (свежие серии M-01-001/D-01-001)
+- [ ] `01-hello` и `02-measurements` запущены; все эндпоинты curl'ом + `/metrics`
+- [ ] Упражнения: `cargo test ex01_trends`/`ex02_page` зелёные
+- [ ] Лаба: 401 без токена, кэш current работает (pg_stat_statements не растёт)
+- [ ] `cargo clippy` и `cargo fmt --check` без замечаний
+- [ ] `PROGRESS.md` обновлён
 
 ### 12-testing
 - [ ] Прочитать `theory.md`, пройти уроки 01–03
