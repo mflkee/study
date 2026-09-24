@@ -6,3 +6,6 @@
 **/venv/
 **/*venv/
 *.pyc
+
+# apcs moved to standalone repo (github.com/mflkee/apcs)
+apcs/
