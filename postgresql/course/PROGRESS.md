@@ -12,7 +12,7 @@
 | 00-orientation | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 01-sql-foundations | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 02-schema-design | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
-| 03-transactions-mvcc | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
+| 03-transactions-mvcc | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 04-rust-sql-first-steps | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 05-async-rust-tokio | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 06-sqlx-in-depth | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
