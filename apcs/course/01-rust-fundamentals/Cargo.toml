@@ -4,7 +4,7 @@
 # - `exercises/` — пакет-упражнения с unit-тестами: `cargo test -p exercises`
 
 [workspace]
-members = [".", "exercises"]
+members = [".", "exercises", "test_attempt/f32_to_u16"]
 resolver = "2"
 
 [package]
