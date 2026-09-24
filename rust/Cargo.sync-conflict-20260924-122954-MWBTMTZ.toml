@@ -1,0 +1,36 @@
+[workspace] 
+members = [
+    # Basics - последовательное изучение основ
+    "01_basics/01_variables",
+    "01_basics/02_data_types",
+    "01_basics/03_functions",
+    "01_basics/04_control_flow",
+    "01_basics/05_ownership",
+    "01_basics/06_slices",
+    "01_basics/07_structs",
+    "01_basics/08_enums",
+    "01_basics/09_collections",
+    "01_basics/10_modules/backyard",
+    "01_basics/10_modules/restaurant",
+    "01_basics/11_handling_errors/ai_vers",
+    "01_basics/11_handling_errors/rb_vers",
+    # Exercises - упражнения из книги
+    "02_exercises/guessing_game",
+    "02_exercises/fibonacci",
+    "02_exercises/01_vectors/01_vec_stack",
+    "02_exercises/01_vectors/02_safe_get",
+    "02_exercises/01_vectors/03_borrow_shift",
+    "02_exercises/01_vectors/04_table_row",
+    "02_exercises/02_strings/01_join_with_comma",
+    "02_exercises/02_strings/02_utf8_trap",
+    "02_exercises/02_strings/03_pig_latin",
+    "02_exercises/03_hashmaps/01_word_frequencies",
+    "02_exercises/03_hashmaps/02_stats_mean_median_mode",
+    "03_projects/temperature_converter",
+    # Projects - полноценные проекты
+    "03_projects/company_directory_cli",
+    "03_projects/temperature_converter_web",
+    # Experiments - эксперименты и математические задачи
+    "04_experiments/mathmagic",
+]
+resolver = "2"
