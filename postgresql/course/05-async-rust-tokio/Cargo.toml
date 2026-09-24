@@ -1,0 +1,18 @@
+[package]
+name = "pg-course-module-05"
+version = "0.1.0"
+edition = "2021"
+description = "Модуль 05 курса «Rust + PostgreSQL для СИКН»: асинхронность (async/await, tokio, каналы, отмена)"
+license = "MIT"
+
+# Версии зафиксированы на момент сборки курса (сентябрь 2026, см. course/PLAN.md).
+# Модуль 05 — про async-механику: БД-кода здесь нет (мост к БД — модуль 06).
+[dependencies]
+anyhow = "1.0.104"
+tokio = { version = "1.53.1", features = [
+    "rt-multi-thread", # tokio::main по умолчанию multi-thread, spawn_blocking
+    "macros",          # tokio::main / #[tokio::test]
+    "time",            # sleep, interval, Instant
+    "sync",            # mpsc, oneshot
+    "signal",          # ctrl_c (SIGINT) — грациозный останов
+] }

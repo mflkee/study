@@ -46,9 +46,9 @@
 
 ## 8. Модуль 05-async-rust-tokio
 
-- [ ] 8.1 Уроки: async/await, tokio (runtime, tasks, spawn), каналы, `select!`, cancellation, backpressure, graceful shutdown — только то, что нужно для БД-слоя — проверить примеры (`cargo run` с корректным завершением)
-- [ ] 8.2 Упражнения: канал-пайплайн опроса датчиков с backpressure и отменой по Ctrl-C — проверить `cargo test`
-- [ ] 8.3 Обновить `PROGRESS.md` + отчёт, пауза до «дальше»
+- [x] 8.1 Уроки: async/await, tokio (runtime, tasks, spawn), каналы, `select!`, cancellation, backpressure, graceful shutdown — только то, что нужно для БД-слоя — проверить примеры (`cargo run` с корректным завершением)
+- [x] 8.2 Упражнения: канал-пайплайн опроса датчиков с backpressure и отменой по Ctrl-C — проверить `cargo test`
+- [x] 8.3 Обновить `PROGRESS.md` + отчёт, пауза до «дальше»
 
 ## 9. Модуль 06-sqlx-in-depth
 

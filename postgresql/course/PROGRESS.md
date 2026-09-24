@@ -14,7 +14,7 @@
 | 02-schema-design | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 03-transactions-mvcc | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 04-rust-sql-first-steps | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
-| 05-async-rust-tokio | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
+| 05-async-rust-tokio | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 06-sqlx-in-depth | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 07-performance | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 08-timeseries-partitioning | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -67,9 +67,12 @@ _(остальные модули заполняются так же: теори
 
 ### 05-async-rust-tokio
 - [ ] Прочитать `theory.md`, пройти уроки 01–03
-- [ ] Примеры: каналы, select!, отмена по Ctrl-C
-- [ ] Упражнение «Пайплайн опроса с backpressure»
-- [ ] `cargo test` зелёный
+- [ ] Примеры: `01-async-basics`, `02-tasks-kanaly`, `04-backpressure` запущены
+- [ ] `03-otmena-graceful`: Ctrl-C → грациозный дренаж и итог
+- [ ] Упражнение «Пайплайн опроса датчиков»: `cargo test ex01_` зелёный
+- [ ] Лаба 01: воркер останавливается по SIGINT/SIGTERM без потерь
+- [ ] `cargo clippy` и `cargo fmt --check` без замечаний
+- [ ] `PROGRESS.md` обновлён
 
 ### 06-sqlx-in-depth
 - [ ] Прочитать `theory.md`, пройти уроки 01–04
