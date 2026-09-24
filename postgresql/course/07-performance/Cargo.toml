@@ -1,0 +1,27 @@
+[package]
+name = "pg-course-module-07"
+version = "0.1.0"
+edition = "2021"
+description = "Модуль 07 курса «Rust + PostgreSQL для СИКН»: производительность — EXPLAIN, pg_stat_statements, batch/COPY, тюнинг пула"
+license = "MIT"
+
+# Версии зафиксированы на момент сборки курса (сентябрь 2026). Макросы sqlx
+# здесь не нужны (runtime-запросы по D2); добавлен tokio-modbus 0.17 (спайк
+# проверен: эмулятор отвечает клиенту — см. design Risks).
+[dependencies]
+anyhow = "1.0.104"
+chrono = { version = "0.4.45", features = ["serde"] }
+rust_decimal = { version = "1.43.0", features = ["serde"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+sqlx = { version = "0.9.0", default-features = false, features = [
+    "runtime-tokio",
+    "tls-rustls-ring",
+    "postgres",
+    "chrono",
+    "rust_decimal",
+    "json",
+    "derive",
+] }
+tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros", "time", "sync", "net", "signal"] }
+tokio-modbus = { version = "0.17.0", default-features = false, features = ["tcp-server"] }

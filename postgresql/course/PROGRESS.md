@@ -16,7 +16,7 @@
 | 04-rust-sql-first-steps | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 05-async-rust-tokio | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 06-sqlx-in-depth | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
-| 07-performance | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
+| 07-performance | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 08-timeseries-partitioning | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 09-plpgsql-triggers-notify | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 10-app-patterns | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -87,10 +87,13 @@ _(остальные модули заполняются так же: теори
 
 ### 07-performance
 - [ ] Прочитать `theory.md`, пройти уроки 01–04
-- [ ] Спайк: эмулятор Modbus (токio-modbus) отвечает
-- [ ] Замеры: построчно vs batch vs COPY
-- [ ] Нагрузочный стенд: свой генератор vs pgbench
-- [ ] Упражнения и лаба «Узкое место»
+- [ ] `00-setup.sql` применён к `course_m06`, `pg_stat_statements` создан
+- [ ] `cargo run --example 03-insert-methods -- --n 50000`: таблица row/batch/copy объяснена
+- [ ] Эмулятор + шлюз (примеры 01–02) работают в двух терминалах
+- [ ] Упражнения 01–02: `cargo test ex01_`/`ex02_` зелёные
+- [ ] Лаба 01: узкое место подтверждено замером (TPS + EXPLAIN/pg_stat), изменения схемы откатаны
+- [ ] `cargo clippy` и `cargo fmt --check` без замечаний
+- [ ] `PROGRESS.md` обновлён
 
 ### 08-timeseries-partitioning
 - [ ] Прочитать `theory.md`, пройти уроки 01–03
