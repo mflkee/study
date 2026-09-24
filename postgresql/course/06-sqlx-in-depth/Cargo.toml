@@ -1,0 +1,30 @@
+[package]
+name = "pg-course-module-06"
+version = "0.1.0"
+edition = "2021"
+description = "Модуль 06 курса «Rust + PostgreSQL для СИКН»: sqlx — пул, транзакции, миграции, ошибки"
+license = "MIT"
+
+# Версии зафиксированы на момент сборки курса (сентябрь 2026, см. course/PLAN.md).
+# В отличие от модуля 04, здесь нужны фичи "macros" (compile-time query_as! +
+# offline-кэш) и "migrate" (встроенные миграции). Runtime-запросы остаются
+# основным стилем (D2) — см. урок 03.
+[dependencies]
+anyhow = "1.0.104"
+chrono = { version = "0.4.45", features = ["serde"] }
+rust_decimal = { version = "1.43.0", features = ["serde"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+sqlx = { version = "0.9.0", default-features = false, features = [
+    "runtime-tokio",
+    "tls-rustls-ring",
+    "postgres",
+    "chrono",
+    "rust_decimal",
+    "json",
+    "derive",
+    "macros",
+    "migrate",
+] }
+thiserror = "2.0.21"
+tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros", "time", "sync", "signal"] }
