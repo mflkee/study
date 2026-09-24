@@ -13,7 +13,7 @@
 | 01-sql-foundations | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 02-schema-design | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 03-transactions-mvcc | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
-| 04-rust-sql-first-steps | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
+| 04-rust-sql-first-steps | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 05-async-rust-tokio | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 06-sqlx-in-depth | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 07-performance | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -59,9 +59,11 @@ _(остальные модули заполняются так же: теори
 
 ### 04-rust-sql-first-steps
 - [ ] Прочитать `theory.md`, пройти уроки 01–03
-- [ ] cargo-проект: examples запущены, `cargo test` зелёный
-- [ ] Упражнения «Каталог оборудования на Rust», «Масса нетто»
-- [ ] `cargo clippy` без предупреждений (или с обоснованными allow)
+- [ ] cargo-проект: `cargo run --example 02-sqlx-hello` показывает устройства справочника
+- [ ] Упражнения «Каталог оборудования на Rust», «Масса нетто»: `cargo test` зелёный
+- [ ] Лаба 01: `derived_measurements` заполнена, `netto` совпадает с ручным расчётом
+- [ ] `cargo clippy` и `cargo fmt --check` без замечаний
+- [ ] `PROGRESS.md` обновлён
 
 ### 05-async-rust-tokio
 - [ ] Прочитать `theory.md`, пройти уроки 01–03

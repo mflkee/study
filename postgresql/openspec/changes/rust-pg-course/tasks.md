@@ -39,10 +39,10 @@
 
 ## 7. Модуль 04-rust-sql-first-steps
 
-- [ ] 7.1 Создать cargo-проект модуля (`Cargo.toml`, `src/lib.rs` с тестами, `examples/`, `exercises/src/exNN_*.rs` + `solutions/`) с зависимостями sqlx/tokio/chrono/rust_decimal/serde — проверить `cargo check`, `cargo test`, `cargo clippy`
-- [ ] 7.2 Уроки: подключение из Rust, сравнение `sqlx` vs `tokio-postgres` vs кратко diesel/sea-orm (выбор по D2), маппинг типов (numeric/rust_decimal, timestamptz/chrono) — проверить запуск примеров против стенда
-- [ ] 7.3 Кейс «каталог оборудования» на Rust: CLI с sqlx (CRUD справочника) как упражнение с заготовками `todo!()` и решением — проверить `cargo test` до/после решения; кейс «точность расчётов»: масса нетто на rust_decimal
-- [ ] 7.4 Обновить `PROGRESS.md` + отчёт, пауза до «дальше»
+- [x] 7.1 Создать cargo-проект модуля (`Cargo.toml`, `src/lib.rs` с тестами, `examples/`, `exercises/src/exNN_*.rs` + `solutions/`) с зависимостями sqlx/tokio/chrono/rust_decimal/serde — проверить `cargo check`, `cargo test`, `cargo clippy`
+- [x] 7.2 Уроки: подключение из Rust, сравнение `sqlx` vs `tokio-postgres` vs кратко diesel/sea-orm (выбор по D2), маппинг типов (numeric/rust_decimal, timestamptz/chrono) — проверить запуск примеров против стенда
+- [x] 7.3 Кейс «каталог оборудования» на Rust: CLI с sqlx (CRUD справочника) как упражнение с заготовками `todo!()` и решением — проверить `cargo test` до/после решения; кейс «точность расчётов»: масса нетто на rust_decimal
+- [x] 7.4 Обновить `PROGRESS.md` + отчёт, пауза до «дальше»
 
 ## 8. Модуль 05-async-rust-tokio
 

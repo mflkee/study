@@ -21,6 +21,8 @@
 ## Крейты (официальная документация по версиям курса)
 
 - sqlx: <https://docs.rs/sqlx> и README репозитория <https://github.com/launchbadge/sqlx> (примеры, миграции, offline-режим макросов). CLI: <https://github.com/launchbadge/sqlx/tree/main/sqlx-cli>
+- tokio-postgres (низкоуровневый драйвер, сравнение в модуле 04): <https://docs.rs/tokio-postgres>
+- chrono (время, timestamptz): <https://docs.rs/chrono>
 - axum: <https://docs.rs/axum>, репозиторий <https://github.com/tokio-rs/axum> (examples — источник готовых сниппетов)
 - rust_decimal: <https://docs.rs/rust_decimal> (документация по точной десятичной арифметике)
 - tokio-modbus: <https://docs.rs/tokio-modbus>, репозиторий <https://github.com/slowtec/tokio-modbus>

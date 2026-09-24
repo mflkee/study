@@ -1,0 +1,27 @@
+[package]
+name = "pg-course-module-04"
+version = "0.1.0"
+edition = "2021"
+description = "Модуль 04 курса «Rust + PostgreSQL для СИКН»: первый Rust + PostgreSQL"
+license = "MIT"
+
+# Версии зафиксированы на момент сборки курса (сентябрь 2026, см. course/PLAN.md).
+# sqlx собран без default-фич: нам нужны runtime-запросы query/query_as,
+# а не макросы query! (им нужен DATABASE_URL на этапе компиляции — урок 06, D2).
+[dependencies]
+anyhow = "1.0.104"
+chrono = { version = "0.4.45", features = ["serde"] }
+rust_decimal = { version = "1.43.0", features = ["serde"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+sqlx = { version = "0.9.0", default-features = false, features = [
+    "runtime-tokio",
+    "tls-rustls-ring",
+    "postgres",
+    "chrono",
+    "rust_decimal",
+    "json",
+    "derive",
+] }
+tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros", "time"] }
+tokio-postgres = "0.7.18"
