@@ -4,7 +4,10 @@
 # (в конце ROLLBACK) — база не засоряется результатами упражнений.
 #
 # Использование:
-#   infra/check-sql.sh <student.sql> <asserts.sql>
+#   infra/check-sql.sh <student.sql> <asserts.sql> [service] [database]
+#
+#   service — контейнер стенда: postgres (15432, по умолчанию) или timescale (15433)
+#   database — база внутри сервиса (по умолчанию course)
 #
 # Код выхода:
 #   0 — решение применилось и все ассерты прошли
@@ -13,12 +16,14 @@
 set -euo pipefail
 
 if [ $# -lt 2 ]; then
-    echo "usage: $0 <student.sql> <asserts.sql>" >&2
+    echo "usage: $0 <student.sql> <asserts.sql> [service] [database]" >&2
     exit 2
 fi
 
 STUDENT="$1"
 ASSERTS="$2"
+SERVICE="${3:-postgres}"
+DATABASE="${4:-course}"
 
 for f in "$STUDENT" "$ASSERTS"; do
     if [ ! -f "$f" ]; then
@@ -37,7 +42,7 @@ DR="$(cd "$(dirname "$0")" && pwd)"
     printf '\n'
     cat "$ASSERTS"
     printf '\nROLLBACK;\n'
-} | docker compose -f "$DR/docker-compose.yml" exec -T postgres \
-        psql -U course -d course -v ON_ERROR_STOP=1 -f -
+} | docker compose -f "$DR/docker-compose.yml" exec -T "$SERVICE" \
+        psql -U course -d "$DATABASE" -v ON_ERROR_STOP=1 -f -
 
 echo "ok: проверка пройдена"

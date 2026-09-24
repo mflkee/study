@@ -17,7 +17,7 @@
 | 05-async-rust-tokio | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 06-sqlx-in-depth | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 07-performance | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
-| 08-timeseries-partitioning | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
+| 08-timeseries-partitioning | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 09-plpgsql-triggers-notify | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 10-app-patterns | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 11-web-api-axum | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -97,10 +97,13 @@ _(остальные модули заполняются так же: теори
 
 ### 08-timeseries-partitioning
 - [ ] Прочитать `theory.md`, пройти уроки 01–03
-- [ ] Партиции + BRIN на стенде
-- [ ] TimescaleDB: hypertable, continuous aggregates (профиль timescale)
-- [ ] Упражнения «Отчёты за смену»
-- [ ] Лаба «Ретеншн съел данные / партиция без индекса»
+- [ ] `00-setup-partitions.sql` применён (3 партиции, 1 М строк)
+- [ ] Примеры 01–03 (partitions/retention/downsampling) прогнаны на course_m06
+- [ ] Пример 04 (hypertable + cagg) прогнан на 15433 (timescale)
+- [ ] Упражнение 01 «Сменный отчёт»: `check-sql.sh … ex01 …` → ok
+- [ ] Упражнение 02 «Разверни TimescaleDB»: `check-sql.sh … ex02 … timescale course` → ok
+- [ ] Лаба: «no partition of relation found for row» воспроизведён и починен
+- [ ] `PROGRESS.md` обновлён
 
 ### 09-plpgsql-triggers-notify
 - [ ] Прочитать `theory.md`, пройти уроки 01–04

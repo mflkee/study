@@ -172,7 +172,7 @@
 | Технология | Версия | Как проверено |
 |---|---|---|
 | PostgreSQL | 18.6 (образ `postgres:18`) | `docker pull`, стенд поднят, смоук-запрос выполнен |
-| TimescaleDB | 2.30.1 (`latest-pg18-oss`) | контейнер поднят, `SELECT extversion` = 2.30.1 |
+| TimescaleDB | 2.30.1 (`latest-pg18`, полный образ) | контейнер поднят, `SELECT extversion` = 2.30.1, cagg/policy работают |
 | Rust | 1.98.1 | `rustc --version` |
 | sqlx | 0.9.0 | crates.io API |
 | tokio | 1.53.1 | crates.io API |
@@ -193,4 +193,4 @@
 3. **PostgreSQL 18.6 — текущая major-версия**, не LTS-выбор: курс пишется на актуальной версии; отличия от 14–17 отмечаются в тексте, но не тестируются.
 4. **SQL-модули (01, 02, 03, 08, 09, 13, 15) — без cargo-проекта**: бриф требует cargo только в Rust-модулях.
 5. **Modbus TCP как основной сценарий**, RTU (ESP32) — в теории и как задание «со звёздочкой» в капстоуне: TCP дружелюбен к Docker-стенду. (design D6)
-6. **TimescaleDB — только OSS-образ** (`latest-pg18-oss`); Apache-версия требуется для проектов с лицензионными требованиями — в курсе достаточно OSS.
+6. **TimescaleDB — полный образ `latest-pg18` (не `-oss`)**: в 2.30 OSS не содержит continuous aggregates (лицензионное ограничение); полный образ бесплатен on-prem (Timescale Community License). Решение задокументировано в design D3 и модуле 08.

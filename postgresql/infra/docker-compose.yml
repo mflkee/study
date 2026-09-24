@@ -102,7 +102,7 @@ services:
         condition: service_healthy
 
   timescale:
-    image: timescale/timescaledb:latest-pg18-oss
+    image: timescale/timescaledb:latest-pg18
     container_name: pg-course-timescale
     profiles: ["timescale"]
     restart: unless-stopped
