@@ -10,8 +10,8 @@
 | Модуль | Статус | Прочитан theory | Уроки | Примеры запущены | Упражнения | Лабы |
 |---|---|---|---|---|---|---|
 | 00-orientation | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
-| 01-sql-foundations | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
-| 02-schema-design | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
+| 01-sql-foundations | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
+| 02-schema-design | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 03-transactions-mvcc | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 04-rust-sql-first-steps | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 05-async-rust-tokio | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
