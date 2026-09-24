@@ -19,7 +19,7 @@
 | 07-performance | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 08-timeseries-partitioning | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 09-plpgsql-triggers-notify | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
-| 10-app-patterns | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
+| 10-app-patterns | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 11-web-api-axum | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 12-testing | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 13-ops-reliability | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -117,10 +117,12 @@ _(остальные модули заполняются так же: теори
 
 ### 10-app-patterns
 - [ ] Прочитать `theory.md`, пройти уроки 01–04
-- [ ] Примеры: repository, outbox
-- [ ] Упражнения «Очередь задач», «Буферизация при потере связи»
-- [ ] Лаба «Отказ БД: без потерь и дублей»
-- [ ] `cargo test` зелёный
+- [ ] `00-setup.sql` применён (outbox, task_queue, metering_points)
+- [ ] Примеры 01–05 прогнаны (repository, outbox, worker, buffer, миграции)
+- [ ] Упражнения 01–02: `cargo test ex01_`/`ex02_` зелёные
+- [ ] Лаба 01: PG реально остановлен; без потерь и дублей
+- [ ] `cargo clippy` и `cargo fmt --check` без замечаний
+- [ ] `PROGRESS.md` обновлён
 
 ### 11-web-api-axum
 - [ ] Прочитать `theory.md`, пройти уроки 01–03
