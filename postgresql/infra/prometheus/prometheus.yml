@@ -1,0 +1,13 @@
+# Конфигурация Prometheus для модуля 13 (профиль obs).
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres_exporter:9187"]
+
+  # Сам Prometheus (для самодиагностики).
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

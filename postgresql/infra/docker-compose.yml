@@ -1,0 +1,117 @@
+# Единый стенд курса «Rust + PostgreSQL для СИКН».
+# Profiles:
+#   (без profile) — PostgreSQL 18.6, всегда поднят
+#   tools    — pgAdmin 4 (веб-интерфейс, http://localhost:5050)
+#   obs      — Prometheus + postgres_exporter + Grafana (модуль 13)
+#   timescale — TimescaleDB на базе PostgreSQL 18 (модуль 08)
+#
+# Запуск:
+#   docker compose up -d                          # только PostgreSQL
+#   docker compose --profile tools  up -d         # + pgAdmin
+#   docker compose --profile obs    up -d         # + мониторинг (модуль 13)
+#   docker compose --profile timescale up -d      # + TimescaleDB (модуль 08)
+#
+# Хостовые порты выбраны НЕстандартными (PG 15432, TimescaleDB 15433,
+# pgAdmin 5050, Prometheus 9090, Grafana 3000, exporter 9187), чтобы не
+# конфликтовать с локальными сервисами ученика (см. design D5).
+
+name: pg-course
+
+services:
+  postgres:
+    image: postgres:18
+    container_name: pg-course-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: course
+      POSTGRES_PASSWORD: course
+      POSTGRES_DB: course
+    ports:
+      - "15432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U course -d course"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pg-course-pgadmin
+    profiles: ["tools"]
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: course@example.com
+      PGADMIN_DEFAULT_PASSWORD: course
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus
+    container_name: pg-course-prometheus
+    profiles: ["obs"]
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: pg-course-postgres-exporter
+    profiles: ["obs"]
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: "postgresql://course:course@postgres:5432/course?sslmode=disable"
+    ports:
+      - "9187:9187"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  grafana:
+    image: grafana/grafana
+    container_name: pg-course-grafana
+    profiles: ["obs"]
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  timescale:
+    image: timescale/timescaledb:latest-pg18-oss
+    container_name: pg-course-timescale
+    profiles: ["timescale"]
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: course
+      POSTGRES_PASSWORD: course
+      POSTGRES_DB: course
+    ports:
+      - "15433:5432"
+    volumes:
+      - ts_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U course -d course"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pg_data:
+  ts_data:
