@@ -21,6 +21,14 @@ echo "== 1. Чистим прошлый standby"
 docker rm -f pg-standby pg-standby-bootstrap 2>/dev/null || true
 docker volume rm pg_standby_data 2>/dev/null || true
 
+echo "== 1.5 Обеспечиваем replication-правило в pg_hba (идемпотентно)"
+docker compose exec -T postgres bash -c '
+  HBA=$(ls -d /var/lib/postgresql/18/docker/pg_hba.conf)
+  grep -q "^host *replication *all *all *scram-sha-256" "$HBA" \
+    || echo "host replication all all scram-sha-256" >> "$HBA"
+  psql -U course -d course -c "SELECT pg_reload_conf();" >/dev/null
+'
+
 echo "== 2. Bootstrap: pg_basebackup -R (recovery.signal + primary_conninfo)"
 docker run --rm \
   --name pg-standby-bootstrap \
