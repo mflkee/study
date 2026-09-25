@@ -22,7 +22,7 @@
 | 10-app-patterns | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 11-web-api-axum | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 12-testing | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
-| 13-ops-reliability | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
+| 13-ops-reliability | ✅ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 14-capstone-historian | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 | 15-interview-prep | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
 
@@ -144,10 +144,13 @@ _(остальные модули заполняются так же: теори
 
 ### 13-ops-reliability
 - [ ] Прочитать `theory.md`, пройти уроки 01–04
-- [ ] Бэкапы: pg_dump, pg_basebackup, WAL-архив, восстановление PITR
-- [ ] Репликация: streaming и logical
-- [ ] Мониторинг: Prometheus + Grafana показывают метрики PG
-- [ ] Лаба «Инцидент: диск WAL / потеря пула»
+- [ ] `01-pgdump-restore.sh`: дамп + сверка (100=100); `02-pgbasebackup.sh`: снимок
+- [ ] `03-pitr-restore.sh`: восстановление из снимка (PITR-to-time — UNVERIFIED, см. пометку)
+- [ ] `04-setup-replica.sh`: standby → streaming → промоушен (in_recovery=false)
+- [ ] Grafana 3000: дашборд «PG обзор (курс)», targets UP (profile obs)
+- [ ] Упражнения: ex01 (скрипт+ротация+сверка), ex02 (`check-sql.sh` → ok)
+- [ ] Лаба: WAL-рост, «too many clients», «dead but not yet removable» воспроизведены и починены
+- [ ] `PROGRESS.md` обновлён
 
 ### 14-capstone-historian
 - [ ] Архитектура и ADR

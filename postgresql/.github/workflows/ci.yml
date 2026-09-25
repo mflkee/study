@@ -1,0 +1,30 @@
+name: CI
+
+# Базовый CI курса (модуль 13, урок 04). Три задачи:
+# 1) compose-валидация (дёшево, каждый push);
+# 2) тесты модуля 12: testcontainers поднимает свой PostgreSQL — общего стенда нет;
+# 3) смоук против свежего стенда (опционально — поднять и погасить).
+# Запускается на GitHub Actions (ubuntu-latest, Docker в наличии).
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker compose config
+        run: docker compose -f infra/docker-compose.yml config --quiet
+
+  test-m12:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: docker info
+        run: docker info
+      - name: cargo test (module 12: testcontainers raises its own PostgreSQL)
+        working-directory: course/12-testing
+        run: cargo test --tests

@@ -36,9 +36,16 @@ services:
       - "pg_stat_statements.max=10000"
       - "-c"
       - "pg_stat_statements.track=all"
+      - "-c"
+      - "wal_level=replica"
+      - "-c"
+      - "archive_mode=on"
+      - "-c"
+      - "archive_command=cp %p /archive/%f"
     volumes:
       - pg_data:/var/lib/postgresql
       - ./db/init:/docker-entrypoint-initdb.d:ro
+      - wal_archive:/archive
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U course -d course"]
       interval: 5s
@@ -123,3 +130,4 @@ services:
 volumes:
   pg_data:
   ts_data:
+  wal_archive:
