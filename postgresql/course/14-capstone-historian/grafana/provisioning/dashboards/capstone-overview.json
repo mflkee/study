@@ -1,0 +1,87 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "postgres", "uid": "" },
+      "datasourceName": "Historian PG",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {},
+      "pluginVersion": "13",
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "" },
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT d.tag, m.ts, m.value\nFROM measurements_hist m\nJOIN devices d ON d.id = m.device_id\nORDER BY m.ts DESC\nLIMIT 20;",
+          "refId": "A",
+          "select": [[{"params": ["value"], "type": "column"}]],
+          "timeColumn": "ts",
+          "where": []
+        }
+      ],
+      "title": "Последние показания (SQL из капстоун-БД)",
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "" },
+      "datasourceName": "Historian PG",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "options": {},
+      "pluginVersion": "13",
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "" },
+          "format": "table",
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT date_trunc('hour', m.ts) AS hour, d.tag, count(*) FILTER (WHERE m.value > 1000) AS above\nFROM measurements_hist m JOIN devices d ON d.id = m.device_id\nWHERE m.ts > now() - interval '6 hours'\nGROUP BY hour, d.tag\nORDER BY hour;",
+          "refId": "A",
+          "timeColumn": "ts"
+        }
+      ],
+      "title": "Частота выше порога (по часам)",
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "" },
+      "datasourceName": "Historian PG",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+      "id": 3,
+      "options": {},
+      "pluginVersion": "13",
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "" },
+          "format": "time_series",
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT m.ts, d.tag, m.value\nFROM measurements_hist m JOIN devices d ON d.id = m.device_id\nWHERE d.tag = 'M-01-001' AND m.ts > now() - interval '1 hour'\nORDER BY m.ts;",
+          "refId": "A",
+          "timeColumn": "ts"
+        }
+      ],
+      "title": "Масса (M-01-001, последний час) — временной ряд",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "tags": ["capstone"],
+  "templating": { "list": [] },
+  "time": { "from": "now-15m", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Historian: поток от Modbus к дашборду",
+  "uid": "capstone-historian",
+  "version": 1,
+  "weekStart": ""
+}

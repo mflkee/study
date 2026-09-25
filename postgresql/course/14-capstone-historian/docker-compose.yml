@@ -1,0 +1,50 @@
+# Docker Compose капстоуна «Historian» — поднимается одной командой.
+#   docker compose -f course/14-capstone-historian/docker-compose.yml up -d
+#
+# Сервисы:
+#   postgres_cap — PostgreSQL 18 (порт 15442), схема капстоуна применяется
+#                  при первом старте (том capstone_pg), миграции — из
+#                  course/14-capstone-historian/migrations через docker-entrypoint-initdb.
+#   grafana_cap — Grafana (порт 3001) с provisioning: datasource PostgreSQL + дашборд.
+
+name: capstone
+
+services:
+  postgres_cap:
+    image: postgres:18
+    container_name: capstone-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: course
+      POSTGRES_PASSWORD: course
+      POSTGRES_DB: capstone
+    ports:
+      - "15442:5432"
+    volumes:
+      - capstone_pg:/var/lib/postgresql
+      # Инициализация схемы капстоуна при ПЕРВОМ старте (идемпотентная миграция
+      # может применяться и повторно через sqlx migrate из тестов).
+      - ../14-capstone-historian/migrations/0001_capstone.sql:/docker-entrypoint-initdb.d/0001_capstone.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U course -d capstone"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  grafana_cap:
+    image: grafana/grafana
+    container_name: capstone-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      postgres_cap:
+        condition: service_healthy
+
+volumes:
+  capstone_pg:

@@ -1,0 +1,16 @@
+apiVersion: 1
+
+datasources:
+  - name: Historian PG
+    type: postgres
+    access: proxy
+    url: postgres_cap:5432
+    database: capstone
+    user: course
+    secureJsonData:
+      password: course
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1800
+      timescaledb: false
+    isDefault: true
