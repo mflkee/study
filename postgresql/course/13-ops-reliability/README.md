@@ -17,6 +17,8 @@ docker compose up -d                        # primary с WAL-архивом (arc
 docker compose --profile obs up -d          # Prometheus + postgres_exporter + Grafana
 docker compose exec -T postgres psql -U course -d course_m06 -f - < ../course/13-ops-reliability/examples/00-setup.sql
 # расширение pg_stat_statements уже включено (модуль 07)
+# WAL-архив: при ПЕРВОМ старте том wal_archive принадлежит root — дай запись postgres (идемпотентно):
+docker run --rm -v pg-course_wal_archive:/archive postgres:18 chown postgres:postgres /archive
 # репликация: replication-правило pg_hba добавляет сам скрипт 04-setup-replica.sh (идемпотентно)
 ```
 
