@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Агрегирующий pom. Существует только чтобы команда `mvn -pl app ...` работала из корня
+  курса. Сам Spring Boot-проект намеренно вынесен в app/ (design.md, решение D1):
+  в корне лежат тексты заданий, openspec/ и отчёты — собирать их не нужно.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>ru.tsu.tpm</groupId>
+  <artifactId>course-parent</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>course-parent</name>
+  <description>Агрегатор учебного курса «Теория и практика многопоточности»</description>
+
+  <modules>
+    <module>app</module>
+  </modules>
+
+</project>
