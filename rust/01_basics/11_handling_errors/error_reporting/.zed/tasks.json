@@ -1,0 +1,18 @@
+[
+  {
+    "label": "Run Rust crate here",
+    "command": "/usr/bin/sh",
+    "args": [
+      "-lc",
+      "printf \"__ZED_TASK_START__\\n\"; dir=\"$ZED_DIRNAME\"; while [ ! -f \"$dir/Cargo.toml\" ] && [ \"$dir\" != \"/\" ]; do dir=$(dirname \"$dir\"); done; printf \"crate_dir=%s\\n\" \"$dir\"; if [ ! -f \"$dir/Cargo.toml\" ]; then echo \"Cargo.toml not found above $ZED_FILE\"; exit 1; fi; cd \"$dir\" && cargo run"
+    ],
+    "show_summary": true,
+    "show_command": true,
+    "save": "current",
+    "use_new_terminal": true,
+    "reveal": "always",
+    "tags": [
+      "rust-main"
+    ]
+  }
+]
