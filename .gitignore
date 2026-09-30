@@ -9,3 +9,8 @@
 
 # apcs moved to standalone repo (github.com/mflkee/apcs)
 apcs/
+
+# крупные учебные бинарники (учебники и т.п.) — держим вне git, файлы остаются на диске
+tsu/5sem/АСД/
+*.epub
+*.djvu
