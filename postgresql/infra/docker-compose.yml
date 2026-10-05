@@ -53,7 +53,7 @@ services:
       retries: 10
 
   pgadmin:
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:9.18
     container_name: pg-course-pgadmin
     profiles: ["tools"]
     restart: unless-stopped
@@ -62,6 +62,8 @@ services:
       PGADMIN_DEFAULT_PASSWORD: course
     ports:
       - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
     depends_on:
       postgres:
         condition: service_healthy
@@ -129,5 +131,6 @@ services:
 
 volumes:
   pg_data:
+  pgadmin_data:
   ts_data:
   wal_archive:
