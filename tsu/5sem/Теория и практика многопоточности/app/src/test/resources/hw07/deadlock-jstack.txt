@@ -1,0 +1,38 @@
+Found one Java-level deadlock:
+=============================
+"Deadlock-A":
+  waiting for ownable synchronizer 0x00000006a4813e70, (a java.util.concurrent.locks.ReentrantLock$NonfairSync),
+  which is held by "Deadlock-B"
+
+"Deadlock-B":
+  waiting for ownable synchronizer 0x00000006a4813e40, (a java.util.concurrent.locks.ReentrantLock$NonfairSync),
+  which is held by "Deadlock-A"
+
+Java stack information for the threads listed above:
+===================================================
+"Deadlock-A":
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.12.1/Native Method)
+	- parking to wait for  <0x00000006a4813e70> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.12.1/LockSupport.java:221)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@21.0.12.1/AbstractQueuedSynchronizer.java:788)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@21.0.12.1/AbstractQueuedSynchronizer.java:1024)
+	at java.util.concurrent.locks.ReentrantLock$Sync.lock(java.base@21.0.12.1/ReentrantLock.java:153)
+	at java.util.concurrent.locks.ReentrantLock.lock(java.base@21.0.12.1/ReentrantLock.java:322)
+	at Dead.lambda$main$0(Dead.java:15)
+	at Dead$$Lambda/0x00007fa64c000a08.run(Unknown Source)
+	at java.lang.Thread.runWith(java.base@21.0.12.1/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.12.1/Thread.java:1583)
+"Deadlock-B":
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.12.1/Native Method)
+	- parking to wait for  <0x00000006a4813e40> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.12.1/LockSupport.java:221)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@21.0.12.1/AbstractQueuedSynchronizer.java:788)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@21.0.12.1/AbstractQueuedSynchronizer.java:1024)
+	at java.util.concurrent.locks.ReentrantLock$Sync.lock(java.base@21.0.12.1/ReentrantLock.java:153)
+	at java.util.concurrent.locks.ReentrantLock.lock(java.base@21.0.12.1/ReentrantLock.java:322)
+	at Dead.lambda$main$1(Dead.java:23)
+	at Dead$$Lambda/0x00007fa64c000c30.run(Unknown Source)
+	at java.lang.Thread.runWith(java.base@21.0.12.1/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.12.1/Thread.java:1583)
+
+Found 1 deadlock.
