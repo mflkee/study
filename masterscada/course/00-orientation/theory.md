@@ -71,7 +71,7 @@ MasterSCADA 4D — российская SCADA-платформа (вендор �
 
 ## Стенд
 
-Единый `docker-compose.yml` в `infra/`: **PostgreSQL 16**, порт хоста **15432** (не 5432 — чтобы не
+Единый `docker-compose.yml` в `infra/`: **PostgreSQL 16**, порт хоста **15444** (не 5432 — чтобы не
 конфликтовать с локальными сервисами и другими контейнерами). Доступы: user `course`, password
 `course`, база `course`. Проекты MasterSCADA 2.0 хранятся в PostgreSQL — на этом стенде для обучения.
 

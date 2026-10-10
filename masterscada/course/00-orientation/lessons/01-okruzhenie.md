@@ -72,7 +72,7 @@ psql --version              # psql (PostgreSQL) 16.x (или клиент из �
 1. `tar: … xz: Cannot exec` — нет `xz` (в Arch он обычно есть); `sudo pacman -S xz`.
 2. Пакет «целый», но `ar p` ничего не выводит — файл ещё качается (`.part`), дождаться.
 3. `docker: permission denied` — `sudo usermod -aG docker $USER` и перелогиниться.
-4. Порт 5432 занят другим PostgreSQL — в курсе свой порт 15432, конфликта не будет.
+4. Порт 5432 занят другим PostgreSQL — в курсе свой порт 15444, конфликта не будет.
 
 ## Мини-задание
 
