@@ -66,6 +66,25 @@ scripts/start-rt-ipc.sh             # 2. IPC-сервер (сокет)
 
 В логе — `Контроллер АРМ 1 … запущен`, `Проект запущен`; открывается окно «… (АРМ 1)».
 
+## 4. Порт fastcgi в nginx (бесконечное «Подключение к серверу»)
+
+Симптом: веб-клиент открывается (`http://127.0.0.1:8045/index.html`), но висит на
+«Подключение к серверу»; в `web_imit/logs/error.log` —
+`connect() failed (111: Connection refused) ... upstream: "fastcgi://127.0.0.1:30750"`.
+
+Причина: в сгенерированном `Debug/web_imit/conf/nginx-mplc-imit.conf` блок
+`upstream fcgi_backend` содержит **жёстко прописанный** `127.0.0.1:30750`, тогда как `mplc`
+запущен с `/fastcgi:31100` (и рядом в конфиге есть `set $fastcgi_port_base 31100;`).
+Чинится заменой порта в upstream и `-s reload` nginx:
+
+```sh
+PREF=~/.config/MPSSoft/MasterSCADA4D_DT_2.0_RC/ProjectsServiceData/<Проект>_<guid>/Debug/web_imit
+sed -i 's/127\.0\.0\.1:30750/127.0.0.1:31100/' "$PREF/conf/nginx-mplc-imit.conf"
+"/opt/MasterSCADA 4D 2.0/resources/MasterSCADA4D_Server/Config/MasterPLC/linux/nginx/sbin/nginx_imit" \
+  -p "$PREF/" -c conf/nginx-mplc-imit.conf -s reload
+curl -s -o /dev/null -w '%{http_code}\n' -X POST http://127.0.0.1:8045/Methods/GetState   # → 200
+```
+
 ## Прочее (на будущее)
 
 - Повторный запуск эмуляции без остановки предыдущей → «Выбранный проект уже открыт»:
