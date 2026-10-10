@@ -1,0 +1,30 @@
+# Стенд курса: PostgreSQL для MasterSCADA 4D 2.0
+#
+# Проекты MasterSCADA 4D 2.0 хранятся в PostgreSQL (требование продукта: >= 10).
+# Порт хоста 15432 (не 5432) — чтобы не конфликтовать с локальными сервисами и другими контейнерами.
+#
+#   docker compose up -d
+#   docker compose exec -T postgres psql -U course -d course -c "SELECT version();"
+#   docker compose down          # данные сохраняются в volume pgdata
+#   docker compose down -v       # удалить данные стенда
+services:
+  postgres:
+    image: postgres:16
+    container_name: masterscada-pg
+    environment:
+      POSTGRES_USER: course
+      POSTGRES_PASSWORD: course
+      POSTGRES_DB: course
+      TZ: Europe/Moscow
+    ports:
+      - "15432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U course -d course"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
