@@ -30,9 +30,29 @@ mkdir -p "$DEST"
 cp -a "$TMP/opt/MasterSCADA 4D 2.0/." "$DEST/"
 
 echo ">> .desktop и иконка"
-install -Dm644 "$TMP/usr/share/applications/MasterSCADA4D_2.0.desktop" \
-  /usr/share/applications/MasterSCADA4D_2.0.desktop
-[[ -f "$DEST/icon.png" ]] && install -Dm644 "$DEST/icon.png" /usr/share/pixmaps/MasterSCADA4D_2.0.png
+# Свой .desktop: в пакетном Exec нет флагов Wayland/песочницы, ярлык из лаунчера не запустил бы SCADA.
+cat > /usr/share/applications/MasterSCADA4D_2.0.desktop <<'EOF'
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=MasterSCADA 4D 2.0
+GenericName=SCADA Development Environment
+GenericName[ru]=Среда разработки АСУ ТП
+Comment=MasterSCADA 4D DT 2.0 — среда разработки (Electron/.NET, Wayland-native)
+Comment[ru]=Среда разработки АСУ ТП MasterSCADA 4D DT 2.0
+Exec="/opt/MasterSCADA 4D 2.0/MasterSCADA4D_2.0" --no-sandbox --ozone-platform-hint=auto %U
+Icon=MasterSCADA4D_2.0
+Terminal=false
+Categories=Development;Engineering;IDE;
+Keywords=SCADA;АСУ ТП;MasterSCADA;ПЛК;HMI;OPC;
+StartupWMClass=MasterSCADA 4D 2.0
+StartupNotify=true
+EOF
+if [[ -f "$DEST/icon.png" ]]; then
+  install -Dm644 "$DEST/icon.png" /usr/share/icons/hicolor/256x256/apps/MasterSCADA4D_2.0.png
+  install -Dm644 "$DEST/icon.png" /usr/share/pixmaps/MasterSCADA4D_2.0.png
+  gtk-update-icon-cache -f -t /usr/share/icons/hicolor 2>/dev/null || true
+fi
 update-desktop-database /usr/share/applications 2>/dev/null || true
 
 # Песочница Chromium: либо setuid-root, либо запуск с --no-sandbox (наш скрипт уже с флагом).

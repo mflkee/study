@@ -72,5 +72,26 @@ ps -eo pid,args | grep -i masterscada | grep -v grep
 5. **Проекты**: без запущенного PostgreSQL создать/сохранить проект не получится.
 6. **Данные приложения** пишутся в `~/.config/MasterSCADA 4D 2.0/` (Electron user-data).
 
+## Интеграция с лаунчером (Super+D / Noctalia)
+
+Пакетный `.desktop` содержит `Exec` **без** флагов (`--no-sandbox`, ozone) — из лаунчера SCADA
+так не запустится. Поэтому ставим свой ярлык. Пользовательский файл с тем же именем
+**перекрывает** системный (XDG precedence), sudo не нужен:
+
+```bash
+mkdir -p ~/.local/share/applications ~/.local/share/icons/hicolor/256x256/apps
+# ~/.local/share/applications/MasterSCADA4D_2.0.desktop — с Exec ... --no-sandbox --ozone-platform-hint=auto
+cp "/opt/MasterSCADA 4D 2.0/icon.png" ~/.local/share/icons/hicolor/256x256/apps/MasterSCADA4D_2.0.png
+update-desktop-database ~/.local/share/applications
+gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor
+```
+
+Скрипт `scripts/install-to-opt.sh` уже создаёт такой `.desktop` в `/usr/share/applications`.
+
+- Лаунчер у пользователя: **Noctalia** на `Mod+D` (`noctalia msg panel-toggle launcher`),
+  fuzzel — на `Mod+Ctrl+D`.
+- Проверить, что ярлык рабочий, без GUI: `gtk-launch MasterSCADA4D_2.0` — поднимет окно из `/opt`.
+- Если лаунчер не видит новую запись — перезапустить его (`killall noctalia` или `Mod+D` заново).
+
 ## Обратный путь (удаление)
 Просто удалить `/opt/MasterSCADA 4D 2.0`, `.desktop` и `~/.config/MasterSCADA 4D 2.0/`.
