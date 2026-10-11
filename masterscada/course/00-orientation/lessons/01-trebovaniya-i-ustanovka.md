@@ -49,6 +49,10 @@ libgtk-3-0, libnotify4, libnss3, libxss1, libxtst6, xdg-utils,
 libatspi2.0-0, libuuid1, libsecret-1-0
 ```
 
+> **`dpkg-deb` — не «из коробки».** Это утилита из пакета `dpkg` (есть на Debian/Astra; на Arch,
+> Fedora и т.п. — нет). Варианты: поставить его (`sudo pacman -S dpkg`) или читать пакет вручную —
+> `ar p "$DEB" control.tar.gz | tar -xzO ./control`.
+
 Посмотреть, **куда** пакет всё положит, ничего не устанавливая:
 
 ```bash
@@ -119,6 +123,40 @@ ldd "/opt/MasterSCADA 4D 2.0/resources/MasterSCADA4D_Server/MasterSCADA4D_Server
 > Проверенный пример такого запуска (Arch + Wayland/niri) — в конспекте
 > [`../../../docs/reference/ustanovka-arch-niri.md`](../../../docs/reference/ustanovka-arch-niri.md).
 > Это **не** вендорская конфигурация: возможны сюрпризы, поддержки не будет.
+
+## 4.1. Что делает `postinst` (и что нужно повторить при распаковке)
+
+У `.deb` есть **скрипты сопровождения**: при `apt install` / `dpkg -i` система сама выполняет
+`postinst`. При «установке распаковкой» (§4) он **не выполняется** — и вы получите ошибки уже в
+работе (например, `Access to the path '/usr/share/MPSSoft' is denied`, см. урок 02).
+
+Что именно делает `postinst` этого пакета (посмотреть можно так):
+
+```bash
+ar p "$DEB" control.tar.gz | tar -xzO ./postinst      # или: dpkg-deb -e "$DEB" /tmp/ctl && cat /tmp/ctl/postinst
+```
+
+Он, во-первых, выставляет бит выполнения на бинарники в `/opt/…/resources` (ядро .NET, `mplc`,
+`nginx`, клиент визуализации, IPC-сервер), а во-вторых — создаёт общий каталог данных:
+
+```sh
+mkdir -p /usr/share/MPSSoft
+chmod a+rw /usr/share/MPSSoft        # вендорский вариант; на практике нужен ещё «x» (см. ниже)
+```
+
+Если ставили распаковкой — выполните это руками:
+
+```bash
+sudo mkdir -p /usr/share/MPSSoft
+sudo chmod a+rwx /usr/share/MPSSoft      # 0777; «a+rw» без x каталог не откроет для записи
+# мультипользовательский вариант (без 777):
+# sudo install -d -m 2775 -o root -g "$(id -gn)" /usr/share/MPSSoft
+```
+
+> Зачем каталог: .NET-часть IDE хранит там **общие данные** (в терминах Windows —
+> `C:\ProgramData\MPSSoft`; .NET на Linux отображает `CommonApplicationData` в `/usr/share`).
+> В частности, туда пишутся пользовательские запросы («Queries») — без каталога открытие проекта
+> падает с `UnauthorizedAccessException`.
 
 ## 5. Обновление и удаление
 

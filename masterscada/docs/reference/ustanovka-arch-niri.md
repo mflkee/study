@@ -113,6 +113,21 @@ docker compose exec -T postgres psql -U course -d course -c "\dt"  # табли�
    композитор. Подробнее — урок 02, §5.
 8. **Внешний вид окна зависит от способа запуска**: XWayland-окно niri обрамляет рамкой/фокус-кольцом,
    а нативное Wayland-окно Chromium — frameless (клиентские декорации), и niri его «не украшает».
+9. **`Access to the path '/usr/share/MPSSoft' is denied`** (`UnauthorizedAccessException`) при создании
+   или открытии проекта. Причина: при распаковке `.deb` (вариант A/B выше) **не выполняется
+   `postinst`** пакета, а он создаёт общий каталог данных IDE:
+
+   ```bash
+   sudo mkdir -p /usr/share/MPSSoft
+   sudo chmod a+rwx /usr/share/MPSSoft     # вендорский `chmod a+rw` без «x» каталог не откроет
+   ```
+
+   Проверка, что делает `postinst` (без установки пакета):
+   `ar p ~/Downloads/MasterSCADA4D_2.0.4_Install.deb control.tar.gz | tar -xzO ./postinst`.
+   Там же — список `chmod +x` на бинарники в `/opt/…/resources` (их тоже стоит применить).
+10. **«Выбранный проект уже открыт»** — проект удерживает advisory-блокировка PostgreSQL, пока
+   открыт другой сеанс IDE (второе окно/старый процесс). Проверить, кто держит:
+   `SELECT pid, objid FROM pg_locks WHERE locktype='advisory';` — закрыть лишний сеанс.
 
 ## Интеграция с лаунчером (Super+D / Noctalia)
 

@@ -54,6 +54,7 @@ ps -eo pid,args | grep -i masterscada | grep -v grep
 | Настройки IDE | `~/.config/MPSSoft/MasterSCADA4D_DT_2.0/IdeSettings.json` | параметры и подключение к БД (урок 03) |
 | **Лог IDE** | `~/.config/MPSSoft/MasterSCADA4D_DT_2.0/sys_log/ГГГГ_ММ_ДД.log` | старт, ошибки, подключение к хранилищу |
 | Настройки проекта (в самом проекте) | в PostgreSQL | см. урок 03 |
+| Общие данные (пользовательские запросы) | `/usr/share/MPSSoft/` | создаётся `postinst` пакета (урок 01, §4.1); без него проект не открыть |
 
 > У сборок с суффиксом (rc/beta/branch) каталог настроек тоже с суффиксом:
 > `~/.config/MPSSoft/MasterSCADA4D_DT_2.0_RC/`. Ниже в командах — релизное имя.
@@ -78,6 +79,8 @@ tail -n 5 ~/.config/MPSSoft/MasterSCADA4D_DT_2.0/sys_log/$(date +%Y_%m_%d).log
 | Окно есть, но чёрное / интерфейс тормозит | рендер через SwiftShader (нет GPU-ускорения) | проверить драйвер GPU, снять софтверный фолбэк |
 | В консоли `fontconfig: … 48-guessfamily.conf` | предупреждения шрифтов | игнорировать, безвредно |
 | Не переключается раскладка в полях ввода | приложение пошло через XWayland (в неофициальных Wayland-окружениях) | §5 «Wayland-окружения» |
+| `Access to the path '/usr/share/MPSSoft' is denied` / `UnauthorizedAccessException` при открытии или создании проекта | не выполнен `postinst` пакета (установка распаковкой): IDE пишет общие данные в `/usr/share/MPSSoft`, которого нет | `sudo mkdir -p /usr/share/MPSSoft && sudo chmod a+rwx /usr/share/MPSSoft` (урок 01, §4.1) |
+| «Выбранный проект уже открыт» | проект удерживается advisory-блокировкой PostgreSQL другим сеансом/окном IDE | закрыть второе окно/старую копию IDE (или `pkill`), проверить: `SELECT * FROM pg_locks WHERE locktype='advisory'` |
 | «Не удалось подключиться» при создании проекта | нет PostgreSQL / не тот порт/пароль | урок 03 |
 
 **Общее правило диагностики:** сначала процессы (`ps`), потом лог (`sys_log`), и только потом
