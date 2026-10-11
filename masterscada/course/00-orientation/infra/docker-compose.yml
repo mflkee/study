@@ -1,27 +1,41 @@
 # Стенд курса: PostgreSQL для MasterSCADA 4D 2.0
 #
 # Проекты MasterSCADA 4D 2.0 хранятся в PostgreSQL (требование продукта: >= 10).
-# Порт хоста 15444 (не 5432) — чтобы не конфликтовать с локальными сервисами и другими контейнерами.
+# Кластер инициализируется с локалью ru_RU.UTF-8 — как рекомендует вендор
+# (`pg-setup initdb --tune=1c --locale=ru_RU.UTF-8`); см. Dockerfile.
 #
-#   docker compose up -d
+# Быстрый старт:
+#   docker compose up -d --build
+#   docker compose ps
 #   docker compose exec -T postgres psql -U course -d course -c "SELECT version();"
-#   docker compose down          # данные сохраняются в volume pgdata
-#   docker compose down -v       # удалить данные стенда
+#   docker compose down        # убрать контейнер, данные (том pgdata) остаются
+#   docker compose down -v     # снести и данные стенда (нужно при смене локали/доступов)
+#
+# Параметры берутся из .env (см. .env.example). Значения по умолчанию:
+#   PG_BIND=127.0.0.1   — публикуем только на loopback (в сеть БД не торчит)
+#   PG_PORT=15444       — НЕ 5432, чтобы не конфликтовать с системным PostgreSQL
+#   PG_USER/PG_PASSWORD/PG_DB = course / course / course
+# ВАЖНО: эти же значения указываются в среде разработки (Настройки среды → База данных).
+
 services:
   postgres:
-    image: postgres:16
+    build: .
+    image: masterscada-pg:16-ru
     container_name: masterscada-pg
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: course
-      POSTGRES_PASSWORD: course
-      POSTGRES_DB: course
-      TZ: Europe/Moscow
+      POSTGRES_USER: ${PG_USER:-course}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-course}
+      POSTGRES_DB: ${PG_DB:-course}
+      TZ: ${TZ:-Europe/Moscow}
+      # Локаль кластера — только на этапе initdb (первое создание тома pgdata).
+      POSTGRES_INITDB_ARGS: "--locale=ru_RU.UTF-8 --encoding=UTF8"
     ports:
-      - "15444:5432"
+      - "${PG_BIND:-127.0.0.1}:${PG_PORT:-15444}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U course -d course"]
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-course} -d ${PG_DB:-course}"]
       interval: 5s
       timeout: 3s
       retries: 10

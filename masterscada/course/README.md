@@ -6,8 +6,11 @@
 резервирование и ИБ. Сквозная предметная область — **СИКН** (система измерений количества и
 качества нефти), как в курсе по PostgreSQL.
 
-> Окружение: **Arch Linux + niri/Wayland**, среда разработки **MasterSCADA 4D DT 2.0** в `/opt/MasterSCADA 4D 2.0`,
-> PostgreSQL — в Docker. Запуск проверен (см. [`../docs/reference/ustanovka-arch-niri.md`](../docs/reference/ustanovka-arch-niri.md)).
+> Окружение: базовый (вендорский) путь — **Astra Linux SE 1.7/1.8** или Windows; курс написан так,
+> чтобы проходиться на любом Linux x64. Проверенный учебный вариант — **Arch Linux + niri/Wayland**
+> (см. [`../docs/reference/ustanovka-arch-niri.md`](../docs/reference/ustanovka-arch-niri.md)).
+> Среда разработки — **MasterSCADA 4D DT 2.0**; СУБД для проектов — системный **PostgreSQL** либо
+> учебный **стенд в Docker** ([`00-orientation/infra/`](00-orientation/infra/README.md)).
 
 ## Как устроен курс
 
@@ -25,7 +28,7 @@
 
 | # | Модуль | Тема | Время |
 |---|---|---|---|
-| 00 | [orientation](00-orientation/) | Окружение, запуск SCADA на Arch+niri, PostgreSQL, первый проект | 6 ч |
+| 00 | [orientation](00-orientation/) | Окружение, установка и запуск DT, PostgreSQL, первый проект | 6 ч |
 | 01 | project-basics | Структура проекта, дерево системы и объектов, узлы, запуск RT | 8 ч |
 | 02 | tags-parameters | Теги и параметры, типы данных, шкалы, права | 8 ч |
 | 03 | object-approach | Объектный подход: типы/наследники/экземпляры, библиотеки | 10 ч |
@@ -46,7 +49,8 @@
 
 1. Прочитай [`00-orientation/README.md`](00-orientation/README.md).
 2. Убедись, что среда разработки запускается: `../scripts/run-masterscada.sh`.
-3. Подними PostgreSQL: `cd 00-orientation/infra && docker compose up -d`.
+3. Подними PostgreSQL: системный (см. урок 03, §2) или стенд
+   `cd 00-orientation/infra && docker compose up -d --build`.
 4. Пройди модуль 00, отмечай прогресс в [`PROGRESS.md`](PROGRESS.md).
 
 Документация (онлайн-справка и конспекты) — в [`../docs/`](../docs/); правила для ИИ — в
