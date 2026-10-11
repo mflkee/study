@@ -81,6 +81,7 @@ tail -n 5 ~/.config/MPSSoft/MasterSCADA4D_DT_2.0/sys_log/$(date +%Y_%m_%d).log
 | Не переключается раскладка в полях ввода | приложение пошло через XWayland (в неофициальных Wayland-окружениях) | §5 «Wayland-окружения» |
 | `Access to the path '/usr/share/MPSSoft' is denied` / `UnauthorizedAccessException` при открытии или создании проекта | не выполнен `postinst` пакета (установка распаковкой): IDE пишет общие данные в `/usr/share/MPSSoft`, которого нет | `sudo mkdir -p /usr/share/MPSSoft && sudo chmod a+rwx /usr/share/MPSSoft` (урок 01, §4.1) |
 | «Выбранный проект уже открыт» | проект удерживается advisory-блокировкой PostgreSQL другим сеансом/окном IDE | закрыть второе окно/старую копию IDE (или `pkill`), проверить: `SELECT * FROM pg_locks WHERE locktype='advisory'` |
+| `!!!Обращение к удаленному элементу : '<disposed>' (Id=… Type=MasterSCADA.Program…)` в логе | шум .NET-ядра: дизайнер (мнемосхема/схема) читает уже удалённый элемент модели; проект при этом работает | если идёт потоком — сохранить проект и переоткрыть; на данные не влияет |
 | «Не удалось подключиться» при создании проекта | нет PostgreSQL / не тот порт/пароль | урок 03 |
 
 **Общее правило диагностики:** сначала процессы (`ps`), потом лог (`sys_log`), и только потом
