@@ -131,6 +131,28 @@ cp .env.example .env      # дальше правим .env; файл в git не
 Смена порта (`PG_PORT=5433`) — тоже требует обновить параметры подключения в среде разработки
 (Настройки среды → База данных либо `IdeSettings.json`).
 
+## Что IDE создаёт в БД (проверено 2026-10-11)
+
+После создания проекта в редакторе в стенде появляются:
+
+| Объект | Что это |
+|---|---|
+| `ms4d_projects` → таблица `public.projects` | **реестр проектов**: `project_id, project_name, type_name, config_name, version, changed_time, database_version` |
+| `ms4d_project_<N>` | **БД проекта** (`ms4d_project_1` ≈ 69 МБ после шаблона). Внутри — объектный граф: `items`, `links`, `types`, `props_str/num/bin`, `trans_*`, `users`, `sessions`, `log` |
+
+```bash
+docker compose exec -T postgres psql -U course -d ms4d_projects  -c "SELECT * FROM projects;"
+docker compose exec -T postgres psql -U course -d ms4d_project_1 -c "SELECT count(*) FROM items;"
+```
+
+Нюансы, на которые легко наткнуться:
+
+- `changed_time` хранится в **UTC** (`timestamp without time zone`) — не пугайся «сдвига» относительно
+  локального времени машины.
+- `type_name` показывает, по какому **шаблону** создан проект (`MasterSCADA.Project.HMI` =
+  «Проект визуализации»). Для полного цикла с узлом RT нужен шаблон «Общий проект» (**UNVERIFIED**).
+- Проекты живут **только** в томе `pgdata`: `docker compose down -v` уничтожит их все.
+
 ## Диагностика
 
 | Симптом | Причина | Что делать |

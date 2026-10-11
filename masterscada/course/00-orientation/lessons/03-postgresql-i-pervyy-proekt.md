@@ -162,15 +162,39 @@ python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print({k:v for k,v 
 Теперь — доказательство (обязательная часть урока). **До** создания и **после** выполни:
 
 ```bash
-# Вариант B: снаружи, через контейнер
+# Вариант B: снаружи, через контейнер (для варианта A — тем же psql с -h localhost -U postgres)
 docker compose exec -T postgres psql -U course -d course -c "\l"
-docker compose exec -T postgres psql -U course -d course -c "\dt"
-# Вариант A: тем же psql, но с -h localhost -p 5432 -U postgres
+# Вариант A/B — содержимое служебной БД (реестр проектов):
+docker compose exec -T postgres psql -U course -d ms4d_projects -c "SELECT * FROM projects;"
 ```
 
-Что ожидается: в списке баз/схем появляются объекты, созданные редактором (в наших наблюдениях
-на похожем стенде — БД вида `ms4d_projects` и `ms4d_project_1`; **точные имена фиксируем после
-первого создания проекта**). Это и есть ответ на вопрос «где проект»: не в файлах проекта, а в СУБД.
+Что реально создаёт редактор (**проверено 2026-10-11** на этом стенде):
+
+| Что | Как выглядит |
+|---|---|
+| Служебная БД | `ms4d_projects` → таблица `public.projects` (реестр): `project_id, project_name, type_name, config_name, version, changed_time, database_version` |
+| БД проекта | по одной на проект: `ms4d_project_<N>` (у нас `ms4d_project_1`, ~69 МБ после шаблона) |
+| Запись в реестре | `1 \| Быстрый старт \| MasterSCADA.Project.HMI \| MasterPLC \| 1 \| 2026-10-11 09:54:24 \| 16.15 (Debian …)` |
+| Модель проекта внутри БД | объектный граф: `items` (объекты) + `links` (связи) + `types` (типы) + `props_str/num/bin` (свойства) + `trans_*` (транзакционные версии) + `users`, `sessions`, `log` |
+
+Порядок величин на «пустом» проекте из шаблона: `items` ≈ 38 700, `links` ≈ 46 000, `types` ≈ 819,
+`props_str` ≈ 45 900, `props_num` ≈ 133 700. Полезно увидеть: **проект — это не файл, а данные в
+СУБД**, и «дерево объектов» в редакторе — это таблицы `items` + `links` + `props_*`.
+
+Проверить, что проект «живой» (реквизиты объекта/связи и т.п.):
+
+```bash
+docker compose exec -T postgres psql -U course -d ms4d_project_1 \
+  -c "SELECT count(*) AS items FROM items;" \
+  -c "SELECT name FROM types ORDER BY name LIMIT 10;"
+```
+
+> **Грабля времени.** `projects.changed_time` хранится в **UTC** (`timestamp without time zone`):
+> у нас проект создан в 17:54 по машине (UTC+8), а в реестре — `09:54:24`. Не пугайся «сдвига».
+
+> **Тип проекта.** В реестре видно `type_name` — `MasterSCADA.Project.HMI` (шаблон «Проект
+> визуализации»). Для полного цикла с запуском узла RT бери шаблон **«Общий проект»**: у HMI-проекта
+> узла в дереве системы может не быть (**UNVERIFIED** — проверяется в уроке 04).
 
 ## 6. Читаем ошибки, а не угадываем
 
