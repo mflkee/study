@@ -128,6 +128,42 @@ docker compose exec -T postgres psql -U course -d course -c "\dt"  # табли�
 10. **«Выбранный проект уже открыт»** — проект удерживает advisory-блокировка PostgreSQL, пока
    открыт другой сеанс IDE (второе окно/старый процесс). Проверить, кто держит:
    `SELECT pid, objid FROM pg_locks WHERE locktype='advisory';` — закрыть лишний сеанс.
+11. **Эмуляция RT на Linux: `System.Exception: Not permited` → `Connection refused (127.0.0.1:30900)`,
+   окно клиента визуализации не открывается.** Проверено 2026-10-12.
+
+   Среда разработки стартует процессы узла (nginx/mplc) **через вспомогательный процесс**
+   `MasterSCADA.Controllers.IPCServer`. На Windows она поднимает его сама
+   (`cmd.exe /c start /b MasterSCADA.Controllers.IPCServer.exe` — эта строка так и лежит в сборке),
+   на Linux ожидает его уже запущенным (в штатной установке его обеспечивает служба `mplc4` из
+   дистрибутива RT). При установке DT «распаковкой» его нет → `ProcessStartService.GetClient()`
+   падает с `Not permited`, каталог узла остаётся без `logs/`, `temp/proxy`, `temp/client`, nginx
+   узла не поднимается, а IDE бесконечно получает `Connection refused` на порт узла `30900`.
+
+   Лечится запуском helper'а (и лучше — user-юнитом, чтобы не делать это руками каждый раз):
+
+   ```bash
+   # разово:
+   setsid nohup "/opt/MasterSCADA 4D RC/resources/MasterSCADA4D_Server/ipc_server/MasterSCADA.Controllers.IPCServer" &
+
+   # постоянная схема: ~/.config/systemd/user/masterscada-ipc.service
+   #   [Service]
+   #   WorkingDirectory=/opt/MasterSCADA 4D RC/resources/MasterSCADA4D_Server/ipc_server
+   #   ExecStart="/opt/MasterSCADA 4D RC/resources/MasterSCADA4D_Server/ipc_server/MasterSCADA.Controllers.IPCServer"
+   #   Restart=on-failure
+   systemctl --user daemon-reload && systemctl --user enable --now masterscada-ipc
+   systemctl --user status masterscada-ipc        # active (running)
+   ls -l /tmp/CoreFxPipe_MasterSCADA.Controllers.IPCServer   # сокет-«труба» helper'а
+   ```
+
+   Признаки, что всё поехало: в `sys_log` пропадает `Not permited`, появляются `Проект запущен`,
+   поднимается `nginx_imit` (порт `8045`) и узел отвечает на `127.0.0.1:30900`. После остановки
+   проекта `nginx_imit` может остаться висеть — при необходимости `pkill nginx_imit` (не делай этого,
+   пока смотришь мнемосхему в браузере).
+   Важно: путь в юните версионный — после обновления среды разработки его надо поправить.
+12. **Диалога выбора клиента визуализации нет** — он показывается только при первом запуске;
+   выбор хранится в `IdeSettings.json` (`OpenClientMode`), меняется в
+   **Настройки среды → вкладка «Клиент визуализации»**. Помни, что мнемосхема может открываться
+   **вкладкой в браузере** (это режим «браузер по умолчанию»), а не отдельным окном.
 
 ## Интеграция с лаунчером (Super+D / Noctalia)
 
