@@ -38,7 +38,7 @@ $EDITOR course/README.md
 - **Стек:** Electron 28.3.3 (Chromium 120) UI + self-contained **.NET 8** сервер + C++/Boost плагины; **проекты хранятся в PostgreSQL**.
 - **СУБД для проектов:** учебный стенд `localhost:15444` (`course/course/course`, том `pgdata`) или системный PostgreSQL на 5432.
 - **Официально** DT 2.0 поддерживает Windows 10+ и Astra Linux SE 1.7/1.8; RT — шире (Debian, ALT, РЕД ОС).
-- **Проверенный учебный вариант** (вне поддержки вендора): Arch + niri/Wayland, запуск с `--no-sandbox --ozone-platform-hint=auto` (см. `scripts/run-masterscada.sh`).
+- **Проверенный учебный вариант** (вне поддержки вендора): Arch + niri/Wayland, запуск **X11-режимом** (`--no-sandbox`, без ozone-флагов) — так работает контекстное меню (ПКМ); нативное окно Wayland ломает ПКМ-меню (диагностика в `docs/reference/ustanovka-arch-niri.md`, грабли 10b–10c). Режимы — `scripts/run-masterscada.sh` (`MASTERSCADA_MODE=x11|wayland`).
 - **Документация:** онлайн-справка 2.0 — `https://support.mps-soft.ru/ms4d_web/` (см. [`AGENTS.md`](AGENTS.md) §3).
 
 ## Статус

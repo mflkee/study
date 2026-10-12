@@ -1,11 +1,16 @@
 # Запуск MasterSCADA 4D DT 2.0 на Arch Linux + Wayland/niri (конспект)
 
-> **Статус: ✅ проверено 2026-10-10** на Arch + niri (Wayland). Окно редактора и диалог
-> «Создание проекта» открываются **нативно в Wayland** (Chromium ozone), ядро `.NET` стартует.
-> Вендором такая конфигурация **не поддерживается** — это эксперимент, не прод-инсталляция.
+> **Статус: ✅ проверено 2026-10-12** на Arch + niri. Рабочий режим — **X11 (XWayland)**: полный
+> функционал (ПКМ-меню, горячие клавиши, диалоги). Нативное окно Wayland тоже запускается, но
+> **ломает контекстное меню** (см. грабл. 10b) — годится только там, где меню не нужны.
+> Вендором такая конфигурация **не поддерживается** — это эксперимент, не прод-инсталляция
+> (официально: Windows 10+ и Astra Linux SE 1.7x/1.8x, где сессия — X.Org; Wayland в справке
+> вендора не упоминается вообще).
 >
 > **Дополнено 2026-10-11:** сборка `rc` (имена путей/пакетов), стенд PostgreSQL в Docker
 > (`localhost:15444`, локаль `ru_RU.UTF-8`), поведение раскладки клавиатуры в XWayland-приложениях.
+> **Дополнено 2026-10-12:** режимы запуска X11/Wayland, поломка ПКМ-меню в нативном Wayland,
+> «зависание на заставке» при незакрытой прежней копии (грабли 10b и 10c).
 
 ## Что понадобится
 
@@ -40,16 +45,15 @@ sudo tar -xJf <(ar p ~/Downloads/MasterSCADA4D_2.0.4_Install.deb data.tar.xz) -C
 sudo cp "/opt/MasterSCADA 4D 2.0/icon.png" /usr/share/pixmaps/ 2>/dev/null || true
 # .desktop из пакета: usr/share/applications/MasterSCADA4D_2.0.desktop
 ```
-Затем запуск — через `scripts/run-masterscada.sh`.
+Затем запуск — через `scripts/run-masterscada.sh` (режим задаётся `MASTERSCADA_MODE`, по умолчанию `x11`).
 
-## Почему именно эти два флага
+## Почему именно такие флаги
 
 | Флаг | Зачем |
 |---|---|
 | `--no-sandbox` | В `.deb` `chrome-sandbox` **не** setuid-root; без флага Electron падает с ошибкой песочницы. Альтернатива — `sudo chown root:root chrome-sandbox && sudo chmod 4755 chrome-sandbox`. |
-| `--ozone-platform-hint=auto` | Chromium 120 сам выбирает **нативный Wayland** (ozone) вместо XWayland. На niri работает сразу, без переменных окружения. |
-
-Подтверждение из процесса GPU/рендерера: `--ozone-platform=wayland` (т.е. **не** XWayland).
+| *без ozone-флага* | Electron идёт через **XWayland** — только так ПКМ-меню и диалоги работают штатно (см. грабл. 10b). Подтверждение: у окна в niri `pid` = процесс `xwayland-satellite`. |
+| `--ozone-platform-hint=auto` | Нужен только для режима `MASTERSCADA_MODE=wayland`: Chromium сам выбирает нативный Wayland. Подтверждение: `ps -eo args \| grep -o -- '--ozone-platform=wayland'`. |
 
 ## Проверка, что всё поднялось
 
@@ -133,18 +137,78 @@ docker compose exec -T postgres psql -U course -d course -c "\dt"  # табли�
    и в X11-, и в нативном Wayland-запуске), но часть команд в этой RC-сборке к клавишам не привязана.
    Рабочий маршрут: меню **«Правка»** и контекстное меню — «Дублировать», «Копировать», «Вставить»,
    «Вставить как экземпляр». Эталон релиза: `Ctrl+C/V`, `Ctrl+D`, `Ctrl+Shift+V`, `Ctrl+S`, `F2`, `Del`.
-10b. **Как запускать на Arch+niri.** Нативный Wayland предпочтительнее: раскладку даёт композитор
-   (niri), поэтому не нужен обходной `setxkbmap` для X-сервера (см. грабл. 7). Запуск:
-   `/opt/MasterSCADA 4D RC/MasterSCADA4D_2.0_RC --no-sandbox --ozone-platform-hint=auto`.
-   Удобно оформить обёрткой + ярлыком, перекрывающим пакетный:
+10b. **ПКМ-меню в нативном Wayland ломается → запускать в X11-режиме** (проверено 2026-10-12).
+   Симптом: по правой кнопке в дереве главное окно на секунду «дёргается», меню не появляется.
+   Что видно в логах: Electron/GTK открывает меню **отдельным X11-окном** —
+   `xwayland-satellite: new window: … override_redirect: true, width: 300, height: 200`,
+   затем `set to Popup … has_transient_for: false` (нет `WM_CLASS`, заголовка, родителя).
+   Привязать такое «сиротское» окно не к чему (главное окно приложения — **нативное Wayland**,
+   у процесса 0 X11-сокетов), поэтому спутник монтирует его как обычное окно:
+   `creating toplevel … fullscreen: false` → `configuring toplevel … 1892x1018`, а niri вставляет
+   его в раскладку (`Window opened: pid=1501, is_floating: false, tile_size: 1896x1022,
+   pos_in_scrolling_layout: (4,1)`). Меню тут же закрывается, т.к. фокус до него не дошёл
+   (`No last focused toplevel, cannot focus window`). Форсирование `GDK_BACKEND=wayland` не помогает.
+
+   Лечение: запускать приложение **целиком X11-клиентом** — `--no-sandbox` и **без** ozone-флагов.
+   Тогда окно и меню — один X11-клиент, попап привязывается к своему toplevel, и ПКМ + горячие
+   клавиши работают штатно (то же самое, что на Astra, где сессия X.Org). Цена — XWayland
+   (и его `setxkbmap`-обход для раскладки, грабл. 7).
+
+   Обёртка + ярлык, перекрывающий пакетный (так удобнее не забывать режим):
 
    ```bash
-   # ~/.local/bin/masterscada-rc
-   exec "/opt/MasterSCADA 4D RC/MasterSCADA4D_2.0_RC" --no-sandbox --ozone-platform-hint=auto "$@"
+   # ~/.local/bin/masterscada-rc — режим по умолчанию x11, wayland — опционально
+   : "${MASTERSCADA_MODE:=x11}"
+   APP="/opt/MasterSCADA 4D RC/MasterSCADA4D_2.0_RC"
+   case "$MASTERSCADA_MODE" in
+     wayland) export GDK_BACKEND=wayland; exec "$APP" --no-sandbox --ozone-platform-hint=auto "$@" ;;
+     *)       exec "$APP" --no-sandbox "$@" ;;
+   esac
    # ~/.local/share/applications/MasterSCADA4D_2.0_RC.desktop → Exec=/home/<user>/.local/bin/masterscada-rc %U
    ```
-   Цена: окно нативного Chromium без рамки niri (клиентские декорации) — кому важна рамка, запускать
-   без ozone-флага (тогда работает `setxkbmap`-обход из грабл. 7).
+   Проверка режима: `niri msg --json windows` — у X11-окна `pid` равен процессу `xwayland-satellite`
+   (1501), у нативного Wayland-окна — pid самой среды разработки.
+
+   В репозитории курса то же самое лежит в `scripts/run-masterscada.sh` (с автопоиском каталога
+   установки RC/DT).
+
+10c. **Новая копия висит на заставке (splash), если осталась прежняя.** Симптом: окно 680×426 с
+   логотипом MasterSCADA 4D висит неограниченно долго, в `sys_log` после строки
+   `Start application …` — тишина, окно проекта так и не открывается. Причина: старый
+   `.NET`-сервер (`MasterSCADA4D_Server`) не закрылся и держит порт ядра (44000), поэтому UI
+   новой копии не может подключиться. Проверка и чистка:
+
+   ```bash
+   ss -ltnp | grep -oE '127.0.0.1:44[0-9]{3}.*'      # кто держит порт ядра
+   pkill -f '^/opt/MasterSCADA 4D RC'; sleep 3        # снять ВСЕ процессы среды (Electron + сервер)
+   pgrep -cf '^/opt/MasterSCADA 4D RC'                # должно быть 0
+   ```
+
+   **Не убивайте процессы шаблоном из своей же команды!** `pkill -f '…MasterSCADA4D_2.0_RC'`,
+   запущенный из скрипта/шелла, матчит и собственную командную строку — оболочка снесёт саму себя.
+
+10d. **«Fatal error» с кнопкой RELOAD → белый экран** (проверено 2026-10-12). Симптом: в клиенте
+   всплывает бейдж `Fatal error | RELOAD`, после нажатия — пустая белая страница, сколько ни
+   перезагружай. Причина — падение **серверного** канала Blazor на RC-баге работы с уже удалёнными
+   элементами модели; в журнале (`sys_log/<дата>.log`) это видно как
+
+   ```
+   [Error] <id>, System.InvalidOperationException: Sequence contains no matching element
+      at System.Linq.Enumerable.First[TSource](IEnumerable`1 source, Func`2 predicate)
+      at MS4Web.IDE.Blazor.Services.Branches.BranchesService.BranchedItem_ItemChanged(...)   ← панель веток
+   !!!Обращение к удаленному элементу : '…' (Id=… <disposed>)                                 ← дизайнер FBD/схем
+      … MS4Web.IDE.Blazor.Components.Designers.Schematic.Fbd.Internal.ValueIndicatedFbdComponent
+   ```
+
+   Лечение — **перезапуск среды**, данные при этом не теряются (проект лежит в PostgreSQL, при старте
+   видно `DbStoreService.RequestAllItems() [END] - Result: Completed`). Быстрая команда:
+
+   ```bash
+   pkill -f '^/opt/MasterSCADA 4D RC'; sleep 3; scripts/run-masterscada.sh
+   ```
+
+   Практика: чаще сохраняться («Проект → Сохранить») и не держать открытыми много дизайнеров
+   (FBD/схемы) при массовых операциях с деревом — именно их `Dispose` и падает.
 11. **Эмуляция RT на Linux: `System.Exception: Not permited` → `Connection refused (127.0.0.1:30900)`,
    окно клиента визуализации не открывается.** Проверено 2026-10-12.
 
