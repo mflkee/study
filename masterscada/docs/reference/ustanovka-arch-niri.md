@@ -139,21 +139,35 @@ docker compose exec -T postgres psql -U course -d course -c "\dt"  # табли�
    падает с `Not permited`, каталог узла остаётся без `logs/`, `temp/proxy`, `temp/client`, nginx
    узла не поднимается, а IDE бесконечно получает `Connection refused` на порт узла `30900`.
 
-   Лечится запуском helper'а (и лучше — user-юнитом, чтобы не делать это руками каждый раз):
+   Лечится запуском helper'а (и лучше — user-юнитом, чтобы не делать это руками каждый раз).
+   Важно: helper **штатно завершается вместе с сессией эмуляции** (в журнале видно
+   `EmulatorSession … Exited` → `Disposed`), поэтому в юните нужен `Restart=always`
+   (`on-failure` недостаточно — «чистый» выход не перезапускается, и следующий запуск снова
+   падает с `Not permited`).
 
    ```bash
    # разово:
    setsid nohup "/opt/MasterSCADA 4D RC/resources/MasterSCADA4D_Server/ipc_server/MasterSCADA.Controllers.IPCServer" &
 
    # постоянная схема: ~/.config/systemd/user/masterscada-ipc.service
+   #   [Unit]
+   #   StartLimitIntervalSec=0
    #   [Service]
    #   WorkingDirectory=/opt/MasterSCADA 4D RC/resources/MasterSCADA4D_Server/ipc_server
    #   ExecStart="/opt/MasterSCADA 4D RC/resources/MasterSCADA4D_Server/ipc_server/MasterSCADA.Controllers.IPCServer"
-   #   Restart=on-failure
+   #   Restart=always
+   #   RestartSec=2
    systemctl --user daemon-reload && systemctl --user enable --now masterscada-ipc
-   systemctl --user status masterscada-ipc        # active (running)
+   systemctl --user status masterscada-ipc        # должно быть active (running)
+   systemctl --user restart masterscada-ipc       # если лежит
    ls -l /tmp/CoreFxPipe_MasterSCADA.Controllers.IPCServer   # сокет-«труба» helper'а
    ```
+
+   Ещё одна ошибка из журнала самого RT (не блокирующая, но полезно знать):
+   `ERR | Can't write config file: /opt/…/Config/MasterPLC/linux/mplc_core.conf` — RT хочет писать
+   свой core-конфиг **рядом со своим бинарником**, а `/opt` принадлежит root. В штатной установке RT
+   работает службой от root (`mplc4`), поэтому там этого нет; в эмуляции под пользователем — есть.
+   Проверить журнал helper'а/RT: `journalctl --user -u masterscada-ipc -f`.
 
    Признаки, что всё поехало: в `sys_log` пропадает `Not permited`, появляются `Проект запущен`,
    поднимается `nginx_imit` (порт `8045`) и узел отвечает на `127.0.0.1:30900`. После остановки
