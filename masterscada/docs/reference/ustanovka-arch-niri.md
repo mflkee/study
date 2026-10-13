@@ -283,3 +283,32 @@ gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor
 
 ## Обратный путь (удаление)
 Просто удалить `/opt/MasterSCADA 4D 2.0`, `.desktop` и `~/.config/MasterSCADA 4D 2.0/`.
+
+## Проверка «а не в правах ли дело» (быстрый чек-лист, проверено 2026-10-13)
+
+Когда что-то «не сохраняется / не даёт править», полезно за 4 команды исключить права:
+
+```bash
+# 1. файлы: рабочие папки проектов и настройки
+ls -ld /usr/share/MPSSoft /usr/share/MPSSoft/* ; find /usr/share/MPSSoft -not -user "$USER"
+find ~/.config/MPSSoft -not -user "$USER" ; find ~/.config/MPSSoft -type d ! -perm -u+w
+
+# 2. БД: роль и владельцы баз (ожидаем Superuser/владельца обеих баз)
+docker compose -f course/00-orientation/infra/docker-compose.yml exec -T postgres \
+  psql -U course -d postgres -c '\du course' \
+  -c "SELECT datname, pg_get_userbyid(datdba) FROM pg_database WHERE datname LIKE 'ms4d%';"
+
+# 3. журнал среды: есть ли отказы по доступу
+grep -inE 'not permited|permission|denied|Unauthorized' \
+  ~/.config/MPSSoft/MasterSCADA4D_DT_2.0_RC/sys_log/$(date +%Y_%m_%d).log | tail
+
+# 4. встроенные права MS4D: есть ли записи прав у конкретного элемента
+#    (в БД проекта: items с типом MasterSCADA.Security.* под нужным item_id)
+```
+
+Итог проверки 2026-10-13 на нашем стенде: `/usr/share/MPSSoft` — `drwxrwxrwx`, подкаталоги
+наши; `~/.config/MPSSoft` — всё наше и записываемое; роль `course` — Superuser и владелец
+`ms4d_projects`/`ms4d_project_2`; в журнале отказов по доступу нет (единственное совпадение —
+известная ошибка узла RT на порту 30900); у наших элементов (окно, картинка, окна станции)
+записей прав нет. **Права ни при чём** — «не сохраняется размер окна» это особенность RC-сборки
+(размеры **элементов** сохраняются, размер **окна** — нет).
