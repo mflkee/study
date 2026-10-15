@@ -1,0 +1,41 @@
+[package]
+name = "digital-logic"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+# Каждая ступень — это два бинарника: задание и разбор.
+# Запуск: cargo run --bin step1-task
+
+[[bin]]
+name = "step1-task"
+path = "step1-gates/task.rs"
+
+[[bin]]
+name = "step1-answer"
+path = "step1-gates/answer.rs"
+
+[[bin]]
+name = "step2-task"
+path = "step2-bits/task.rs"
+
+[[bin]]
+name = "step2-answer"
+path = "step2-bits/answer.rs"
+
+[[bin]]
+name = "step3-task"
+path = "step3-adder/task.rs"
+
+[[bin]]
+name = "step3-answer"
+path = "step3-adder/answer.rs"
+
+[[bin]]
+name = "step4-task"
+path = "step4-flipflop/task.rs"
+
+[[bin]]
+name = "step4-answer"
+path = "step4-flipflop/answer.rs"
