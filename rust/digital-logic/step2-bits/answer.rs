@@ -46,7 +46,11 @@ fn main() {
     println!("set_bit(x, 0) = {:#010b}", set_bit(x, 0));
     println!("clear_bit(x,7)= {:#010b}", clear_bit(x, 7));
     println!("flip_bit(x, 5)= {:#010b}", flip_bit(x, 5));
-    println!("parity(x)     = {} (count_ones = {})", parity(x), x.count_ones());
+    println!(
+        "parity(x)     = {} (count_ones = {})",
+        parity(x),
+        x.count_ones()
+    );
 
     let (a, b) = (0b1100_1010u8, 0b1010_0110u8);
     let (and, or, xor) = byte_gates(a, b);

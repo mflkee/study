@@ -49,8 +49,18 @@ fn adder8(a: u8, b: u8) -> (u8, bool) {
 }
 
 fn main() {
-    let cases = [(0u8, 0u8), (1, 2), (200, 55), (255, 1), (128, 128), (42, 42)];
-    println!("{:>4} {:>4} | {:>4} {:>5} | builtin", "a", "b", "sum", "carry");
+    let cases = [
+        (0u8, 0u8),
+        (1, 2),
+        (200, 55),
+        (255, 1),
+        (128, 128),
+        (42, 42),
+    ];
+    println!(
+        "{:>4} {:>4} | {:>4} {:>5} | builtin",
+        "a", "b", "sum", "carry"
+    );
     for (a, b) in cases {
         let (sum, carry) = adder8(a, b);
         let (bsum, bcarr) = a.overflowing_add(b);

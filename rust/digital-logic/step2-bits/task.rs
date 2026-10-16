@@ -17,28 +17,45 @@ fn get_bit(x: u8, i: u32) -> bool {
 
 /// Поставить бит `i` в 1.
 fn set_bit(x: u8, i: u32) -> u8 {
-    todo!("реализуй сам")
+    x | (1u8 << i)
 }
 
 /// Сбросить бит `i` в 0.
 fn clear_bit(x: u8, i: u32) -> u8 {
-    todo!("реализуй сам")
+    x & !(1u8 << i)
 }
 
 /// Инвертировать бит `i`.
 fn flip_bit(x: u8, i: u32) -> u8 {
-    todo!("реализуй сам")
+    x ^ (1u8 << i)
 }
 
 /// Чётность: истина, если единиц в байте нечётное число.
+// fn parity(x: u8) -> bool {
+//     let mut acc = 0;
+//     for i in 0..8 {
+//         if get_bit(x, i) == true {
+//             acc += 1
+//         }
+//         if acc % 2 == 0 {
+//             return false;
+//         }
+//     }
+//     true
+// }
+//
 fn parity(x: u8) -> bool {
-    todo!("реализуй сам")
+    let mut acc = false;
+    for i in 0..8 {
+        acc ^= get_bit(x, i);
+    }
+    acc
 }
 
 /// Один побитовый гейт обрабатывает все 8 бит сразу.
 /// Верни тройку (a AND b, a OR b, a XOR b).
 fn byte_gates(a: u8, b: u8) -> (u8, u8, u8) {
-    todo!("реализуй сам")
+    (a & b, a | b, a ^ b)
 }
 
 fn main() {
