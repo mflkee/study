@@ -36,6 +36,7 @@ cargo run  --bin step1-answer    # разбор
 cargo test --bin step1-drills     # прогресс (красное тает по мере решений)
 cargo run  --bin step1-drills     # карта упражнений
 cargo test --bin step2-drills     # и так далее: step3-drills, step4-drills
+cargo run  --bin step1-drills-answer   # разбор тренажёра, если застрял
 ```
 
 | Бинарник | Упражнений | Тестов | Тема |
@@ -44,6 +45,9 @@ cargo test --bin step2-drills     # и так далее: step3-drills, step4-dr
 | `step2-drills` | 19 | 19 | бит, нибблы, маски, чётность, разворот битов |
 | `step3-drills` | 14 | 14 | полусумматор → adder16, вычитание |
 | `step4-drills` | 10 | 11 | триггеры, счётчик, кольцевой сдвиг, импульсы |
+
+Разборы — те же бинарники с суффиксом `-answer` (`step1-drills-answer` …):
+те же решения, те же тесты, но зелёные, плюс демо-вывод в `main`.
 
 Подробности и как читать вывод — `drills/README.md`.
 

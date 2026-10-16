@@ -59,3 +59,21 @@ path = "drills/step3.rs"
 [[bin]]
 name = "step4-drills"
 path = "drills/step4.rs"
+
+# Разборы тренажёра: те же упражнения с готовыми решениями.
+
+[[bin]]
+name = "step1-drills-answer"
+path = "drills/step1-answer.rs"
+
+[[bin]]
+name = "step2-drills-answer"
+path = "drills/step2-answer.rs"
+
+[[bin]]
+name = "step3-drills-answer"
+path = "drills/step3-answer.rs"
+
+[[bin]]
+name = "step4-drills-answer"
+path = "drills/step4-answer.rs"
