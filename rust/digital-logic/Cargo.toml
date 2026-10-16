@@ -39,3 +39,23 @@ path = "step4-flipflop/task.rs"
 [[bin]]
 name = "step4-answer"
 path = "step4-flipflop/answer.rs"
+
+# Тренажёр: по 10-20 коротких упражнений на ступень, каждое со своим тестом.
+# Запуск: cargo test --bin step1-drills   (прогресс)
+#         cargo run  --bin step1-drills   (карта упражнений)
+
+[[bin]]
+name = "step1-drills"
+path = "drills/step1.rs"
+
+[[bin]]
+name = "step2-drills"
+path = "drills/step2.rs"
+
+[[bin]]
+name = "step3-drills"
+path = "drills/step3.rs"
+
+[[bin]]
+name = "step4-drills"
+path = "drills/step4.rs"
