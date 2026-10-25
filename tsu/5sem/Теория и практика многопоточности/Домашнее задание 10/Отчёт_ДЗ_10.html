@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<title>ДЗ 10 — Макеев Г. Б.</title>
+<style>
+@page { size: A4; margin: 18mm 16mm 16mm 16mm; }
+body { font-family: "Noto Sans", "DejaVu Sans", sans-serif; font-size: 10.5pt;
+       line-height: 1.45; color: #1a1a1a; max-width: 100%; }
+h1, div.h1 { font-size: 19pt; font-weight: 700; margin: 0 0 2mm 0; line-height: 1.2;
+         color: #111; text-indent: 0; }
+h2, div.h2 { font-size: 13.5pt; font-weight: 700; margin: 7mm 0 2mm 0; padding-bottom: 1mm;
+         border-bottom: 1px solid #d8d8d8; color: #111; text-indent: 0; }
+h3, div.h3 { font-size: 11.5pt; font-weight: 700; margin: 5mm 0 1.5mm 0; color: #222;
+         text-indent: 0; }
+h4, div.h4 { font-size: 10.5pt; font-weight: 700; margin: 4mm 0 1mm 0; color: #333;
+         text-indent: 0; }
+p { margin: 0 0 2.2mm 0; text-align: justify; }
+ul, ol { margin: 0 0 2.5mm 0; padding-left: 6mm; }
+li { margin-bottom: 1mm; }
+code { font-family: "Noto Sans Mono", "DejaVu Sans Mono", monospace; font-size: 9pt;
+       background: #f2f2f2; padding: 0.3mm 1mm; border-radius: 1.5mm; }
+pre { background: #f6f6f6; border: 1px solid #e2e2e2; border-radius: 2mm;
+      padding: 2.5mm 3mm; margin: 0 0 3mm 0; overflow: hidden; }
+pre code { background: none; font-size: 8.6pt; line-height: 1.35; }
+table { border-collapse: collapse; width: 100%; margin: 1mm 0 4mm 0; font-size: 9.2pt; }
+th, td { border: 1px solid #cfcfcf; padding: 1.6mm 2mm; text-align: left;
+         vertical-align: top; }
+th { background: #efefef; font-weight: 600; }
+hr { border: none; border-top: 1px solid #dcdcdc; margin: 5mm 0; }
+.meta { color: #555; font-size: 9.5pt; margin: 0 0 6mm 0; padding-bottom: 2.5mm;
+        border-bottom: 2px solid #333; }
+blockquote { margin: 0 0 3mm 0; padding: 1mm 0 1mm 4mm; border-left: 3px solid #bbb;
+             color: #444; }
+</style></head>
+<body>
+<h1>Домашнее задание 10 — CompletableFuture</h1>
+<ul>
+<li><strong>Дедлайн:</strong> 21.10.2026</li>
+<li><strong>Тема:</strong> CompletableFuture (асинхронное программирование)</li>
+<li><strong>Форма проверки:</strong> задание с самопроверкой</li>
+<li><strong>Вариант итогового ДЗ:</strong> 3 — парсер вакансий</li>
+<li><strong>Модуль:</strong> <code>hw10.completable</code> в Maven-проекте <code>app/</code></li>
+</ul>
+<hr>
+<h2>1. Что требовалось и что сделано</h2>
+<p>Текст задания:</p>
+<ol>
+<li>По списку идентификаторов получить данные из внешнего источника (API, БД, файл, парсер).
+   Реализовать метод, который асинхронно через <code>CompletableFuture</code> получает данные по каждому
+   идентификатору, применяет преобразование, <strong>объединяет два независимых асинхронных результата в
+   один объект</strong> и возвращает список итоговых объектов, собранных параллельно. Использовать
+   <code>thenCombine</code>, <code>thenApply</code>, <code>thenAccept</code>. Метод: <code>public List&lt;FinalResult&gt; fetchAllDataAsync(List&lt;String&gt; ids)</code>.</li>
+<li>Обработка ошибок через <code>handle</code>/<code>exceptionally</code> (сбой одной задачи не ломает операцию), собственный
+   <code>Executor</code> вместо <code>ForkJoinPool.commonPool</code>, пул с именованными демон-потоками, <code>thenApplyAsync(…,
+   executor)</code> для тяжёлых преобразований, корректное завершение <code>ExecutorService</code> при остановке
+   приложения, логирование с именем потока и ID запроса, имитация ошибки в одном источнике (частичный
+   результат), сравнение времени асинхронной и синхронной версий.</li>
+<li>Отчёт: описание этапов, промежуточные результаты, выводы.</li>
+</ol>
+<p>Сделано:</p>
+<table>
+<thead>
+<tr>
+<th>Что</th>
+<th>Где</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Локальный API-источник: данные вакансии и справочник компаний</td>
+<td><code>server.VacancyStubServer</code></td>
+</tr>
+<tr>
+<td>HTTP-клиент двух источников, разбор JSON</td>
+<td><code>source.HttpVacancyClient</code>, <code>source.FlatJson</code></td>
+</tr>
+<tr>
+<td>Два независимых источника-интерфейса</td>
+<td><code>source.VacancyDetailsSource</code>, <code>source.CompanyInfoSource</code></td>
+</tr>
+<tr>
+<td>Итоговый объект и сбой</td>
+<td><code>model.FinalResult</code>, <code>model.FetchFailure</code></td>
+</tr>
+<tr>
+<td>Конвейер: <code>supplyAsync</code> → <code>thenCombine</code> → <code>thenApplyAsync</code> → <code>handle</code> → <code>thenAccept</code></td>
+<td><code>service.AsyncVacancyService</code></td>
+</tr>
+<tr>
+<td>Тяжёлое преобразование (нормализация + оценка)</td>
+<td><code>service.VacancyScoring</code></td>
+</tr>
+<tr>
+<td>Синхронная версия для сравнения</td>
+<td><code>service.AsyncVacancyService#runSync</code></td>
+</tr>
+<tr>
+<td>Итог прогона (время, потоки, сбои)</td>
+<td><code>service.FetchOutcome</code></td>
+</tr>
+<tr>
+<td>Строки отчёта</td>
+<td><code>report.AsyncFetchReport</code></td>
+</tr>
+<tr>
+<td>Демонстрация</td>
+<td><code>CompletableFutureDemo</code>, запуск <code>--app.hw=hw10</code></td>
+</tr>
+<tr>
+<td>Настройки <code>app.hw10.*</code></td>
+<td><code>config.Hw10Properties</code>, <code>config.Hw10Configuration</code></td>
+</tr>
+</tbody>
+</table>
+<p>Предметная область — парсер вакансий: идентификатор — номер вакансии (<code>v-01…v-12</code>), первый источник
+отдаёт заголовок, город и зарплатную вилку, второй — компанию, её рейтинг и число открытых вакансий.</p>
+<h2>2. Этапы выполнения</h2>
+<h3>Этап 1. Асинхронная выборка и объединение двух источников</h3>
+<p>Для каждого идентификатора запускаются <strong>две</strong> задачи: <code>supplyAsync(details) + supplyAsync(company)</code>.
+Обе идут на собственном пуле <code>hw10-async-1…6</code>. Результаты объединяются в <code>FinalResult</code> через
+<code>thenCombine</code> (два независимых результата → один объект), затем объект проходит тяжёлое
+преобразование в <code>thenApplyAsync(…, executor)</code> и попадает в приёмник через <code>thenAccept</code>. Сборка всех
+конвейеров — <code>CompletableFuture.allOf(...).join()</code>; порядок итогового списка — порядок входных
+идентификаторов, а не порядок завершения задач.</p>
+<p>Фактический вывод этапа (12 идентификаторов, пул 6, задержка источника 120 мс на запрос,
+преобразование 10 мс):</p>
+<pre><code class="language-text">Этап 1. Асинхронная выборка через CompletableFuture (два источника объединяются в один объект)
+    async: запрошено 12, получено 11, сбоев 1, обращений к источникам 24, длительность 773.731 мс, потоков 6
+    потоки этапов: hw10-async-1, hw10-async-2, hw10-async-3, hw10-async-4, hw10-async-5, hw10-async-6
+    результаты (в порядке входного списка):
+      v-01 | Backend-разработчик (Java) | Новосибирск | 70000–110000 ₽ | компания: АО «Сибирь-Софт» (рейтинг 3.6) | оценка 97.20
+      v-02 | Инженер по тестированию | Москва | 80000–130000 ₽ | компания: ООО «Код и Точка» (рейтинг 3.7) | оценка 113.93
+      ...
+      v-12 | Team Lead Java | Томск | 60000–110000 ₽ | компания: ООО «Код и Точка» (рейтинг 4.7) | оценка 96.48
+      сбой v-07 (данные вакансии): SourceUnavailableException: источник /api/vacancies/v-07 ответил HTTP 500: {&quot;error&quot;:&quot;источник вакансий недоступен&quot;}
+    журнал «поток + ID запроса» (первые 14 строк):
+      [hw10-async-1] v-01: запрос данных вакансии отправлен
+      [hw10-async-2] v-01: запрос компании отправлен
+      [hw10-async-3] v-02: запрос данных вакансии отправлен
+      [hw10-async-4] v-02: запрос компании отправлен
+      ...
+</code></pre>
+<p>Каждый идентификатор даёт <strong>два</strong> одновременных запроса (24 обращения на 12 идентификаторов), в
+результате участвовали все 6 потоков пула. Журнал показывает и имя потока, и ID запроса — по нему
+видно, что этапы разных вакансий действительно идут одновременно.</p>
+<h3>Этап 2. Синхронная версия и сравнение времени</h3>
+<p>Тот же сценарий выполнен последовательно (без пула) с той же семантикой изоляции сбоев:</p>
+<pre><code class="language-text">Этап 2. Синхронная версия и сравнение времени
+    sync: запрошено 12, получено 11, сбоев 1, обращений к источникам 23, длительность 2740.577 мс, потоков 1
+    синхронно 2740.577 мс, асинхронно 773.731 мс — ускорение 3.54× (в синхронной версии запросы идут друг за другом, в асинхронной перекрываются)
+    на один идентификатор: синхронно 228.38 мс, асинхронно 64.48 мс
+    наборы результатов совпадают: да (асинхронно 11, синхронно 11)
+    обращений к источникам: асинхронно 24, синхронно 23
+</code></pre>
+<p>Ускорение <strong>3.54×</strong> при пуле 6 и 24 запросах. Теоретическая оценка: 24 × 120 мс / 6 потоков ≈ 480 мс
+плюс 12 × 10 мс преобразования ≈ 20 мс; практически 773 мс — разница приходится на запуск задач,
+HTTP-клиент и преобразование, которое тоже идёт на пуле. Асинхронная версия делает на одно обращение
+больше (24 против 23): синхронная после сбоя данных вакансии не запрашивает компанию, а конвейер
+запускает оба запроса сразу — это цена параллельности, а не ошибка.</p>
+<h3>Этап 3. Сбой одного источника: <code>handle</code> и <code>exceptionally</code></h3>
+<pre><code class="language-text">Этап 3. Сбой одного источника не ломает операцию (handle и exceptionally)
+    запрошено 3: [v-07, v-04, v-01]
+    async: запрошено 3, получено 2, сбоев 1, обращений к источникам 6, длительность 176.151 мс, потоков 6
+      v-07: исключён из результата: сбой источника вакансий обработан handle
+      v-04: вакансия сохранена, компания подставлена заглушкой (сбой справочника обработан exceptionally)
+      v-01: получен полностью, компания АО «Сибирь-Софт»
+    вывод: сбой одной задачи не отменил остальные — метод вернул частичный результат
+</code></pre>
+<p>Два обработчика решают разные задачи:</p>
+<ul>
+<li><strong><code>exceptionally</code></strong> стоит на будущем справочника компаний: сбой заменяется заглушкой
+  <code>CompanyInfo.unknown(id)</code>, поэтому вакансия остаётся в результате с пометкой «компания: нет данных»;</li>
+<li><strong><code>handle</code></strong> стоит на объединённом результате: если данных вакансии нет, идентификатор исключается,
+  а сбой попадает в список <code>FetchFailure</code>; остальные конвейеры продолжают работать.</li>
+</ul>
+<p><code>handle</code>/<code>exceptionally</code> возвращают значение и не «пробрасывают» исключение дальше, поэтому
+<code>allOf(...).join()</code> завершается нормально, а метод возвращает частичный результат, а не падает.</p>
+<h2>3. Фактический вывод демонстрации</h2>
+<pre><code class="language-bash">mvn -pl app spring-boot:run -Dspring-boot.run.arguments=&quot;--app.hw=hw10 --server.port=0&quot;
+</code></pre>
+<p>Прогон завершился с кодом <code>0</code>; живых потоков ДЗ 10 после остановки контекста нет.</p>
+<pre><code class="language-text">=== ДЗ 10. CompletableFuture: асинхронная выборка по списку идентификаторов ===
+
+
+Процесс: pid 128371
+Настройки ДЗ 10:
+    - идентификаторов в списке: 12
+    - размер собственного пула: 6
+    - задержка ответа источника: 120 мс на запрос
+    - моделируемое тяжёлое преобразование: 10 мс на объект
+    - таймаут запроса: 2000 мс, остановки пула: 3000 мс
+    - сбой источника вакансий на «v-07», сбой справочника компаний на «v-04»
+    - источник данных: локальная HTTP-заглушка, порт 41891
+
+Этап 1. Асинхронная выборка через CompletableFuture (два источника объединяются в один объект)
+    async: запрошено 12, получено 11, сбоев 1, обращений к источникам 24, длительность 773.731 мс, потоков 6
+    потоки этапов: hw10-async-1, hw10-async-2, hw10-async-3, hw10-async-4, hw10-async-5, hw10-async-6
+    ...
+
+Этап 2. Синхронная версия и сравнение времени
+    sync: запрошено 12, получено 11, сбоев 1, обращений к источникам 23, длительность 2740.577 мс, потоков 1
+    синхронно 2740.577 мс, асинхронно 773.731 мс — ускорение 3.54× (в синхронной версии запросы идут друг за другом, в асинхронной перекрываются)
+    на один идентификатор: синхронно 228.38 мс, асинхронно 64.48 мс
+    наборы результатов совпадают: да (асинхронно 11, синхронно 11)
+    обращений к источникам: асинхронно 24, синхронно 23
+
+Этап 3. Сбой одного источника не ломает операцию (handle и exceptionally)
+    запрошено 3: [v-07, v-04, v-01]
+    async: запрошено 3, получено 2, сбоев 1, обращений к источникам 6, длительность 176.151 мс, потоков 6
+      v-07: исключён из результата: сбой источника вакансий обработан handle
+      v-04: вакансия сохранена, компания подставлена заглушкой (сбой справочника обработан exceptionally)
+      v-01: получен полностью, компания АО «Сибирь-Софт»
+    вывод: сбой одной задачи не отменил остальные — метод вернул частичный результат
+
+[tpm] Демонстрация завершена: частичный результат получен, сбой одного источника изолирован, исполнитель остановлен
+
+после остановки контекста: пул остановлен=да, потоки завершены=да
+живых потоков ДЗ 10 после завершения: []
+</code></pre>
+<p>Полный список результатов этапа 1 (все 11 вакансий с оценками) — в фактическом выводе прогона;
+выше он сокращён, чтобы отчёт не дублировал консоль целиком. Служебные строки Spring при остановке
+контекста (<code>GracefulShutdown</code>, закрытие JPA/Hikari) опущены — к демонстрации они не относятся.</p>
+<h2>4. Промежуточные результаты по этапам</h2>
+<table>
+<thead>
+<tr>
+<th>Этап</th>
+<th>Фактический результат</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Асинхронная выборка</td>
+<td>12 идентификаторов, 24 обращения к источникам, 11 результатов и 1 изолированный сбой, 6 потоков пула, <strong>773.7 мс</strong></td>
+</tr>
+<tr>
+<td>2. Синхронная версия</td>
+<td>2740.6 мс, 1 поток, тот же набор результатов → <strong>ускорение 3.54×</strong></td>
+</tr>
+<tr>
+<td>3. Сбой одного источника</td>
+<td><code>v-07</code> исключён (<code>handle</code>), <code>v-04</code> сохранён с заглушкой компании (<code>exceptionally</code>), остальные получены</td>
+</tr>
+<tr>
+<td>Остановка</td>
+<td><code>пул остановлен=да</code>, <code>потоки завершены=да</code>, живых потоков <code>[]</code></td>
+</tr>
+</tbody>
+</table>
+<h2>5. Почему не <code>commonPool</code> и чем <code>thenCombine</code> отличается от <code>thenCompose</code></h2>
+<ul>
+<li><strong>Собственный исполнитель.</strong> <code>supplyAsync</code> без исполнителя и <code>thenApplyAsync</code> без исполнителя идут в
+  <code>ForkJoinPool.commonPool()</code>, который делится со всеми (<code>parallelStream</code>, другие библиотеки). На нём
+  нельзя ни задать размер, ни изолировать нагрузку, а его потоки называются
+  <code>ForkJoinPool.commonPool-worker-N</code> — в дампе не видно, чьи это задачи. Поэтому все этапы получают
+  явный <code>ExecutorService</code> с именами <code>hw10-async-N</code>.</li>
+<li><strong>Демон-потоки.</strong> Пул создан фабрикой, которая помечает потоки демонами: аварийное завершение
+  приложения не будет держать процесс. При этом пул всё равно закрывается явно (<code>destroyMethod =
+  "close"</code>), потому что «процесс завершится сам» — не то же самое, что «ресурсы освобождены».</li>
+<li><strong><code>thenApply</code> vs <code>thenApplyAsync(…, executor)</code>.</strong> <code>thenApply</code> выполняется в потоке, который завершил
+  предыдущий этап; для тяжёлого преобразования это означало бы, что поток, доставивший HTTP-ответ,
+  занят CPU-работой и не берёт следующую задачу. <code>thenApplyAsync</code> с явным пулом возвращает поток в
+  оборот.</li>
+<li><strong><code>thenCombine</code> vs <code>thenCompose</code>.</strong> <code>thenCombine</code> нужен, когда два будущих <strong>независимы</strong> и их
+  результаты складываются (данные вакансии + компания). <code>thenCompose</code> был бы нужен, если бы второй
+  запрос зависел от результата первого — здесь такой зависимости нет, и последовательное выполнение
+  только удлинило бы операцию.</li>
+<li><strong><code>thenAccept</code></strong> — терминальный этап без возврата значения: приём результата и запись в журнал. Он не
+  меняет тип конвейера, поэтому после него <code>allOf</code> ждёт именно завершения обработки, а не только
+  получения значения.</li>
+</ul>
+<h2>6. Автоматические проверки</h2>
+<pre><code class="language-bash">mvn -pl app test -Dtest='ru.tsu.tpm.vacancyparser.hw10.**'
+</code></pre>
+<p>Результат: <code>Tests run: 30, Failures: 0, Errors: 0, Skipped: 0</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Тест</th>
+<th>Что проверяет</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AsyncVacancyServiceTest</code> (10)</td>
+<td>порядок результатов; асинхронная версия быстрее синхронной и использует свой пул (имена <code>hw10-async-*</code>, ни одного <code>commonPool</code>); сбой вакансии исключает только свою запись; сбой компании даёт заглушку и не выбрасывает вакансию; полный сбой даёт пустой список без исключения; пустой список; потоки — демоны; журнал содержит имя потока и ID; <code>close()</code> останавливает пул; некорректные параметры</td>
+</tr>
+<tr>
+<td><code>VacancyStubServerTest</code> (6)</td>
+<td>оба маршрута и разбор ответа; ошибки 500/503 с кодом; задержка применяется; порт освобождается; список идентификаторов; отрицательная задержка</td>
+</tr>
+<tr>
+<td><code>FlatJsonTest</code> (4)</td>
+<td>строки/числа/логические/null, экранирование, ошибки разбора</td>
+</tr>
+<tr>
+<td><code>AsyncFetchReportTest</code> (4)</td>
+<td>ускорение и строка сравнения; пометки <code>handle</code>/<code>exceptionally</code>; строки результатов; обрезка журнала</td>
+</tr>
+<tr>
+<td><code>Hw10PropertiesBindingTest</code> (2)</td>
+<td>значения по умолчанию и переопределение <code>app.hw10.*</code></td>
+</tr>
+<tr>
+<td><code>CompletableFutureDemoConditionTest</code> (4)</td>
+<td>демо и бины создаются только при <code>--app.hw=hw10</code>; после закрытия контекста пул остановлен и потоков нет</td>
+</tr>
+</tbody>
+</table>
+<p>Сборка целиком: <code>mvn -pl app package</code> — успешно, <code>app/target/vacancy-parser.jar</code>.
+Полный прогон всех домашних заданий: <code>Tests run: 545, Failures: 0, Errors: 0, Skipped: 0</code>.</p>
+<h2>7. Соответствие чек-листу</h2>
+<table>
+<thead>
+<tr>
+<th>Пункт задания</th>
+<th>Где подтверждено</th>
+<th>Отметка</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Получение данных по списку идентификаторов из внешнего источника</td>
+<td>Раздел 2, этап 1; <code>AsyncVacancyService</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Асинхронно через <code>CompletableFuture</code> по каждому ID</td>
+<td><code>supplyAsync</code> на каждом источнике</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Преобразование каждого результата</td>
+<td><code>thenApplyAsync</code> + <code>VacancyScoring</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Объединение двух независимых результатов в один объект</td>
+<td><code>thenCombine</code> → <code>FinalResult</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Список итоговых объектов, собранных параллельно</td>
+<td><code>allOf</code> + порядок входного списка</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Использованы <code>thenCombine</code>, <code>thenApply</code>, <code>thenAccept</code></td>
+<td><code>AsyncVacancyService#runAsync</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>public List&lt;FinalResult&gt; fetchAllDataAsync(List&lt;String&gt; ids)</code></td>
+<td><code>AsyncVacancyService</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>handle</code>/<code>exceptionally</code>, сбой не ломает операцию</td>
+<td>Раздел 2, этап 3; тесты изоляции</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Собственный <code>Executor</code>, не <code>commonPool</code></td>
+<td><code>Executors.newFixedThreadPool</code> + фабрика имён</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Именованные демон-потоки, разумный размер</td>
+<td><code>hw10-async-N</code>, daemon=true, 6 потоков</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>thenApplyAsync(…, executor)</code> для тяжёлых преобразований</td>
+<td><code>AsyncVacancyService#runAsync</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Корректное завершение при остановке приложения</td>
+<td><code>@Bean(destroyMethod = "close")</code>; проверка в тесте</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Логирование с именем потока и ID запроса</td>
+<td>журнал <code>[hw10-async-3] v-07: …</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Имитация ошибки в одном источнике → частичный результат</td>
+<td><code>v-07</code> (500), <code>v-04</code> (503)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Сравнение времени async и sync</td>
+<td>773.7 мс против 2740.6 мс (3.54×)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Отчёт с этапами и промежуточными результатами</td>
+<td>Этот файл</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h2>8. Как запустить и сдать</h2>
+<pre><code class="language-bash">cd &quot;Теория и практика многопоточности&quot;
+
+# Полная демонстрация (завершается с кодом 0)
+mvn -pl app spring-boot:run -Dspring-boot.run.arguments=&quot;--app.hw=hw10 --server.port=0&quot;
+
+# Ускоренный прогон: маленький пул и быстрый источник
+mvn -pl app spring-boot:run -Dspring-boot.run.arguments=&quot;--app.hw=hw10 --app.hw10.pool-size=3 --app.hw10.latency-millis=40&quot;
+
+# Готовый jar
+mvn -pl app package
+java -jar app/target/vacancy-parser.jar --app.hw=hw10 --server.port=0
+</code></pre>
+<p>Все параметры выведены в начале прогона и меняются аргументами: <code>app.hw10.pool-size</code>,
+<code>app.hw10.latency-millis</code>, <code>app.hw10.transform-delay-millis</code>, <code>app.hw10.request-timeout-millis</code>,
+<code>app.hw10.ids</code>, <code>app.hw10.details-fail-id</code>, <code>app.hw10.company-fail-id</code>.</p>
+<p>Сдача: скопировать содержимое этого файла в Google/Яндекс Документ, вложить исходники или ссылку на
+репозиторий, открыть доступ по ссылке и прикрепить ссылку в личном кабинете LMS.</p>
+<h2>9. Примечание о числах и окружении</h2>
+<p>Все числа — фактические замеры на этой машине (12 ядер, OpenJDK 21.0.13, Maven 3.9.16). Источник
+данных — локальная HTTP-заглушка на свободном порту: сеть не нужна, задержка ответа задаётся
+настройкой, поэтому прогон воспроизводим. Времена между запусками различаются на единицы процентов
+(в первую очередь из-за запуска JVM и планировщика), структура вывода устойчива, а абсолютное
+ускорение зависит от размера пула и задержки источника.</p>
+</body></html>
