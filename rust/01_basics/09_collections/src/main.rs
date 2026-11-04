@@ -1,6 +1,8 @@
 // Коллекции: Vec, String, HashMap
 // https://doc.rust-lang.org/book/ch08-00-common-collections.html
 // Три основные коллекции из стандартной библиотеки
+// Подробный разбор HashMap (entry API, грабли, BTreeMap) — в ./HASHMAP.md
+// Подробный разбор Vec и String (срезы, UTF-8) — в ./VEC_STRING.md
 
 use std::collections::HashMap;
 
@@ -11,6 +13,7 @@ fn demo_vec() {
     // 1. Создание вектора
     let v: Vec<i32> = Vec::new();          // пустой вектор
     let mut v2 = vec![1, 2, 3];            // макрос vec! — удобнее
+    println!("Пустой: {v:?}");             // [] — элементов нет
     println!("Исходный: {:?}", v2);
 
     // 2. Добавление и удаление

@@ -15,9 +15,10 @@ rust/
 │   ├── 06_slices/          # Срезы строк и массивов
 │   ├── 07_structs/         # Структуры, методы, impl
 │   ├── 08_enums/           # Перечисления, match, Option
-│   ├── 09_collections/     # Vec, String, HashMap
+│   ├── 09_collections/     # Vec, String, HashMap (+ HASHMAP.md)
 │   ├── 10_modules/         # Модули: backyard, restaurant
-│   └── 11_handling_errors/ # Обработка ошибок: expect vs match
+│   ├── 11_handling_errors/ # Обработка ошибок: expect vs match
+│   └── 12_generic_types/   # Дженерики: устранение дублирования
 │
 ├── 02_exercises/           # Упражнения по темам
 │   ├── guessing_game/      # Игра "Угадай число"
@@ -31,8 +32,14 @@ rust/
 │   ├── temperature_converter_web/   # Web-версия (Axum + htmx)
 │   └── company_directory_cli/      # Справочник сотрудников (CLI)
 │
-└── 04_experiments/         # Эксперименты
-    └── mathmagic/          # Математический фокус с матрицами
+├── 04_experiments/         # Эксперименты
+│   └── mathmagic/          # Математический фокус с матрицами
+│
+├── 05_algorithms/          # Алгоритмы
+│   └── bs/                 # Бинарный поиск
+│
+├── digital-logic/          # Мини-курс: цифровая логика (гейты → регистры)
+└── rust-study-materials/   # Импортированный курс: Theory / Practice / Homework
 ```
 
 ## Использование
@@ -48,19 +55,45 @@ cargo run -p basics_slices
 cargo run -p basics_structs
 cargo run -p basics_enums
 cargo run -p basics_collections
+cargo run -p backyard              # модули
+cargo run -p restaurant            # модули
+cargo run -p ai_vers               # ошибки: expect
+cargo run -p handing_errors        # ошибки: match
+cargo run -p error_reporting       # ошибки: ?-оператор
+cargo run -p removing_dublication  # дженерики
 
 # Exercises
 cargo run -p guessing_game
 cargo run -p fibonacci
+cargo run -p ex_vec_stack
+cargo run -p ex_safe_get
+cargo run -p ex_borrow_shift
+cargo run -p ex_table_row
+cargo run -p ex_join_with_comma
+cargo run -p ex_utf8_trap
+cargo run -p ex_pig_latin
+cargo run -p ex_word_frequencies
+cargo run -p ex_stats_mean_median_mode
+cargo run -p ex_group_by
+cargo run -p ex_inventory_upsert
+cargo run -p ex_top_n
+cargo run -p ex_merge_maps
 
 # Projects
 cargo run -p temperature_converter
 cargo run -p company_directory_cli
 cargo run -p temperature_converter_web  # http://localhost:3000
 
-# Experiments
+# Experiments & Algorithms
 cargo run -p mathmagic
+cargo run -p bs
+
+# Digital logic (мини-курс)
+cd digital-logic && cargo run --bin step1-task
 ```
+
+> Не помнишь имя пакета? `cargo metadata --no-deps --format-version 1 | grep -o '"name":"[^"]*"'`
+> или просто `grep -r '^name' */**/Cargo.toml`.
 
 ### Тесты
 
@@ -79,6 +112,25 @@ cargo check        # Проверка без оптимизаций
 cargo build        # Полная сборка
 cargo build --release  # Релизная сборка
 ```
+
+## Шпаргалки и заметки
+
+Материалы, которые не влезают в комментарии к коду:
+
+- [`01_basics/09_collections/HASHMAP.md`](01_basics/09_collections/HASHMAP.md) —
+  полный разбор `HashMap`: entry API, владение, порядок обхода, `BTreeMap`, рецепты.
+- [`01_basics/09_collections/VEC_STRING.md`](01_basics/09_collections/VEC_STRING.md) —
+  `Vec` и `String`: методы, срезы, владение, ловушки UTF-8.
+- [`01_basics/11_handling_errors/OPTION_RESULT.md`](01_basics/11_handling_errors/OPTION_RESULT.md) —
+  `Option`, `Result`, оператор `?`, свои типы ошибок, `panic!` vs `Result`.
+- [`01_basics/12_generic_types/GENERICS_TRAITS.md`](01_basics/12_generic_types/GENERICS_TRAITS.md) —
+  дженерики, трейты, `dyn` vs `impl Trait`, времена жизни.
+- [`digital-logic/README.md`](digital-logic/README.md) — мини-курс по цифровой
+  логике: гейты → таблицы истинности → сумматор → триггеры (лекции + задания + разборы).
+- [`02_exercises/README_collections.md`](02_exercises/README_collections.md) — индекс
+  упражнений по коллекциям.
+- [`rust-study-materials/`](rust-study-materials/README.md) — вводный курс:
+  теория, практика, домашние задания, Rust-koans.
 
 ## Как пользоваться
 

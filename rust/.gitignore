@@ -4,3 +4,6 @@ target/
 !Cargo.lock
 **/.cargo-lock
 **/.cargo-lock.json
+
+# локальные target-каталоги отдельных крейтов (.cargo-target)
+**/.cargo-target/

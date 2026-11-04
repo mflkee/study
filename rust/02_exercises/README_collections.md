@@ -19,3 +19,9 @@ This folder is organized by topic so it is clear where each new theme starts.
 
 - `03_hashmaps/01_word_frequencies` (old 07)
 - `03_hashmaps/02_stats_mean_median_mode` (old 08)
+- `03_hashmaps/03_group_by` — группировка значений в `Vec` (entry + `or_default`)
+- `03_hashmaps/04_inventory_upsert` — склад: `and_modify` + `or_insert`
+- `03_hashmaps/05_top_n` — топ-N по частоте (сортировка + `truncate`)
+- `03_hashmaps/06_merge_maps` — слияние карт со сложением значений, инверсия
+
+Разбор API `HashMap` — [`../../01_basics/09_collections/HASHMAP.md`](../../01_basics/09_collections/HASHMAP.md).

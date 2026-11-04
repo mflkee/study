@@ -1,3 +1,6 @@
+// Обработка ошибок: оператор `?` и разбор `ErrorKind`.
+// Шпаргалка по Option/Result/? — в ../OPTION_RESULT.md
+
 use std::fs::File;
 use std::io::{self, Read};
 

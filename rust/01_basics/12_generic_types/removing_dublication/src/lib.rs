@@ -1,3 +1,6 @@
+// Дженерики: обобщаем функцию поиска максимума.
+// Подробный разбор дженериков, трейтов и времён жизни — в ../GENERICS_TRAITS.md
+
 pub fn largest_value_in_list(list: &[i32]) -> &i32 {
     let mut largest = &list[0];
 

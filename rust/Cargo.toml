@@ -31,6 +31,6 @@ members = [
     "03_projects/company_directory_cli",
     "03_projects/temperature_converter_web",
     # Experiments - эксперименты и математические задачи
-    "04_experiments/mathmagic", "01_basics/12_generic_types/removing_dublication", "05_algotithms/bs", "01_basics/11_handling_errors/error_reporting",
+    "04_experiments/mathmagic", "01_basics/12_generic_types/removing_dublication", "05_algorithms/bs", "01_basics/11_handling_errors/error_reporting", "digital-logic", "digital-logic/xor", "02_exercises/03_hashmaps/03_group_by", "02_exercises/03_hashmaps/04_inventory_upsert", "02_exercises/03_hashmaps/05_top_n", "02_exercises/03_hashmaps/06_merge_maps",
 ]
 resolver = "2"

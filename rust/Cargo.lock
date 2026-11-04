@@ -184,6 +184,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "812e12b5285cc515a9c72a5c1d3b6d46a19dac5acfef5265968c166106e31dd3"
 
 [[package]]
+name = "bs"
+version = "0.1.0"
+
+[[package]]
 name = "bytes"
 version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -231,11 +235,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "digital-logic"
+version = "0.1.0"
+
+[[package]]
+name = "error_reporting"
+version = "0.1.0"
+
+[[package]]
 name = "ex_borrow_shift"
 version = "0.1.0"
 
 [[package]]
+name = "ex_group_by"
+version = "0.1.0"
+
+[[package]]
+name = "ex_inventory_upsert"
+version = "0.1.0"
+
+[[package]]
 name = "ex_join_with_comma"
+version = "0.1.0"
+
+[[package]]
+name = "ex_merge_maps"
 version = "0.1.0"
 
 [[package]]
@@ -252,6 +276,10 @@ version = "0.1.0"
 
 [[package]]
 name = "ex_table_row"
+version = "0.1.0"
+
+[[package]]
+name = "ex_top_n"
 version = "0.1.0"
 
 [[package]]
@@ -1226,6 +1254,10 @@ name = "windows_x86_64_msvc"
 version = "0.53.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6bbff5f0aada427a1e5a6da5f1f98158182f26556f345ac9e04d36d0ebed650"
+
+[[package]]
+name = "xor"
+version = "0.1.0"
 
 [[package]]
 name = "yansi"

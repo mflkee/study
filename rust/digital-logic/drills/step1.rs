@@ -19,22 +19,22 @@
 
 /// NOT: истина, когда вход ложен.
 fn not(a: bool) -> bool {
-    todo!("NOT")
+    !a
 }
 
 /// NAND: «не-и». Ложь только в одном случае — когда оба входа истинны.
 fn nand(a: bool, b: bool) -> bool {
-    todo!("NAND")
+    !(a & b)
 }
 
 /// NOR: «не-или». Истина только в одном случае — когда оба входа ложны.
 fn nor(a: bool, b: bool) -> bool {
-    todo!("NOR")
+    !(a | b)
 }
 
 /// XNOR: «равенство» — истина, когда входы совпадают.
 fn xnor(a: bool, b: bool) -> bool {
-    todo!("XNOR")
+    !(a ^ b)
 }
 
 /// Импликация «если a, то b» (запись `a → b`, «a влечёт b»).
@@ -58,21 +58,31 @@ fn xnor(a: bool, b: bool) -> bool {
 /// (`!(x & y) == !x | !y`). Подробный разбор — в LECTURE.md: разделы
 /// «Импликация» и «Как вывести выражение по таблице».
 fn implies(a: bool, b: bool) -> bool {
-    todo!("импликация")
+    /*
+     * ТИ импликации A -> B
+     * 0 0 1
+     * 0 1 1
+     * 1 0 0
+     * 1 1 1
+     */
+    !(a & !b) | (!a | b)
 }
 
 // ===== Блок 2. Собрать из NAND ===========================================
 fn and_from_nand(a: bool, b: bool) -> bool {
-    todo!("AND из NAND")
+    !(!(a & b) & !(a & b))
 }
 fn or_from_nand(a: bool, b: bool) -> bool {
-    todo!("OR из NAND")
+    !(a & a) | !(b & b)
 }
 fn not_from_nand(a: bool) -> bool {
-    todo!("NOT из NAND")
+    !(a & a)
 }
 fn xor_from_nand(a: bool, b: bool) -> bool {
-    todo!("XOR из NAND")
+    let n1 = !(a & b);
+    let n2 = !(n1 & a);
+    let n3 = !(n1 & b);
+    !(n3 & n2)
 }
 
 // ===== Блок 3. Три входа =================================================
@@ -115,34 +125,148 @@ fn main() {
 #[cfg(test)]
 mod block1_gates {
     use super::*;
-    #[test] fn drill_not() { assert!(not(false)); assert!(!not(true)); }
-    #[test] fn drill_nand() { assert!(nand(false,false)&&nand(false,true)&&nand(true,false)); assert!(!nand(true,true)); }
-    #[test] fn drill_nor() { assert!(nor(false,false)); assert!(!nor(false,true)&&!nor(true,false)&&!nor(true,true)); }
-    #[test] fn drill_xnor() { assert!(xnor(false,false)&&xnor(true,true)); assert!(!xnor(false,true)&&!xnor(true,false)); }
-    #[test] fn drill_implies() { assert!(implies(false,false)&&implies(false,true)&&implies(true,true)); assert!(!implies(true,false)); }
+    #[test]
+    fn drill_not() {
+        assert!(not(false));
+        assert!(!not(true));
+    }
+    #[test]
+    fn drill_nand() {
+        assert!(nand(false, false) && nand(false, true) && nand(true, false));
+        assert!(!nand(true, true));
+    }
+    #[test]
+    fn drill_nor() {
+        assert!(nor(false, false));
+        assert!(!nor(false, true) && !nor(true, false) && !nor(true, true));
+    }
+    #[test]
+    fn drill_xnor() {
+        assert!(xnor(false, false) && xnor(true, true));
+        assert!(!xnor(false, true) && !xnor(true, false));
+    }
+    #[test]
+    fn drill_implies() {
+        assert!(implies(false, false) && implies(false, true) && implies(true, true));
+        assert!(!implies(true, false));
+    }
 }
 #[cfg(test)]
 mod block2_from_nand {
     use super::*;
-    #[test] fn drill_and_from_nand() { assert!(!and_from_nand(false,false)); assert!(!and_from_nand(false,true)); assert!(!and_from_nand(true,false)); assert!(and_from_nand(true,true)); }
-    #[test] fn drill_or_from_nand() { assert!(!or_from_nand(false,false)); assert!(or_from_nand(false,true)); assert!(or_from_nand(true,false)); assert!(or_from_nand(true,true)); }
-    #[test] fn drill_not_from_nand() { assert!(not_from_nand(false)); assert!(!not_from_nand(true)); }
-    #[test] fn drill_xor_from_nand() { assert!(!xor_from_nand(false,false)); assert!(xor_from_nand(false,true)); assert!(xor_from_nand(true,false)); assert!(!xor_from_nand(true,true)); }
+    #[test]
+    fn drill_and_from_nand() {
+        assert!(!and_from_nand(false, false));
+        assert!(!and_from_nand(false, true));
+        assert!(!and_from_nand(true, false));
+        assert!(and_from_nand(true, true));
+    }
+    #[test]
+    fn drill_or_from_nand() {
+        assert!(!or_from_nand(false, false));
+        assert!(or_from_nand(false, true));
+        assert!(or_from_nand(true, false));
+        assert!(or_from_nand(true, true));
+    }
+    #[test]
+    fn drill_not_from_nand() {
+        assert!(not_from_nand(false));
+        assert!(!not_from_nand(true));
+    }
+    #[test]
+    fn drill_xor_from_nand() {
+        assert!(!xor_from_nand(false, false));
+        assert!(xor_from_nand(false, true));
+        assert!(xor_from_nand(true, false));
+        assert!(!xor_from_nand(true, true));
+    }
 }
 #[cfg(test)]
 mod block3_three_inputs {
     use super::*;
-    #[test] fn drill_majority() { assert!(!majority(false,false,false)); assert!(!majority(true,false,false)); assert!(!majority(false,true,false)); assert!(!majority(false,false,true)); assert!(majority(true,true,false)); assert!(majority(true,false,true)); assert!(majority(false,true,true)); assert!(majority(true,true,true)); }
-    #[test] fn drill_all_equal() { assert!(all_equal(false,false,false)); assert!(all_equal(true,true,true)); assert!(!all_equal(false,false,true)); assert!(!all_equal(true,false,true)); assert!(!all_equal(false,true,true)); assert!(!all_equal(true,true,false)); }
-    #[test] fn drill_odd_ones() { assert!(!odd_ones(false,false,false)); assert!(odd_ones(true,false,false)); assert!(odd_ones(false,true,false)); assert!(odd_ones(false,false,true)); assert!(!odd_ones(true,true,false)); assert!(!odd_ones(true,false,true)); assert!(!odd_ones(false,true,true)); assert!(odd_ones(true,true,true)); }
-    #[test] fn drill_exactly_one() { assert!(!exactly_one(false,false,false)); assert!(exactly_one(true,false,false)); assert!(exactly_one(false,true,false)); assert!(exactly_one(false,false,true)); assert!(!exactly_one(true,true,false)); assert!(!exactly_one(true,false,true)); assert!(!exactly_one(false,true,true)); assert!(!exactly_one(true,true,true)); }
-    #[test] fn drill_count_true() { assert_eq!(count_true(false,false,false), 0); assert_eq!(count_true(true,false,false), 1); assert_eq!(count_true(false,true,false), 1); assert_eq!(count_true(false,false,true), 1); assert_eq!(count_true(true,true,false), 2); assert_eq!(count_true(true,false,true), 2); assert_eq!(count_true(false,true,true), 2); assert_eq!(count_true(true,true,true), 3); }
+    #[test]
+    fn drill_majority() {
+        assert!(!majority(false, false, false));
+        assert!(!majority(true, false, false));
+        assert!(!majority(false, true, false));
+        assert!(!majority(false, false, true));
+        assert!(majority(true, true, false));
+        assert!(majority(true, false, true));
+        assert!(majority(false, true, true));
+        assert!(majority(true, true, true));
+    }
+    #[test]
+    fn drill_all_equal() {
+        assert!(all_equal(false, false, false));
+        assert!(all_equal(true, true, true));
+        assert!(!all_equal(false, false, true));
+        assert!(!all_equal(true, false, true));
+        assert!(!all_equal(false, true, true));
+        assert!(!all_equal(true, true, false));
+    }
+    #[test]
+    fn drill_odd_ones() {
+        assert!(!odd_ones(false, false, false));
+        assert!(odd_ones(true, false, false));
+        assert!(odd_ones(false, true, false));
+        assert!(odd_ones(false, false, true));
+        assert!(!odd_ones(true, true, false));
+        assert!(!odd_ones(true, false, true));
+        assert!(!odd_ones(false, true, true));
+        assert!(odd_ones(true, true, true));
+    }
+    #[test]
+    fn drill_exactly_one() {
+        assert!(!exactly_one(false, false, false));
+        assert!(exactly_one(true, false, false));
+        assert!(exactly_one(false, true, false));
+        assert!(exactly_one(false, false, true));
+        assert!(!exactly_one(true, true, false));
+        assert!(!exactly_one(true, false, true));
+        assert!(!exactly_one(false, true, true));
+        assert!(!exactly_one(true, true, true));
+    }
+    #[test]
+    fn drill_count_true() {
+        assert_eq!(count_true(false, false, false), 0);
+        assert_eq!(count_true(true, false, false), 1);
+        assert_eq!(count_true(false, true, false), 1);
+        assert_eq!(count_true(false, false, true), 1);
+        assert_eq!(count_true(true, true, false), 2);
+        assert_eq!(count_true(true, false, true), 2);
+        assert_eq!(count_true(false, true, true), 2);
+        assert_eq!(count_true(true, true, true), 3);
+    }
 }
 #[cfg(test)]
 mod block4_select_and_functions {
     use super::*;
-    #[test] fn drill_mux() { assert!(!mux(false,true,false)); assert!(mux(true,true,false)); assert!(mux(false,false,true)); assert!(!mux(true,false,true)); }
-    #[test] fn drill_gates_equal_same() { assert!(gates_equal(|a,b| a&b, |a,b| a&b)); assert!(gates_equal(|a,b| !(a&b), |a,b| !(a&b))); assert!(gates_equal(|a,b| !(a^b), |a,b| (a&b)|(!a&!b))); }
-    #[test] fn drill_gates_equal_differs() { assert!(!gates_equal(|a,b| a&b, |a,b| a|b)); assert!(!gates_equal(|a,b| a^b, |a,b| a|b)); assert!(!gates_equal(|a,b| a&b, |a,b| a^b)); }
-    #[test] fn drill_truth_table_rows() { assert_eq!(truth_table_rows(|a,b| a&b), 0b1000); assert_eq!(truth_table_rows(|a,b| a|b), 0b1110); assert_eq!(truth_table_rows(|a,b| a^b), 0b0110); assert_eq!(truth_table_rows(|a,b| !(a&b)), 0b0111); assert_eq!(truth_table_rows(|a,b| !(a|b)), 0b0001); assert_eq!(truth_table_rows(|a,b| !(a^b)), 0b1001); }
+    #[test]
+    fn drill_mux() {
+        assert!(!mux(false, true, false));
+        assert!(mux(true, true, false));
+        assert!(mux(false, false, true));
+        assert!(!mux(true, false, true));
+    }
+    #[test]
+    fn drill_gates_equal_same() {
+        assert!(gates_equal(|a, b| a & b, |a, b| a & b));
+        assert!(gates_equal(|a, b| !(a & b), |a, b| !(a & b)));
+        assert!(gates_equal(|a, b| !(a ^ b), |a, b| (a & b) | (!a & !b)));
+    }
+    #[test]
+    fn drill_gates_equal_differs() {
+        assert!(!gates_equal(|a, b| a & b, |a, b| a | b));
+        assert!(!gates_equal(|a, b| a ^ b, |a, b| a | b));
+        assert!(!gates_equal(|a, b| a & b, |a, b| a ^ b));
+    }
+    #[test]
+    fn drill_truth_table_rows() {
+        assert_eq!(truth_table_rows(|a, b| a & b), 0b1000);
+        assert_eq!(truth_table_rows(|a, b| a | b), 0b1110);
+        assert_eq!(truth_table_rows(|a, b| a ^ b), 0b0110);
+        assert_eq!(truth_table_rows(|a, b| !(a & b)), 0b0111);
+        assert_eq!(truth_table_rows(|a, b| !(a | b)), 0b0001);
+        assert_eq!(truth_table_rows(|a, b| !(a ^ b)), 0b1001);
+    }
 }
