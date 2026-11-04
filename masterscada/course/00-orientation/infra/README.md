@@ -10,12 +10,12 @@
 |---|---|
 | Образ | `masterscada-pg:16-ru` — собирается из `Dockerfile` (postgres:16 + локаль `ru_RU.UTF-8`) |
 | Контейнер | `masterscada-pg` |
-| Адрес для IDE | `localhost:15444` |
+| Адрес для IDE | `localhost:15444` (Arch/хост) и `192.168.122.1:15444` (среда в VM, см. «Arch + Astra») |
 | Доступы | пользователь `course`, пароль `course`, база `course` |
 | **Локаль кластера** | **`ru_RU.UTF-8`** (как в инструкции вендора) |
 | Данные | том `infra_pgdata` (переживает `down`, удаляется только `down -v`) |
-| Доступ извне | закрыт: порт публикуется на `127.0.0.1` |
-| Автозапуск | `restart: unless-stopped` |
+| Доступ извне | loopback (`127.0.0.1`) + адрес моста libvirt (`192.168.122.1`) для VM; в LAN/NetBird не торчит |
+| Автозапуск | `restart: unless-stopped` (+ порядок с `libvirtd`, см. «Arch + Astra») |
 
 > Порт **15444**, а не 5432, — чтобы стенд не конфликтовал с системным PostgreSQL. Значение
 > задаётся в `.env` (`PG_PORT`) и **обязано совпадать** с настройками среды разработки.
@@ -46,7 +46,7 @@ docker compose ps                   # ожидаем: Up … (healthy), 127.0.0.
 
 ```
 NAME             IMAGE         STATUS                    PORTS
-masterscada-pg   postgres:16   Up 11 minutes (healthy)   127.0.0.1:15444->5432/tcp
+masterscada-pg   postgres:16   Up 11 minutes (healthy)   127.0.0.1:15444->5432/tcp, 192.168.122.1:15444->5432/tcp
 ```
 
 Три независимые проверки, что БД действительно отвечает:
@@ -131,6 +131,73 @@ cp .env.example .env      # дальше правим .env; файл в git не
 Смена порта (`PG_PORT=5433`) — тоже требует обновить параметры подключения в среде разработки
 (Настройки среды → База данных либо `IdeSettings.json`).
 
+## Arch + Astra: два места разработки на одном стенде
+
+Типовая путаница: «работаю то в Arch, то в Astra — что менять каждый раз?». Ответ — **ничего**.
+Стенд один (PostgreSQL в Docker на хосте), а Arch и Astra — это два *клиента* к нему:
+
+| Место разработки | Где живёт | Адрес БД в настройках среды |
+|---|---|---|
+| Arch (niri, хост) | сама машина стенда | `localhost`, порт `15444` |
+| Astra SE (KVM/QEMU) | VM на той же машине; хост для гостя = шлюз `virbr0` | `192.168.122.1`, порт `15444` |
+
+Поэтому **адрес в IDE задаётся один раз на каждую ОС** (`~/.config/MPSSoft/MasterSCADA4D_DT_2.0_RC/IdeSettings.json`
+внутри соответствующей системы: `ProjectsStoreServer/Port/User/Password`; в VM — файл внутри её диска).
+А `.env`/`docker-compose.yml` — настройка **сервера**: на какие адреса хоста опубликовать порт. Чтобы не
+переключать `PG_BIND` туда-сюда, порт публикуется сразу на оба адреса:
+
+```yaml
+ports:
+  - "${PG_BIND:-127.0.0.1}:${PG_PORT:-15444}:5432"       # Arch (хост)
+  - "${PG_BIND_VM:-192.168.122.1}:${PG_PORT:-15444}:5432" # Astra (VM через virbr0)
+```
+
+> Один и тот же склад = **одни и те же проекты** в Arch и в Astra (это обычно и нужно: проект,
+> начатый в VM, открывается на хосте). Нужны независимые наборы — держи на каждой ОС свой Postgres,
+> тогда `.env` одинаковый (`127.0.0.1:15444`), а проекты таскаются через `pg_dump`/`psql`.
+
+### Грабли: гонка загрузки `docker.service` и `libvirtd`
+
+Адрес `192.168.122.1` назначает `libvirtd` при старте. Если Docker поднимется раньше, публикация
+второго порта падает, и это **не** косметика:
+
+```
+failed to bind host port 192.168.122.1:15444/tcp: cannot assign requested address
+failed to start container … "failed to set up container networking …"
+```
+
+Контейнер при этом остаётся `Up (healthy)` (процесс postgres жив), но **без сети и без порта** —
+IDE получает `Connection refused`, а в `docker ps` колонка PORTS пуста. Наблюдалось 2026-10-15:
+`docker.service` активен в 07:05:29, `libvirtd` — в 07:05:30. Лечится дроп-ином для systemd
+(копия лежит рядом, [`systemd/10-wait-libvirt.conf`](systemd/10-wait-libvirt.conf)):
+
+```bash
+sudo install -Dm644 systemd/10-wait-libvirt.conf \
+  /etc/systemd/system/docker.service.d/10-wait-libvirt.conf
+sudo systemctl daemon-reload && sudo systemctl restart docker
+```
+
+Проверка после перезагрузки — в `docker compose ps` должны быть видны **оба** адреса:
+
+```bash
+docker compose ps
+# 127.0.0.1:15444->5432/tcp, 192.168.122.1:15444->5432/tcp
+docker compose exec -T postgres psql -U course -d course -tAc "select 'ok'"
+PGPASSWORD=course psql -h 192.168.122.1 -p 15444 -U course -d course -tAc "select 'ok'"
+```
+
+### Если VM на машине нет
+
+Закомментируй вторую строку в `ports` (или убери `PG_BIND_VM`): публикация на несуществующий адрес
+не даст контейнеру подняться вообще.
+
+### Если Astra окажется на другой машине (не VM тут)
+
+Тогда публикуй порт на `0.0.0.0` (или на конкретный адрес NetBird-оверлея) и в `IdeSettings.json`
+той машины укажи `<адрес-хоста-стенда>:15444`. Всё равно один раз, а не «при каждом переключении».
+Осторожно: `0.0.0.0` выставляет БД в LAN и в NetBird — либо прикрой nftables, либо оставь
+учётные данные не учебными.
+
 ## Что IDE создаёт в БД (проверено 2026-10-11)
 
 После создания проекта в редакторе в стенде появляются:
@@ -158,6 +225,7 @@ docker compose exec -T postgres psql -U course -d ms4d_project_1 -c "SELECT coun
 | Симптом | Причина | Что делать |
 |---|---|---|
 | `Bind for 0.0.0.0:15444 failed: port is already allocated` | порт занят (другой контейнер/сервис) | `ss -ltnp \| grep 15444`, сменить `PG_PORT` |
+| Контейнер `Up (healthy)`, но в `PORTS` пусто, IDE — `Connection refused` | публикация на `192.168.122.1` не удалась: docker стартовал раньше `libvirtd` (адреса ещё нет) | `docker compose up -d --force-recreate`; поставить дроп-ин (см. «Arch + Astra»), чтобы не повторялось при загрузке |
 | `docker: permission denied … /var/run/docker.sock` | пользователь не в группе `docker` | `sudo usermod -aG docker $USER`, перелогин |
 | `docker compose ps` показывает `unhealthy` | контейнер не может инициализироваться | `docker compose logs postgres` |
 | IDE пишет `Connection refused` | IDE смотрит не на тот порт, стенд остановлен | `docker compose ps`; сверить порт |

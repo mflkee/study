@@ -14,6 +14,10 @@
 |---|---|
 | [`reference/arhitektura-i-os.md`](reference/arhitektura-i-os.md) | Из чего состоит DT 2.0 (Electron/.NET/C++), требования, поддерживаемые ОС |
 | [`reference/ustanovka-arch-niri.md`](reference/ustanovka-arch-niri.md) | Установка `.deb` и запуск на Arch + niri/Wayland (проверено) |
+| [`reference/astra-vm-kvm.md`](reference/astra-vm-kvm.md) | Стенд Astra Linux SE 1.8.6 в KVM/QEMU (virtio-vga + Spice) — команды `virt-install`, установка DT внутрь VM |
+| [`reference/rt-emulyaciya-na-linux.md`](reference/rt-emulyaciya-na-linux.md) | Запуск эмуляции RT на Linux (helper `IPCServer`, user-юнит, грабли) |
+| [`reference/bugreport-ms4d-rc-2026-10-13.md`](reference/bugreport-ms4d-rc-2026-10-13.md) | Отчёт о 4 воспроизводимых дефектах беты `2.0.4_RC_20260622.1` (отправлен вендору 2026-10-13) |
+| [`reference/helpdesk-2026-10/`](reference/helpdesk-2026-10/README.md) | Пакет для HelpDesk: 4 заявки, выписка из PostgreSQL, карта вложений, раскадровка видео |
 
 ## 2. Онлайн-справка MasterSCADA 4D 2.0 (актуальная)
 
