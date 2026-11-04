@@ -1,0 +1,11 @@
+langchain
+langchain-community
+langchain-openai
+langchain-huggingface
+langchain-chroma
+chromadb
+sentence-transformers
+huggingface_hub
+tiktoken
+# torch ставится отдельно, CPU-сборка:
+#   uv pip install torch --index-url https://download.pytorch.org/whl/cpu
