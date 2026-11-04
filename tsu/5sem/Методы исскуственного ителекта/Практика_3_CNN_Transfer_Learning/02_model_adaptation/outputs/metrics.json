@@ -1,0 +1,177 @@
+{
+  "param_stats": {
+    "total_params": 11181642,
+    "total_human": "11.18 млн",
+    "trainable_params": 5130,
+    "trainable_human": "5.1 тыс.",
+    "frozen_params": 11176512,
+    "trainable_share_pct": 0.046
+  },
+  "modules": [
+    {
+      "block": "conv1",
+      "type": "Conv2d",
+      "params": 9408,
+      "params_human": "9.4 тыс.",
+      "trainable": false
+    },
+    {
+      "block": "bn1",
+      "type": "BatchNorm2d",
+      "params": 128,
+      "params_human": "128",
+      "trainable": false
+    },
+    {
+      "block": "layer1",
+      "type": "Sequential",
+      "params": 147968,
+      "params_human": "148.0 тыс.",
+      "trainable": false
+    },
+    {
+      "block": "layer2",
+      "type": "Sequential",
+      "params": 525568,
+      "params_human": "525.6 тыс.",
+      "trainable": false
+    },
+    {
+      "block": "layer3",
+      "type": "Sequential",
+      "params": 2099712,
+      "params_human": "2.10 млн",
+      "trainable": false
+    },
+    {
+      "block": "layer4",
+      "type": "Sequential",
+      "params": 8393728,
+      "params_human": "8.39 млн",
+      "trainable": false
+    },
+    {
+      "block": "fc",
+      "type": "Linear",
+      "params": 5130,
+      "params_human": "5.1 тыс.",
+      "trainable": true
+    }
+  ],
+  "forward_shapes": [
+    {
+      "block": "input",
+      "shape": [
+        2,
+        3,
+        32,
+        32
+      ]
+    },
+    {
+      "block": "conv1",
+      "shape": [
+        2,
+        64,
+        16,
+        16
+      ]
+    },
+    {
+      "block": "bn1",
+      "shape": [
+        2,
+        64,
+        16,
+        16
+      ]
+    },
+    {
+      "block": "relu",
+      "shape": [
+        2,
+        64,
+        16,
+        16
+      ]
+    },
+    {
+      "block": "maxpool",
+      "shape": [
+        2,
+        64,
+        8,
+        8
+      ]
+    },
+    {
+      "block": "layer1",
+      "shape": [
+        2,
+        64,
+        8,
+        8
+      ]
+    },
+    {
+      "block": "layer2",
+      "shape": [
+        2,
+        128,
+        4,
+        4
+      ]
+    },
+    {
+      "block": "layer3",
+      "shape": [
+        2,
+        256,
+        2,
+        2
+      ]
+    },
+    {
+      "block": "layer4",
+      "shape": [
+        2,
+        512,
+        1,
+        1
+      ]
+    },
+    {
+      "block": "avgpool",
+      "shape": [
+        2,
+        512,
+        1,
+        1
+      ]
+    },
+    {
+      "block": "flatten",
+      "shape": [
+        2,
+        512
+      ]
+    },
+    {
+      "block": "fc",
+      "shape": [
+        2,
+        10
+      ]
+    }
+  ],
+  "fc": {
+    "in_features": 512,
+    "out_features": 10
+  },
+  "backbone_pretrained": true,
+  "backbone_frozen": true,
+  "demo_image": {
+    "index": 13,
+    "class": "horse"
+  }
+}

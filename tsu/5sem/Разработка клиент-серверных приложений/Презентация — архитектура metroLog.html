@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<title>Презентация — архитектура metroLog</title>
+<style>
+@page { size: 297mm 210mm; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #fff; }
+body {
+  font-family: "Noto Sans", "DejaVu Sans", Arial, sans-serif;
+  color: #16202b; -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.slide {
+  position: relative; width: 297mm; height: 210mm; padding: 13mm 16mm 12mm 16mm;
+  page-break-after: always; overflow: hidden; background: #fff;
+}
+.slide:last-child { page-break-after: auto; }
+h1 { font-size: 30pt; line-height: 1.15; margin: 0 0 6mm 0; color: #10202e; }
+h2 {
+  font-size: 21pt; margin: 0 0 6mm 0; color: #10202e; padding-bottom: 2.5mm;
+  border-bottom: 2px solid #1f6feb;
+}
+.subtitle { font-size: 15pt; color: #1f6feb; margin: 0 0 12mm 0; }
+.title-slide { padding-top: 38mm; }
+.accent-bar { width: 60mm; height: 3mm; background: #1f6feb; margin-bottom: 8mm; }
+.meta-line { font-size: 12.5pt; color: #40505f; margin: 0 0 1.5mm 0; }
+.body { font-size: 12.5pt; line-height: 1.42; }
+.block-head { font-size: 13pt; font-weight: 700; color: #0b7285; margin: 0 0 2mm 0; }
+ul.bullets, ol.numbered { margin: 0 0 4mm 0; padding-left: 7mm; }
+ul.bullets li, ol.numbered li { margin-bottom: 1.6mm; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 4mm 0; font-size: 11pt; }
+th, td { border: 1px solid #cbd6e2; padding: 1.6mm 2.2mm; text-align: left; vertical-align: top; }
+th { background: #eef4fb; font-weight: 700; }
+.note { font-size: 11.5pt; color: #3d4d5c; background: #f5f8fc; border-left: 3px solid #1f6feb;
+        padding: 2.5mm 3mm; margin: 3mm 0 0 0; }
+.page-num { position: absolute; right: 16mm; bottom: 6mm; font-size: 10pt; color: #8a97a4; }
+
+.diagram { margin: 0 0 2mm 0; }
+.diagram .row { display: flex; gap: 4mm; justify-content: center; align-items: stretch; margin: 0 0 2mm 0; }
+.diagram .box {
+  border: 1.6px solid #1f6feb; border-radius: 2.5mm; background: #eef4fb; padding: 3mm 4mm;
+  font-size: 11pt; font-weight: 600; text-align: center; flex: 0 1 auto; min-width: 46mm;
+}
+.diagram .box .dim { font-weight: 400; font-size: 9.5pt; color: #4a5a69; }
+.diagram .box.client, .diagram .box.api, .diagram .box.gateway { flex: 1 1 auto; }
+.diagram .box.db, .diagram .box.files { background: #e7f5ef; border-color: #0b7285; }
+.diagram .box.redis, .diagram .box.worker { background: #fdf1e6; border-color: #c2681a; }
+.diagram .box.ext { background: #f3eefb; border-color: #6a3ec2; }
+.diagram .arrow { text-align: center; font-size: 11pt; color: #5b6b7c; margin: 0 0 2mm 0; }
+.diagram .arrow-h { align-self: center; font-size: 14pt; color: #5b6b7c; }
+.diagram .flow { display: flex; gap: 3mm; justify-content: center; align-items: center; margin-bottom: 2mm; }
+.diagram.small .box { font-size: 10pt; min-width: 30mm; }
+</style></head>
+<body>
+<section class="slide title-slide">
+  <div class="accent-bar"></div>
+  <h1>metroLog — система учёта средств измерений и эталонов</h1>
+  <p class="subtitle">Клиент-серверная архитектура: React SPA → nginx → FastAPI → PostgreSQL / Redis</p>
+  <div class="meta"><p class='meta-line'>Дисциплина: «Разработка клиент-серверных приложений»</p><p class='meta-line'>Студент: Макеев Глеб Борисович, группа BHEBDPS-24-RKSP-5</p><p class='meta-line'>Преподаватель: Бучинский И. Н.</p><p class='meta-line'>18.10.2026 · github.com/mflkee/metroLog · v0.13.0</p></div>
+  <div class="page-num">1 / 14</div>
+</section>
+<section class="slide"><h2>Проблема и назначение системы</h2><div class="body">
+<p class="block-head">Как было (AS IS)</p>
+<ul class="bullets">
+<li>реестр СИ/ЭСИ — в разрозненных Excel-файлах по папкам и подразделениям;</li>
+<li>сроки поверки контролируются вручную по календарю — риск просрочки;</li>
+<li>данные из ФГИС «Аршин» переносятся руками: опечатки и дубли;</li>
+<li>статус прибора нигде не агрегирован; нет разграничения доступа к файлам.</li>
+</ul>
+<p class="block-head">Назначение и результат</p>
+<ul class="bullets">
+<li>единая база измерительного оборудования с иерархией «папка → группа → прибор»;</li>
+<li>автоматический контроль сроков и синхронизация с ФГИС «Аршин»;</li>
+<li>прозрачная история поверок и ремонтов; доступ заказчика — только к своим папкам;</li>
+<li><strong>результат:</strong> работающая система v0.13.0: 91 путь API, 124 операции, 18 экранов, 196 backend-тестов.</li>
+</ul>
+</div>
+<div class="page-num">2 / 14</div>
+</section>
+<section class="slide"><h2>Пользователи и роли</h2><div class="body">
+<table><thead><tr>
+<th>Роль</th>
+<th>Код</th>
+<th>Что может</th>
+</tr></thead><tbody>
+<tr>
+<td>Разработчик</td>
+<td>DEVELOPER</td>
+<td>поддержка и диагностика, полный доступ</td>
+</tr>
+<tr>
+<td>Администратор</td>
+<td>ADMINISTRATOR</td>
+<td>пользователи, роли, права по папкам, справочники</td>
+</tr>
+<tr>
+<td>Сотрудник метрологической службы</td>
+<td>MKAIR</td>
+<td>реестр, поверки, ремонты, переписка, отчёты</td>
+</tr>
+<tr>
+<td>Заказчик</td>
+<td>CUSTOMER</td>
+<td>просмотр своих папок, комментарии, согласование</td>
+</tr>
+</tbody></table>
+<p class="block-head">Два уровня разграничения</p>
+<ul class="bullets">
+<li><strong>роль</strong> — какой класс операций разрешён (чтение / оператор / администратор);</li>
+<li><strong>скоуп папок</strong> — белый список разрешённых и чёрный список скрытых папок;</li>
+<li>нет доступа к объекту → <strong>404</strong>, а не 403: система не раскрывает сам факт существования чужих данных.</li>
+</ul>
+</div>
+<div class="page-num">3 / 14</div>
+</section>
+<section class="slide"><h2>Диаграмма развёртывания</h2><div class="body">
+
+<div class="diagram">
+  <div class="row">
+    <div class="box client">Браузер клиента<br><span class="dim">React 19 SPA · Vite · TanStack Query · Zustand</span></div>
+  </div>
+  <div class="arrow">&#8595; &nbsp;HTTPS / HTTP</div>
+  <div class="row">
+    <div class="box gateway">nginx :80<br><span class="dim">статика SPA + proxy /api/ → backend:8000</span></div>
+  </div>
+  <div class="arrow">&#8595; &nbsp;/api/v1 (REST, JSON)</div>
+  <div class="row">
+    <div class="box api">FastAPI · uvicorn · 2 воркера<br><span class="dim">91 путь · 124 операции · /docs</span></div>
+    <div class="arrow-h">&#8596;</div>
+    <div class="box redis">Redis 7<br><span class="dim">очередь notifications</span></div>
+    <div class="arrow-h">&#8594;</div>
+    <div class="box worker">RQ worker<br><span class="dim">email через SMTP</span></div>
+  </div>
+  <div class="arrow">&#8595; &nbsp;SQLAlchemy 2.0 &nbsp;|&nbsp; &#8595; файлы</div>
+  <div class="row">
+    <div class="box db">PostgreSQL 16<br><span class="dim">30 таблиц · 50 FK · 76 индексов</span></div>
+    <div class="box files">Хранилище вложений<br><span class="dim">до 25 МБ, сжатие изображений</span></div>
+  </div>
+  <div class="arrow">&#8593; &nbsp;HTTP + retry (2 → 45 с) &nbsp;&nbsp;&nbsp; &#8593; &nbsp;SMTP</div>
+  <div class="row">
+    <div class="box ext">ФГИС «Аршин»<br><span class="dim">vri / mieta: поиск и детализация</span></div>
+    <div class="box ext">SMTP-сервер<br><span class="dim">уведомления и временные пароли</span></div>
+  </div>
+</div>
+
+<p class="note">Один хост, пять контейнеров Docker Compose. Наружу открыт только nginx: раздаёт статику и проксирует /api/ на backend. PostgreSQL, Redis и воркер доступны лишь во внутренней docker-сети (порты БД и Redis — только на loopback).</p>
+</div>
+<div class="page-num">4 / 14</div>
+</section>
+<section class="slide"><h2>Компоненты и ответственность</h2><div class="body">
+<table><thead><tr>
+<th>Слой</th>
+<th>Технология</th>
+<th>Зона ответственности</th>
+</tr></thead><tbody>
+<tr>
+<td>Клиент</td>
+<td>React 19 + TS, Vite, TanStack Query, Zustand</td>
+<td>экраны, кэш серверных данных, состояние сессии и темы</td>
+</tr>
+<tr>
+<td>Шлюз</td>
+<td>nginx 1.27</td>
+<td>статика SPA, try_files, proxy /api/, без буферизации загрузок</td>
+</tr>
+<tr>
+<td>API</td>
+<td>FastAPI + Pydantic</td>
+<td>маршрутизация, валидация, OpenAPI, зависимости</td>
+</tr>
+<tr>
+<td>Логика</td>
+<td>сервисный слой (18 модулей)</td>
+<td>скоуп папок, процессы, batch-операции, уведомления</td>
+</tr>
+<tr>
+<td>Данные</td>
+<td>SQLAlchemy 2.0 + Alembic</td>
+<td>ORM, 66 миграций, транзакции, репозитории</td>
+</tr>
+<tr>
+<td>Фон</td>
+<td>Redis 7 + RQ</td>
+<td>email-уведомления, повторы, fallback в синхронную отправку</td>
+</tr>
+<tr>
+<td>БД</td>
+<td>PostgreSQL 16</td>
+<td>30 таблиц, 50 FK, 76 индексов (8 частичных)</td>
+</tr>
+</tbody></table>
+<p class="note">Ключевое решение: бизнес-логика не в эндпоинтах, а в сервисах — роутер отвечает только за HTTP-контракт, поэтому правила доступа и процессов тестируются отдельно от транспорта.</p>
+</div>
+<div class="page-num">5 / 14</div>
+</section>
+<section class="slide"><h2>Поток данных: вход в систему (HMAC, stateless)</h2><div class="body">
+
+<div class="diagram small">
+  <div class="flow">
+    <div class="box api">POST /auth/login</div>
+    <div class="arrow-h">&#8594;</div>
+    <div class="box">PBKDF2-HMAC-SHA256<br><span class="dim">600 000 итераций, соль 16 Б</span></div>
+    <div class="arrow-h">&#8594;</div>
+    <div class="box">HMAC-токен<br><span class="dim">base64url(payload).base64url(sig)</span></div>
+    <div class="arrow-h">&#8594;</div>
+    <div class="box">200 {access_token, user}</div>
+  </div>
+  <div class="arrow">&#8595;</div>
+  <div class="flow">
+    <div class="box">get_current_user: подпись → загрузка пользователя → is_active</div>
+    <div class="arrow-h">&#8594;</div>
+    <div class="box">require_operator / require_admin</div>
+    <div class="arrow-h">&#8594;</div>
+    <div class="box">скоуп папок → 403 или 404</div>
+  </div>
+</div>
+
+<ol class="numbered">
+<li>Клиент: POST /api/v1/auth/login {email, password}.</li>
+<li>Pydantic-валидация → AuthService.login(); пароль проверяется PBKDF2-HMAC-SHA256, 600 000 итераций.</li>
+<li>Сервер формирует токен: base64url(payload) . base64url(HMAC-SHA256(payload, secret)), payload = {sub, role, iat, exp}.</li>
+<li>Ответ 200 {access_token, user}; клиент подставляет Authorization: Bearer &lt;token&gt;.</li>
+<li>Сервер <strong>не хранит сессии</strong>: отзыв = блокировка пользователя (проверка на каждом запросе) или ротация ключа.</li>
+</ol>
+</div>
+<div class="page-num">6 / 14</div>
+</section>
+<section class="slide"><h2>Поток данных: CRUD оборудования</h2><div class="body">
+<table><thead><tr>
+<th>Операция</th>
+<th>Запрос</th>
+<th>Что происходит на сервере</th>
+</tr></thead><tbody>
+<tr>
+<td>Список</td>
+<td>GET /equipment/page?limit=&amp;offset=&amp;search=&amp;sort=</td>
+<td>проверка скоупа → SQL с пагинацией → EquipmentRead</td>
+</tr>
+<tr>
+<td>Чтение</td>
+<td>GET /equipment/{id}</td>
+<td>доступ к папке → 404 при отказе → карточка с деталями</td>
+</tr>
+<tr>
+<td>Создание</td>
+<td>POST /equipment</td>
+<td>валидация → вставка → событие аудита → 201</td>
+</tr>
+<tr>
+<td>Изменение</td>
+<td>PATCH /equipment/{id}</td>
+<td>частичное обновление (exclude_unset) → событие аудита</td>
+</tr>
+<tr>
+<td>Удаление</td>
+<td>DELETE /equipment/{id}</td>
+<td>каскад процессов и вложений → событие → 204</td>
+</tr>
+<tr>
+<td>Массово</td>
+<td>POST /equipment/delete-batch</td>
+<td>удаление пачки, событие на каждую сущность</td>
+</tr>
+</tbody></table>
+<ul class="bullets">
+<li>все запросы к реестру проходят через фильтр скоупа — на уровне сервиса, а не интерфейса;</li>
+<li>списки всегда постраничные; тяжёлые выгрузки — в XLSX;</li>
+<li>каждое изменение оставляет запись в журнале событий с текстовыми копиями названий.</li>
+</ul>
+</div>
+<div class="page-num">7 / 14</div>
+</section>
+<section class="slide"><h2>Поток данных: импорт из Аршина и поверка</h2><div class="body">
+<p class="block-head">Сверка с ФГИС «Аршин»</p>
+<ol class="numbered">
+<li>POST /arshin/search — поиск по свидетельству, регистрационному номеру, типу прибора.</li>
+<li>ArshinClient: таймаут 30 с, до 5 попыток, экспоненциальная задержка 2 → 45 с.</li>
+<li>GET /arshin/vri/{vri_id} — детализация; ответ кэшируется в si_verifications вместе с raw_payload_json.</li>
+<li>POST /equipment/folders/{id}/refresh-tasks — шапка задачи + строка на каждый прибор: UPDATED / UPDATED_UNCERTAIN / UNCHANGED / NOT_FOUND / ERROR.</li>
+<li>Неоднозначный заводской номер → serial_ambiguous + список кандидатов; применяется выбранная оператором запись.</li>
+</ol>
+<p class="block-head">Поверка и ремонт</p>
+<ul class="bullets">
+<li>POST /equipment/{id}/verification — режим (выездная/на месте, с демонтажом или без), маршрут, сроки;</li>
+<li>этапы, переписка и вложения; закрытие — POST .../verification/close;</li>
+<li>групповые операции: POST /equipment/verifications/bulk + PATCH .../batch/{batch_key}.</li>
+</ul>
+</div>
+<div class="page-num">8 / 14</div>
+</section>
+<section class="slide"><h2>Доступ: RBAC + скоуп папок</h2><div class="body">
+<table><thead><tr>
+<th>Уровень</th>
+<th>Где проверяется</th>
+<th>Результат при отказе</th>
+</tr></thead><tbody>
+<tr>
+<td>Аутентификация</td>
+<td>get_current_user (подпись токена, is_active)</td>
+<td>401</td>
+</tr>
+<tr>
+<td>Роль</td>
+<td>require_operator / require_admin</td>
+<td>403</td>
+</tr>
+<tr>
+<td>Скоуп папок</td>
+<td>is_folder_access_allowed в сервисах</td>
+<td><strong>404</strong> (soft-denial)</td>
+</tr>
+<tr>
+<td>Ролевые экраны</td>
+<td>RequireRoles в React Router</td>
+<td>редирект в интерфейсе</td>
+</tr>
+</tbody></table>
+<ul class="bullets">
+<li>DEVELOPER и ADMINISTRATOR видят всё — скоуп не ограничен;</li>
+<li>MKAIR и CUSTOMER — только allowed_folder_ids минус hidden_equipment_folder_ids;</li>
+<li>проверка применяется к спискам, одиночным объектам и вложенным сущностям (поверки, ремонты, комментарии, задачи);</li>
+<li>почему 404, а не 403: 403 подтверждает существование объекта, а сам факт наличия чужого прибора — коммерческая информация.</li>
+</ul>
+</div>
+<div class="page-num">9 / 14</div>
+</section>
+<section class="slide"><h2>API-контракт: REST, OpenAPI, slumber</h2><div class="body">
+<table><thead><tr>
+<th>Метод</th>
+<th>Пример</th>
+<th>Смысл</th>
+</tr></thead><tbody>
+<tr>
+<td>POST</td>
+<td>/api/v1/auth/login</td>
+<td>вход, выдача токена</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/api/v1/equipment/page?limit=50&amp;offset=0</td>
+<td>постраничный список с фильтрами</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/api/v1/equipment/{equipment_id}</td>
+<td>карточка прибора</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>/api/v1/equipment</td>
+<td>создание (201)</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td>/api/v1/equipment/{equipment_id}</td>
+<td>частичное изменение</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td>/api/v1/equipment/{equipment_id}</td>
+<td>удаление (204)</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td>/api/v1/equipment/folders/{id}/process-subscriptions</td>
+<td>идемпотентная замена подписок</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>/api/v1/equipment/verifications/bulk</td>
+<td>групповая операция</td>
+</tr>
+</tbody></table>
+<ul class="bullets">
+<li>коды: 200/201/204 — успех, 400 — бизнес-ошибка, 401 — нет токена, 403 — нет прав, 404 — нет объекта или доступа, 503 — недоступна БД/Redis;</li>
+<li>OpenAPI 3 генерируется автоматически: /docs (Swagger UI), /redoc, /api/v1/openapi.json — 91 путь, 124 операции;</li>
+<li>slumber.yml — коллекция запросов к ФГИС «Аршин» (vri/mieta: поиск, детализация).</li>
+</ul>
+</div>
+<div class="page-num">10 / 14</div>
+</section>
+<section class="slide"><h2>Фон, миграции, эксплуатация</h2><div class="body">
+<p class="block-head">Фоновые задачи (Redis + RQ)</p>
+<ul class="bullets">
+<li>очередь notifications, воркер отдельным контейнером: python -m app.tasks.worker;</li>
+<li>письма-упоминания, события процессов, уведомления подписчикам, временные пароли;</li>
+<li>таймаут задачи 120 с, TTL результата 300 с, TTL ошибки 24 ч;</li>
+<li><strong>fallback:</strong> при недоступности Redis письмо уходит синхронно — уведомление не теряется;</li>
+<li>напоминания по срокам идемпотентны: UNIQUE (task_id, reminder_date);</li>
+<li>пакетное обновление папки — BackgroundTasks с прогрессом в БД.</li>
+</ul>
+<p class="block-head">Миграции и эксплуатация</p>
+<ul class="bullets">
+<li>Alembic: 66 ревизий, alembic upgrade head при старте контейнера backend;</li>
+<li>GET /api/v1/health — живость; GET /api/v1/health/ready — БД (SELECT 1) и Redis, иначе 503;</li>
+<li>контейнеры restart: unless-stopped, перед деплоем — pg_dump базы.</li>
+</ul>
+</div>
+<div class="page-num">11 / 14</div>
+</section>
+<section class="slide"><h2>Тестирование и нагрузка</h2><div class="body">
+<table><thead><tr>
+<th>Уровень</th>
+<th>Инструмент</th>
+<th>Объём</th>
+</tr></thead><tbody>
+<tr>
+<td>Backend: API и сервисы</td>
+<td>pytest + httpx ASGI (SQLite in-memory)</td>
+<td>196 тестов в 10 файлах</td>
+</tr>
+<tr>
+<td>Frontend: логика</td>
+<td>vitest + Testing Library</td>
+<td>33 файла тестов</td>
+</tr>
+<tr>
+<td>Линт и типы</td>
+<td>ruff, mypy, eslint, tsc --noEmit</td>
+<td>на каждый push в CI</td>
+</tr>
+</tbody></table>
+<table><thead><tr>
+<th>Нагрузка (Locust, read-профиль)</th>
+<th>30 пользователей</th>
+<th>60 пользователей</th>
+</tr></thead><tbody>
+<tr>
+<td>Запросов / RPS</td>
+<td>2 311 / 19,3</td>
+<td>3 255 / 27,3</td>
+</tr>
+<tr>
+<td>Ошибки</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>p50 / p95</td>
+<td>53 мс / 1,4 с</td>
+<td>660 мс / 2,4 с</td>
+</tr>
+<tr>
+<td>Максимум</td>
+<td>6,1 с</td>
+<td>25,5 с</td>
+</tr>
+</tbody></table>
+<p class="note">Узкое место найдено: POST /auth/login — PBKDF2 600 000 итераций считается в event loop и блокирует воркер. Для заявленного профиля (десятки пользователей) запаса хватает, но хеширование нужно вынести в пул потоков (anyio.to_thread.run_sync).</p>
+</div>
+<div class="page-num">12 / 14</div>
+</section>
+<section class="slide"><h2>CI/CD</h2><div class="body">
+<table><thead><tr>
+<th>Стадия</th>
+<th>Что делает</th>
+</tr></thead><tbody>
+<tr>
+<td>checks</td>
+<td>ruff, pytest с покрытием, eslint, vitest, статический guard UI</td>
+</tr>
+<tr>
+<td>version-guard</td>
+<td>версия в frontend/package.json и корневом package.json обязана совпадать</td>
+</tr>
+<tr>
+<td>build-images</td>
+<td>сборка backend и frontend, публикация в ghcr.io/mflkee/metrolog-* (sha-*, staging/latest)</td>
+</tr>
+<tr>
+<td>runner-preflight</td>
+<td>ждёт self-hosted runner mkair-runner, иначе падает с понятным сообщением</td>
+</tr>
+<tr>
+<td>deploy-staging</td>
+<td>docker compose pull &amp;&amp; up -d на порту 9000 + проверка /health/ready</td>
+</tr>
+<tr>
+<td>deploy-prod</td>
+<td>pg_dump → pull/up → health-проверка → удаление release-ветки</td>
+</tr>
+</tbody></table>
+<ul class="bullets">
+<li><strong>main</strong> → проверки → сборка → staging; <strong>release/X.Y.Z</strong> → тот же конвейер → production;</li>
+<li>сломанный тест или разошедшаяся версия не попадают на прод;</li>
+<li>перед каждым прод-деплоем автоматически снимается резервная копия БД.</li>
+</ul>
+</div>
+<div class="page-num">13 / 14</div>
+</section>
+<section class="slide"><h2>Что осталось и выводы</h2><div class="body">
+<p class="block-head">Сделано</p>
+<ul class="bullets">
+<li>единая БД: 30 таблиц, 3НФ с документированными денормализациями;</li>
+<li>REST API: 91 путь, 124 операции, OpenAPI и Swagger; веб-клиент: 18 экранов;</li>
+<li>интеграция с ФГИС «Аршин» с ретраями и пакетным обновлением;</li>
+<li>196 pytest + 33 vitest, нагрузочные тесты Locust, CI/CD с деплоем.</li>
+</ul>
+<p class="block-head">Осталось</p>
+<ol class="numbered">
+<li>второй протокол взаимодействия (кроме HTTP/REST) — уточнить зачёт SMTP, иначе WebSocket/SSE;</li>
+<li>фикс PBKDF2: вынести хеширование в пул потоков и перепрогнать нагрузочный тест;</li>
+<li>тесты на устойчивость: 4xx/5xx, некорректные токены, недоступность Аршина;</li>
+<li>демонстрация по сценарию приёмки из ТЗ (раздел 11.6).</li>
+</ol>
+<p class="note">Вывод: спроектированная клиент-серверная архитектура закрывает требования практики 1, подтверждена тестами и нагрузочными прогонами и работает в реальной эксплуатации.</p>
+</div>
+<div class="page-num">14 / 14</div>
+</section>
+</body></html>

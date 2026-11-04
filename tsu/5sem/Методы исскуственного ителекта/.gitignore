@@ -1,0 +1,7 @@
+catboost_info/
+.ipynb_checkpoints/
+__pycache__/
+
+# Практика 3 (CNN + Transfer Learning): датасет ~180 МБ и веса моделей не в git
+Практика_3_CNN_Transfer_Learning/data/
+Практика_3_CNN_Transfer_Learning/**/*.pt

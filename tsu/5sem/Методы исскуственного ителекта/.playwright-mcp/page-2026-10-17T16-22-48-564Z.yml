@@ -1,0 +1,31 @@
+- generic [active] [ref=e1]:
+  - status
+  - generic [ref=e2]:
+    - link "Перейти к основному содержанию" [ref=e3] [cursor=pointer]:
+      - /url: "#maincontent"
+    - main [ref=e10]:
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - img "Учебный портал ТюмГУ" [ref=e14]
+          - heading "Зайти на Учебный портал ТюмГУ" [level=1] [ref=e15]
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - generic [ref=e18]: Логин или адрес электронной почты
+            - textbox "Логин или адрес электронной почты" [ref=e19]
+          - generic [ref=e20]:
+            - generic [ref=e21]: Пароль
+            - textbox "Пароль" [ref=e22]
+          - button "Вход" [ref=e24] [cursor=pointer]
+          - link "Забыли пароль?" [ref=e26] [cursor=pointer]:
+            - /url: https://lms.utmn.ru/login/forgot_password.php
+        - generic [ref=e28]:
+          - heading "Вы в первый раз на нашем сайте?" [level=2] [ref=e29]
+          - paragraph [ref=e30]: Для входа в систему используйте данные своей корпоративной учетной записи.
+        - link "Создать учетную запись" [ref=e32] [cursor=pointer]:
+          - /url: https://lms.utmn.ru/login/signup.php
+        - generic [ref=e34]:
+          - button "Русский ‎(ru)‎" [ref=e40] [cursor=pointer]: Русский ‎(ru)‎ 
+          - button "Уведомление о файлах cookie" [ref=e42] [cursor=pointer]
+    - contentinfo:
+      - button "Показать нижний колонтитул" [ref=e43] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e44]: "?"

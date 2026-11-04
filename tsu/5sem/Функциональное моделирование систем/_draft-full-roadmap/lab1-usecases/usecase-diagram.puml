@@ -1,0 +1,113 @@
+@startuml usecase-diagram
+' Диаграмма прецедентов: «Дорожная карта миграционного учёта»
+' Рендер: plantuml usecase-diagram.puml  (или расширение PlantUML в IDE)
+
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam nodesep 25
+skinparam ranksep 45
+skinparam usecase {
+  BackgroundColor #F7FBFF
+  BorderColor #4A6FA5
+}
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #333333
+}
+
+' --- Основные исполнители ---
+actor "Иностранный\nгражданин" as CIT
+actor "Принимающая сторона\n(собственник жилья)" as HOST
+actor "Работодатель" as EMP
+
+' --- Вспомогательные исполнители ---
+actor "Сотрудник ОВМ МВД" as MVD
+actor "ФГУП «ПВС» МВД" as PVS
+actor "МФЦ" as MFC
+actor "ЕПГУ (Госуслуги)" as EPGU
+actor "Медицинская\nорганизация" as MED
+actor "Страховая\nкомпания" as INS
+actor "Образовательная\nорганизация" as EDU
+actor "Банк" as BANK
+
+' --- Закулисные исполнители ---
+actor "ФНС" as FNS
+
+rectangle "Система «Дорожная карта миграционного учёта»" as SYS {
+  usecase "01. Формирование персональной\nдорожной карты" as UC01
+  usecase "02. Постановка на миграционный\nучёт" as UC02
+  usecase "03. Дактилоскопия\nи фотографирование" as UC03
+  usecase "04. Медицинское\nосвидетельствование" as UC04
+  usecase "05. Оформление полиса\nмедицинского страхования" as UC05
+  usecase "06. Получение ИНН" as UC06
+  usecase "07. Подтверждение владения\nрусским языком" as UC07
+  usecase "08. Оформление и получение\nпатента" as UC08
+  usecase "09. Трудоустройство\nи уведомление МВД" as UC09
+  usecase "10. Оформление РВП" as UC10
+  usecase "11. Оформление ВНЖ\nи ежегодное подтверждение" as UC11
+  usecase "12. Участие в программе\nпереселения соотечественников" as UC12
+}
+
+' --- ассоциации ---
+CIT --> UC01
+CIT --> UC02
+CIT --> UC03
+CIT --> UC04
+CIT --> UC05
+CIT --> UC06
+CIT --> UC07
+CIT --> UC08
+CIT --> UC09
+CIT --> UC10
+CIT --> UC11
+CIT --> UC12
+
+HOST --> UC02
+EMP --> UC09
+
+MVD --> UC02
+MVD --> UC08
+MVD --> UC10
+MVD --> UC11
+MVD --> UC12
+
+PVS --> UC03
+PVS --> UC08
+
+MFC --> UC02
+MFC --> UC08
+MFC --> UC10
+MFC --> UC11
+
+EPGU --> UC02
+EPGU --> UC06
+EPGU --> UC08
+EPGU --> UC09
+EPGU --> UC10
+EPGU --> UC11
+
+MED --> UC04
+INS --> UC05
+EDU --> UC07
+BANK --> UC08
+
+FNS --> UC06
+FNS --> UC08
+
+' --- включения ---
+UC08 ..> UC03 : <<include>>
+UC08 ..> UC04 : <<include>>
+UC08 ..> UC06 : <<include>>
+UC08 ..> UC07 : <<include>>
+
+UC10 ..> UC03 : <<include>>
+UC10 ..> UC04 : <<include>>
+UC10 ..> UC07 : <<include>>
+
+UC11 ..> UC04 : <<include>>
+UC11 ..> UC07 : <<include>>
+
+UC12 ..> UC02 : <<include>>
+
+@enduml

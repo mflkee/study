@@ -1,0 +1,1011 @@
+- main [ref=f4e2]:
+  - generic [ref=f4e7]:
+    - heading "Практика 1. EDA, очистка данных и базовая модель классификации" [level=1] [ref=f4e8]
+    - paragraph [ref=f4e9]:
+      - strong [ref=f4e10]: "Выполнил:"
+      - text: Макеев Г. Б.
+      - strong [ref=f4e11]: "Группа:"
+      - text: BHEBDPS-24-MII-5
+      - strong [ref=f4e12]: "Дисциплина:"
+      - text: Методы искусственного интеллекта
+      - strong [ref=f4e13]: "Датасет:"
+      - text: Telco Customer Churn (7043 записи, 21 признак)
+      - strong [ref=f4e14]: "Задача:"
+      - text: бинарная классификация — предсказать отток клиента (
+      - code [ref=f4e15]: Churn
+      - text: ": 1 — ушёл, 0 — остался)"
+    - paragraph [ref=f4e16]:
+      - strong [ref=f4e17]: "Главный принцип:"
+      - emphasis [ref=f4e18]: Garbage In, Garbage Out
+      - text: — качество данных важнее выбора модели.
+    - heading "План работы" [level=3] [ref=f4e19]
+    - list [ref=f4e20]:
+      - listitem [ref=f4e21]: Первичный осмотр (EDA)
+      - listitem [ref=f4e22]: Очистка данных (Data Cleaning)
+      - listitem [ref=f4e23]: Визуализация и поиск инсайтов
+      - listitem [ref=f4e24]: Feature Engineering (кодирование признаков)
+      - listitem [ref=f4e25]:
+        - text: Обучение базовой модели
+        - code [ref=f4e26]: LogisticRegression
+      - listitem [ref=f4e27]:
+        - text: "Оценка качества:"
+        - code [ref=f4e28]: classification_report
+        - text: ","
+        - code [ref=f4e29]: Confusion Matrix
+        - text: ","
+        - code [ref=f4e30]: ROC-AUC
+      - listitem [ref=f4e31]: ":star: Задания со звёздочкой: RandomForest / CatBoost, сравнение метрик, важность признаков"
+  - heading "0. Импорт библиотек и настройки" [level=2] [ref=f4e37]
+  - generic [ref=f4e38]:
+    - generic [ref=f4e40]:
+      - generic [ref=f4e41]: "In [1]:"
+      - generic [ref=f4e42]: import warnings warnings.filterwarnings("ignore") import numpy as np import pandas as pd import matplotlib.pyplot as plt import seaborn as sns from sklearn.model_selection import train_test_split from sklearn.preprocessing import StandardScaler from sklearn.compose import ColumnTransformer from sklearn.pipeline import Pipeline from sklearn.linear_model import LogisticRegression from sklearn.ensemble import RandomForestClassifier from sklearn.metrics import ( classification_report, confusion_matrix, ConfusionMatrixDisplay, roc_auc_score, roc_curve, accuracy_score, f1_score, precision_score, recall_score, ) sns.set_theme(style="whitegrid") plt.rcParams["figure.figsize"] = (9, 5) plt.rcParams["font.size"] = 11 RANDOM_STATE = 42 print("Библиотеки загружены") import sklearn print("scikit-learn:", sklearn.__version__, "| pandas:", pd.__version__)
+    - generic [ref=f4e46]: "Библиотеки загружены scikit-learn: 1.9.1 | pandas: 3.0.6"
+  - generic [ref=f4e56]:
+    - heading "Шаг 1. Первичный осмотр данных (EDA)" [level=2] [ref=f4e57]
+    - paragraph [ref=f4e58]: Смотрим первые строки, типы данных, пропуски и статистические сводки.
+  - generic [ref=f4e59]:
+    - generic [ref=f4e61]:
+      - generic [ref=f4e62]: "In [2]:"
+      - generic [ref=f4e63]: df = pd.read_csv("data/Telco-Customer-Churn.csv") print("Размер датасета:", df.shape) df.head()
+    - generic [ref=f4e68]:
+      - generic [ref=f4e69]: "Размер датасета: (7043, 21)"
+      - generic [ref=f4e73]:
+        - generic [ref=f4e74]: "Out[2]:"
+        - generic [ref=f4e76]:
+          - table [ref=f4e77]:
+            - rowgroup [ref=f4e78]:
+              - row [ref=f4e79]:
+                - columnheader [ref=f4e80]
+                - columnheader "customerID" [ref=f4e81]
+                - columnheader "gender" [ref=f4e82]
+                - columnheader "SeniorCitizen" [ref=f4e83]
+                - columnheader "Partner" [ref=f4e84]
+                - columnheader "Dependents" [ref=f4e85]
+                - columnheader "tenure" [ref=f4e86]
+                - columnheader "PhoneService" [ref=f4e87]
+                - columnheader "MultipleLines" [ref=f4e88]
+                - columnheader "InternetService" [ref=f4e89]
+                - columnheader "OnlineSecurity" [ref=f4e90]
+                - columnheader "..." [ref=f4e91]
+                - columnheader "DeviceProtection" [ref=f4e92]
+                - columnheader "TechSupport" [ref=f4e93]
+                - columnheader "StreamingTV" [ref=f4e94]
+                - columnheader "StreamingMovies" [ref=f4e95]
+                - columnheader "Contract" [ref=f4e96]
+                - columnheader "PaperlessBilling" [ref=f4e97]
+                - columnheader "PaymentMethod" [ref=f4e98]
+                - columnheader "MonthlyCharges" [ref=f4e99]
+                - columnheader "TotalCharges" [ref=f4e100]
+                - columnheader "Churn" [ref=f4e101]
+            - rowgroup [ref=f4e102]:
+              - row [ref=f4e103]:
+                - rowheader "0" [ref=f4e104]
+                - cell "7590-VHVEG" [ref=f4e105]
+                - cell "Female" [ref=f4e106]
+                - cell "0" [ref=f4e107]
+                - cell "Yes" [ref=f4e108]
+                - cell "No" [ref=f4e109]
+                - cell "1" [ref=f4e110]
+                - cell "No" [ref=f4e111]
+                - cell "No phone service" [ref=f4e112]
+                - cell "DSL" [ref=f4e113]
+                - cell "No" [ref=f4e114]
+                - cell "..." [ref=f4e115]
+                - cell "No" [ref=f4e116]
+                - cell "No" [ref=f4e117]
+                - cell "No" [ref=f4e118]
+                - cell "No" [ref=f4e119]
+                - cell "Month-to-month" [ref=f4e120]
+                - cell "Yes" [ref=f4e121]
+                - cell "Electronic check" [ref=f4e122]
+                - cell "29.85" [ref=f4e123]
+                - cell "29.85" [ref=f4e124]
+                - cell "No" [ref=f4e125]
+              - row [ref=f4e126]:
+                - rowheader "1" [ref=f4e127]
+                - cell "5575-GNVDE" [ref=f4e128]
+                - cell "Male" [ref=f4e129]
+                - cell "0" [ref=f4e130]
+                - cell "No" [ref=f4e131]
+                - cell "No" [ref=f4e132]
+                - cell "34" [ref=f4e133]
+                - cell "Yes" [ref=f4e134]
+                - cell "No" [ref=f4e135]
+                - cell "DSL" [ref=f4e136]
+                - cell "Yes" [ref=f4e137]
+                - cell "..." [ref=f4e138]
+                - cell "Yes" [ref=f4e139]
+                - cell "No" [ref=f4e140]
+                - cell "No" [ref=f4e141]
+                - cell "No" [ref=f4e142]
+                - cell "One year" [ref=f4e143]
+                - cell "No" [ref=f4e144]
+                - cell "Mailed check" [ref=f4e145]
+                - cell "56.95" [ref=f4e146]
+                - cell "1889.5" [ref=f4e147]
+                - cell "No" [ref=f4e148]
+              - row [ref=f4e149]:
+                - rowheader "2" [ref=f4e150]
+                - cell "3668-QPYBK" [ref=f4e151]
+                - cell "Male" [ref=f4e152]
+                - cell "0" [ref=f4e153]
+                - cell "No" [ref=f4e154]
+                - cell "No" [ref=f4e155]
+                - cell "2" [ref=f4e156]
+                - cell "Yes" [ref=f4e157]
+                - cell "No" [ref=f4e158]
+                - cell "DSL" [ref=f4e159]
+                - cell "Yes" [ref=f4e160]
+                - cell "..." [ref=f4e161]
+                - cell "No" [ref=f4e162]
+                - cell "No" [ref=f4e163]
+                - cell "No" [ref=f4e164]
+                - cell "No" [ref=f4e165]
+                - cell "Month-to-month" [ref=f4e166]
+                - cell "Yes" [ref=f4e167]
+                - cell "Mailed check" [ref=f4e168]
+                - cell "53.85" [ref=f4e169]
+                - cell "108.15" [ref=f4e170]
+                - cell "Yes" [ref=f4e171]
+              - row [ref=f4e172]:
+                - rowheader "3" [ref=f4e173]
+                - cell "7795-CFOCW" [ref=f4e174]
+                - cell "Male" [ref=f4e175]
+                - cell "0" [ref=f4e176]
+                - cell "No" [ref=f4e177]
+                - cell "No" [ref=f4e178]
+                - cell "45" [ref=f4e179]
+                - cell "No" [ref=f4e180]
+                - cell "No phone service" [ref=f4e181]
+                - cell "DSL" [ref=f4e182]
+                - cell "Yes" [ref=f4e183]
+                - cell "..." [ref=f4e184]
+                - cell "Yes" [ref=f4e185]
+                - cell "Yes" [ref=f4e186]
+                - cell "No" [ref=f4e187]
+                - cell "No" [ref=f4e188]
+                - cell "One year" [ref=f4e189]
+                - cell "No" [ref=f4e190]
+                - cell "Bank transfer (automatic)" [ref=f4e191]
+                - cell "42.30" [ref=f4e192]
+                - cell "1840.75" [ref=f4e193]
+                - cell "No" [ref=f4e194]
+              - row [ref=f4e195]:
+                - rowheader "4" [ref=f4e196]
+                - cell "9237-HQITU" [ref=f4e197]
+                - cell "Female" [ref=f4e198]
+                - cell "0" [ref=f4e199]
+                - cell "No" [ref=f4e200]
+                - cell "No" [ref=f4e201]
+                - cell "2" [ref=f4e202]
+                - cell "Yes" [ref=f4e203]
+                - cell "No" [ref=f4e204]
+                - cell "Fiber optic" [ref=f4e205]
+                - cell "No" [ref=f4e206]
+                - cell "..." [ref=f4e207]
+                - cell "No" [ref=f4e208]
+                - cell "No" [ref=f4e209]
+                - cell "No" [ref=f4e210]
+                - cell "No" [ref=f4e211]
+                - cell "Month-to-month" [ref=f4e212]
+                - cell "Yes" [ref=f4e213]
+                - cell "Electronic check" [ref=f4e214]
+                - cell "70.70" [ref=f4e215]
+                - cell "151.65" [ref=f4e216]
+                - cell "Yes" [ref=f4e217]
+          - paragraph [ref=f4e218]: 5 rows × 21 columns
+  - generic [ref=f4e219]:
+    - generic [ref=f4e221]:
+      - generic [ref=f4e222]: "In [3]:"
+      - generic [ref=f4e223]: df.info()
+    - generic [ref=f4e227]: "<class 'pandas.DataFrame'> RangeIndex: 7043 entries, 0 to 7042 Data columns (total 21 columns): # Column Non-Null Count Dtype --- ------ -------------- ----- 0 customerID 7043 non-null str 1 gender 7043 non-null str 2 SeniorCitizen 7043 non-null int64 3 Partner 7043 non-null str 4 Dependents 7043 non-null str 5 tenure 7043 non-null int64 6 PhoneService 7043 non-null str 7 MultipleLines 7043 non-null str 8 InternetService 7043 non-null str 9 OnlineSecurity 7043 non-null str 10 OnlineBackup 7043 non-null str 11 DeviceProtection 7043 non-null str 12 TechSupport 7043 non-null str 13 StreamingTV 7043 non-null str 14 StreamingMovies 7043 non-null str 15 Contract 7043 non-null str 16 PaperlessBilling 7043 non-null str 17 PaymentMethod 7043 non-null str 18 MonthlyCharges 7043 non-null float64 19 TotalCharges 7043 non-null str 20 Churn 7043 non-null str dtypes: float64(1), int64(2), str(18) memory usage: 1.1 MB"
+  - generic [ref=f4e233]:
+    - generic [ref=f4e235]:
+      - generic [ref=f4e236]: "In [4]:"
+      - generic [ref=f4e237]: df.describe(include="all").T
+    - generic [ref=f4e243]:
+      - generic [ref=f4e244]: "Out[4]:"
+      - table [ref=f4e247]:
+        - rowgroup [ref=f4e248]:
+          - row [ref=f4e249]:
+            - columnheader [ref=f4e250]
+            - columnheader "count" [ref=f4e251]
+            - columnheader "unique" [ref=f4e252]
+            - columnheader "top" [ref=f4e253]
+            - columnheader "freq" [ref=f4e254]
+            - columnheader "mean" [ref=f4e255]
+            - columnheader "std" [ref=f4e256]
+            - columnheader "min" [ref=f4e257]
+            - columnheader "25%" [ref=f4e258]
+            - columnheader "50%" [ref=f4e259]
+            - columnheader "75%" [ref=f4e260]
+            - columnheader "max" [ref=f4e261]
+        - rowgroup [ref=f4e262]:
+          - row [ref=f4e263]:
+            - rowheader "customerID" [ref=f4e264]
+            - cell "7043" [ref=f4e265]
+            - cell "7043" [ref=f4e266]
+            - cell "7590-VHVEG" [ref=f4e267]
+            - cell "1" [ref=f4e268]
+            - cell "NaN" [ref=f4e269]
+            - cell "NaN" [ref=f4e270]
+            - cell "NaN" [ref=f4e271]
+            - cell "NaN" [ref=f4e272]
+            - cell "NaN" [ref=f4e273]
+            - cell "NaN" [ref=f4e274]
+            - cell "NaN" [ref=f4e275]
+          - row [ref=f4e276]:
+            - rowheader "gender" [ref=f4e277]
+            - cell "7043" [ref=f4e278]
+            - cell "2" [ref=f4e279]
+            - cell "Male" [ref=f4e280]
+            - cell "3555" [ref=f4e281]
+            - cell "NaN" [ref=f4e282]
+            - cell "NaN" [ref=f4e283]
+            - cell "NaN" [ref=f4e284]
+            - cell "NaN" [ref=f4e285]
+            - cell "NaN" [ref=f4e286]
+            - cell "NaN" [ref=f4e287]
+            - cell "NaN" [ref=f4e288]
+          - row [ref=f4e289]:
+            - rowheader "SeniorCitizen" [ref=f4e290]
+            - cell "7043.0" [ref=f4e291]
+            - cell "NaN" [ref=f4e292]
+            - cell "NaN" [ref=f4e293]
+            - cell "NaN" [ref=f4e294]
+            - cell "0.162147" [ref=f4e295]
+            - cell "0.368612" [ref=f4e296]
+            - cell "0.0" [ref=f4e297]
+            - cell "0.0" [ref=f4e298]
+            - cell "0.0" [ref=f4e299]
+            - cell "0.0" [ref=f4e300]
+            - cell "1.0" [ref=f4e301]
+          - row [ref=f4e302]:
+            - rowheader "Partner" [ref=f4e303]
+            - cell "7043" [ref=f4e304]
+            - cell "2" [ref=f4e305]
+            - cell "No" [ref=f4e306]
+            - cell "3641" [ref=f4e307]
+            - cell "NaN" [ref=f4e308]
+            - cell "NaN" [ref=f4e309]
+            - cell "NaN" [ref=f4e310]
+            - cell "NaN" [ref=f4e311]
+            - cell "NaN" [ref=f4e312]
+            - cell "NaN" [ref=f4e313]
+            - cell "NaN" [ref=f4e314]
+          - row [ref=f4e315]:
+            - rowheader "Dependents" [ref=f4e316]
+            - cell "7043" [ref=f4e317]
+            - cell "2" [ref=f4e318]
+            - cell "No" [ref=f4e319]
+            - cell "4933" [ref=f4e320]
+            - cell "NaN" [ref=f4e321]
+            - cell "NaN" [ref=f4e322]
+            - cell "NaN" [ref=f4e323]
+            - cell "NaN" [ref=f4e324]
+            - cell "NaN" [ref=f4e325]
+            - cell "NaN" [ref=f4e326]
+            - cell "NaN" [ref=f4e327]
+          - row [ref=f4e328]:
+            - rowheader "tenure" [ref=f4e329]
+            - cell "7043.0" [ref=f4e330]
+            - cell "NaN" [ref=f4e331]
+            - cell "NaN" [ref=f4e332]
+            - cell "NaN" [ref=f4e333]
+            - cell "32.371149" [ref=f4e334]
+            - cell "24.559481" [ref=f4e335]
+            - cell "0.0" [ref=f4e336]
+            - cell "9.0" [ref=f4e337]
+            - cell "29.0" [ref=f4e338]
+            - cell "55.0" [ref=f4e339]
+            - cell "72.0" [ref=f4e340]
+          - row [ref=f4e341]:
+            - rowheader "PhoneService" [ref=f4e342]
+            - cell "7043" [ref=f4e343]
+            - cell "2" [ref=f4e344]
+            - cell "Yes" [ref=f4e345]
+            - cell "6361" [ref=f4e346]
+            - cell "NaN" [ref=f4e347]
+            - cell "NaN" [ref=f4e348]
+            - cell "NaN" [ref=f4e349]
+            - cell "NaN" [ref=f4e350]
+            - cell "NaN" [ref=f4e351]
+            - cell "NaN" [ref=f4e352]
+            - cell "NaN" [ref=f4e353]
+          - row [ref=f4e354]:
+            - rowheader "MultipleLines" [ref=f4e355]
+            - cell "7043" [ref=f4e356]
+            - cell "3" [ref=f4e357]
+            - cell "No" [ref=f4e358]
+            - cell "3390" [ref=f4e359]
+            - cell "NaN" [ref=f4e360]
+            - cell "NaN" [ref=f4e361]
+            - cell "NaN" [ref=f4e362]
+            - cell "NaN" [ref=f4e363]
+            - cell "NaN" [ref=f4e364]
+            - cell "NaN" [ref=f4e365]
+            - cell "NaN" [ref=f4e366]
+          - row [ref=f4e367]:
+            - rowheader "InternetService" [ref=f4e368]
+            - cell "7043" [ref=f4e369]
+            - cell "3" [ref=f4e370]
+            - cell "Fiber optic" [ref=f4e371]
+            - cell "3096" [ref=f4e372]
+            - cell "NaN" [ref=f4e373]
+            - cell "NaN" [ref=f4e374]
+            - cell "NaN" [ref=f4e375]
+            - cell "NaN" [ref=f4e376]
+            - cell "NaN" [ref=f4e377]
+            - cell "NaN" [ref=f4e378]
+            - cell "NaN" [ref=f4e379]
+          - row [ref=f4e380]:
+            - rowheader "OnlineSecurity" [ref=f4e381]
+            - cell "7043" [ref=f4e382]
+            - cell "3" [ref=f4e383]
+            - cell "No" [ref=f4e384]
+            - cell "3498" [ref=f4e385]
+            - cell "NaN" [ref=f4e386]
+            - cell "NaN" [ref=f4e387]
+            - cell "NaN" [ref=f4e388]
+            - cell "NaN" [ref=f4e389]
+            - cell "NaN" [ref=f4e390]
+            - cell "NaN" [ref=f4e391]
+            - cell "NaN" [ref=f4e392]
+          - row [ref=f4e393]:
+            - rowheader "OnlineBackup" [ref=f4e394]
+            - cell "7043" [ref=f4e395]
+            - cell "3" [ref=f4e396]
+            - cell "No" [ref=f4e397]
+            - cell "3088" [ref=f4e398]
+            - cell "NaN" [ref=f4e399]
+            - cell "NaN" [ref=f4e400]
+            - cell "NaN" [ref=f4e401]
+            - cell "NaN" [ref=f4e402]
+            - cell "NaN" [ref=f4e403]
+            - cell "NaN" [ref=f4e404]
+            - cell "NaN" [ref=f4e405]
+          - row [ref=f4e406]:
+            - rowheader "DeviceProtection" [ref=f4e407]
+            - cell "7043" [ref=f4e408]
+            - cell "3" [ref=f4e409]
+            - cell "No" [ref=f4e410]
+            - cell "3095" [ref=f4e411]
+            - cell "NaN" [ref=f4e412]
+            - cell "NaN" [ref=f4e413]
+            - cell "NaN" [ref=f4e414]
+            - cell "NaN" [ref=f4e415]
+            - cell "NaN" [ref=f4e416]
+            - cell "NaN" [ref=f4e417]
+            - cell "NaN" [ref=f4e418]
+          - row [ref=f4e419]:
+            - rowheader "TechSupport" [ref=f4e420]
+            - cell "7043" [ref=f4e421]
+            - cell "3" [ref=f4e422]
+            - cell "No" [ref=f4e423]
+            - cell "3473" [ref=f4e424]
+            - cell "NaN" [ref=f4e425]
+            - cell "NaN" [ref=f4e426]
+            - cell "NaN" [ref=f4e427]
+            - cell "NaN" [ref=f4e428]
+            - cell "NaN" [ref=f4e429]
+            - cell "NaN" [ref=f4e430]
+            - cell "NaN" [ref=f4e431]
+          - row [ref=f4e432]:
+            - rowheader "StreamingTV" [ref=f4e433]
+            - cell "7043" [ref=f4e434]
+            - cell "3" [ref=f4e435]
+            - cell "No" [ref=f4e436]
+            - cell "2810" [ref=f4e437]
+            - cell "NaN" [ref=f4e438]
+            - cell "NaN" [ref=f4e439]
+            - cell "NaN" [ref=f4e440]
+            - cell "NaN" [ref=f4e441]
+            - cell "NaN" [ref=f4e442]
+            - cell "NaN" [ref=f4e443]
+            - cell "NaN" [ref=f4e444]
+          - row [ref=f4e445]:
+            - rowheader "StreamingMovies" [ref=f4e446]
+            - cell "7043" [ref=f4e447]
+            - cell "3" [ref=f4e448]
+            - cell "No" [ref=f4e449]
+            - cell "2785" [ref=f4e450]
+            - cell "NaN" [ref=f4e451]
+            - cell "NaN" [ref=f4e452]
+            - cell "NaN" [ref=f4e453]
+            - cell "NaN" [ref=f4e454]
+            - cell "NaN" [ref=f4e455]
+            - cell "NaN" [ref=f4e456]
+            - cell "NaN" [ref=f4e457]
+          - row [ref=f4e458]:
+            - rowheader "Contract" [ref=f4e459]
+            - cell "7043" [ref=f4e460]
+            - cell "3" [ref=f4e461]
+            - cell "Month-to-month" [ref=f4e462]
+            - cell "3875" [ref=f4e463]
+            - cell "NaN" [ref=f4e464]
+            - cell "NaN" [ref=f4e465]
+            - cell "NaN" [ref=f4e466]
+            - cell "NaN" [ref=f4e467]
+            - cell "NaN" [ref=f4e468]
+            - cell "NaN" [ref=f4e469]
+            - cell "NaN" [ref=f4e470]
+          - row [ref=f4e471]:
+            - rowheader "PaperlessBilling" [ref=f4e472]
+            - cell "7043" [ref=f4e473]
+            - cell "2" [ref=f4e474]
+            - cell "Yes" [ref=f4e475]
+            - cell "4171" [ref=f4e476]
+            - cell "NaN" [ref=f4e477]
+            - cell "NaN" [ref=f4e478]
+            - cell "NaN" [ref=f4e479]
+            - cell "NaN" [ref=f4e480]
+            - cell "NaN" [ref=f4e481]
+            - cell "NaN" [ref=f4e482]
+            - cell "NaN" [ref=f4e483]
+          - row [ref=f4e484]:
+            - rowheader "PaymentMethod" [ref=f4e485]
+            - cell "7043" [ref=f4e486]
+            - cell "4" [ref=f4e487]
+            - cell "Electronic check" [ref=f4e488]
+            - cell "2365" [ref=f4e489]
+            - cell "NaN" [ref=f4e490]
+            - cell "NaN" [ref=f4e491]
+            - cell "NaN" [ref=f4e492]
+            - cell "NaN" [ref=f4e493]
+            - cell "NaN" [ref=f4e494]
+            - cell "NaN" [ref=f4e495]
+            - cell "NaN" [ref=f4e496]
+          - row [ref=f4e497]:
+            - rowheader "MonthlyCharges" [ref=f4e498]
+            - cell "7043.0" [ref=f4e499]
+            - cell "NaN" [ref=f4e500]
+            - cell "NaN" [ref=f4e501]
+            - cell "NaN" [ref=f4e502]
+            - cell "64.761692" [ref=f4e503]
+            - cell "30.090047" [ref=f4e504]
+            - cell "18.25" [ref=f4e505]
+            - cell "35.5" [ref=f4e506]
+            - cell "70.35" [ref=f4e507]
+            - cell "89.85" [ref=f4e508]
+            - cell "118.75" [ref=f4e509]
+          - row [ref=f4e510]:
+            - rowheader "TotalCharges" [ref=f4e511]
+            - cell "7043" [ref=f4e512]
+            - cell "6531" [ref=f4e513]
+            - cell "20.2" [ref=f4e514]
+            - cell "11" [ref=f4e515]
+            - cell "NaN" [ref=f4e516]
+            - cell "NaN" [ref=f4e517]
+            - cell "NaN" [ref=f4e518]
+            - cell "NaN" [ref=f4e519]
+            - cell "NaN" [ref=f4e520]
+            - cell "NaN" [ref=f4e521]
+            - cell "NaN" [ref=f4e522]
+          - row [ref=f4e523]:
+            - rowheader "Churn" [ref=f4e524]
+            - cell "7043" [ref=f4e525]
+            - cell "2" [ref=f4e526]
+            - cell "No" [ref=f4e527]
+            - cell "5174" [ref=f4e528]
+            - cell "NaN" [ref=f4e529]
+            - cell "NaN" [ref=f4e530]
+            - cell "NaN" [ref=f4e531]
+            - cell "NaN" [ref=f4e532]
+            - cell "NaN" [ref=f4e533]
+            - cell "NaN" [ref=f4e534]
+            - cell "NaN" [ref=f4e535]
+  - generic [ref=f4e540]:
+    - heading "Ловушка датасета" [level=3] [ref=f4e541]
+    - paragraph [ref=f4e542]:
+      - text: Столбец
+      - code [ref=f4e543]: TotalCharges
+      - text: определён как
+      - code [ref=f4e544]: object
+      - text: (строка), потому что содержит пустые строки
+      - code [ref=f4e545]: "\" \""
+      - text: . Проверим это и найдём строки-виновники.
+  - generic [ref=f4e546]:
+    - generic [ref=f4e548]:
+      - generic [ref=f4e549]: "In [5]:"
+      - generic [ref=f4e550]: "print(\"Тип TotalCharges до очистки:\", df[\"TotalCharges\"].dtype) # Сколько значений не приводится к числу converted = pd.to_numeric(df[\"TotalCharges\"], errors=\"coerce\") print(\"Нечисловых значений в TotalCharges:\", converted.isna().sum()) # Что это за строки? df[converted.isna()][[\"customerID\", \"tenure\", \"MonthlyCharges\", \"TotalCharges\", \"Churn\"]]"
+    - generic [ref=f4e555]:
+      - generic [ref=f4e556]: "Тип TotalCharges до очистки: str Нечисловых значений в TotalCharges: 11"
+      - generic [ref=f4e560]:
+        - generic [ref=f4e561]: "Out[5]:"
+        - table [ref=f4e564]:
+          - rowgroup [ref=f4e565]:
+            - row [ref=f4e566]:
+              - columnheader [ref=f4e567]
+              - columnheader "customerID" [ref=f4e568]
+              - columnheader "tenure" [ref=f4e569]
+              - columnheader "MonthlyCharges" [ref=f4e570]
+              - columnheader "TotalCharges" [ref=f4e571]
+              - columnheader "Churn" [ref=f4e572]
+          - rowgroup [ref=f4e573]:
+            - row [ref=f4e574]:
+              - rowheader "488" [ref=f4e575]
+              - cell "4472-LVYGI" [ref=f4e576]
+              - cell "0" [ref=f4e577]
+              - cell "52.55" [ref=f4e578]
+              - cell [ref=f4e579]
+              - cell "No" [ref=f4e580]
+            - row [ref=f4e581]:
+              - rowheader "753" [ref=f4e582]
+              - cell "3115-CZMZD" [ref=f4e583]
+              - cell "0" [ref=f4e584]
+              - cell "20.25" [ref=f4e585]
+              - cell [ref=f4e586]
+              - cell "No" [ref=f4e587]
+            - row [ref=f4e588]:
+              - rowheader "936" [ref=f4e589]
+              - cell "5709-LVOEQ" [ref=f4e590]
+              - cell "0" [ref=f4e591]
+              - cell "80.85" [ref=f4e592]
+              - cell [ref=f4e593]
+              - cell "No" [ref=f4e594]
+            - row [ref=f4e595]:
+              - rowheader "1082" [ref=f4e596]
+              - cell "4367-NUYAO" [ref=f4e597]
+              - cell "0" [ref=f4e598]
+              - cell "25.75" [ref=f4e599]
+              - cell [ref=f4e600]
+              - cell "No" [ref=f4e601]
+            - row [ref=f4e602]:
+              - rowheader "1340" [ref=f4e603]
+              - cell "1371-DWPAZ" [ref=f4e604]
+              - cell "0" [ref=f4e605]
+              - cell "56.05" [ref=f4e606]
+              - cell [ref=f4e607]
+              - cell "No" [ref=f4e608]
+            - row [ref=f4e609]:
+              - rowheader "3331" [ref=f4e610]
+              - cell "7644-OMVMY" [ref=f4e611]
+              - cell "0" [ref=f4e612]
+              - cell "19.85" [ref=f4e613]
+              - cell [ref=f4e614]
+              - cell "No" [ref=f4e615]
+            - row [ref=f4e616]:
+              - rowheader "3826" [ref=f4e617]
+              - cell "3213-VVOLG" [ref=f4e618]
+              - cell "0" [ref=f4e619]
+              - cell "25.35" [ref=f4e620]
+              - cell [ref=f4e621]
+              - cell "No" [ref=f4e622]
+            - row [ref=f4e623]:
+              - rowheader "4380" [ref=f4e624]
+              - cell "2520-SGTTA" [ref=f4e625]
+              - cell "0" [ref=f4e626]
+              - cell "20.00" [ref=f4e627]
+              - cell [ref=f4e628]
+              - cell "No" [ref=f4e629]
+            - row [ref=f4e630]:
+              - rowheader "5218" [ref=f4e631]
+              - cell "2923-ARZLG" [ref=f4e632]
+              - cell "0" [ref=f4e633]
+              - cell "19.70" [ref=f4e634]
+              - cell [ref=f4e635]
+              - cell "No" [ref=f4e636]
+            - row [ref=f4e637]:
+              - rowheader "6670" [ref=f4e638]
+              - cell "4075-WKNIU" [ref=f4e639]
+              - cell "0" [ref=f4e640]
+              - cell "73.35" [ref=f4e641]
+              - cell [ref=f4e642]
+              - cell "No" [ref=f4e643]
+            - row [ref=f4e644]:
+              - rowheader "6754" [ref=f4e645]
+              - cell "2775-SEFEE" [ref=f4e646]
+              - cell "0" [ref=f4e647]
+              - cell "61.90" [ref=f4e648]
+              - cell [ref=f4e649]
+              - cell "No" [ref=f4e650]
+  - paragraph [ref=f4e656]:
+    - strong [ref=f4e657]: "Вывод:"
+    - text: «пустые» значения
+    - code [ref=f4e658]: TotalCharges
+    - text: — это абоненты с
+    - code [ref=f4e659]: tenure = 0
+    - text: ", то есть клиенты, которые ещё не пользовались услугами ни одного дня. Логично заполнить их нулём (совокупные платежи за 0 месяцев = 0), а не удалять строки."
+  - generic [ref=f4e664]:
+    - heading "Шаг 2. Очистка данных (Data Cleaning)" [level=2] [ref=f4e665]
+    - list [ref=f4e666]:
+      - listitem [ref=f4e667]:
+        - text: Приведение
+        - code [ref=f4e668]: TotalCharges
+        - text: к
+        - code [ref=f4e669]: float64
+        - text: и заполнение пропусков.
+      - listitem [ref=f4e670]: Проверка и удаление дубликатов.
+      - listitem [ref=f4e671]:
+        - text: Удаление бесполезного признака
+        - code [ref=f4e672]: customerID
+        - text: .
+  - generic [ref=f4e673]:
+    - generic [ref=f4e675]:
+      - generic [ref=f4e676]: "In [6]:"
+      - generic [ref=f4e677]: "df_clean = df.copy() # 1) TotalCharges -> float64, пустые строки -> NaN df_clean[\"TotalCharges\"] = pd.to_numeric(df_clean[\"TotalCharges\"], errors=\"coerce\") print(\"Пропусков после to_numeric:\", df_clean[\"TotalCharges\"].isna().sum()) # Заполняем нулём: tenure=0 => клиент ещё ничего не заплатил df_clean[\"TotalCharges\"] = df_clean[\"TotalCharges\"].fillna(0.0) print(\"Тип TotalCharges после очистки:\", df_clean[\"TotalCharges\"].dtype) print(\"Пропусков в датасете всего:\", int(df_clean.isna().sum().sum())) # 2) Дубликаты print(\"Полных дубликатов строк:\", df_clean.duplicated().sum()) df_clean = df_clean.drop_duplicates().reset_index(drop=True) # 3) Удаляем бесполезный идентификатор df_clean = df_clean.drop(columns=[\"customerID\"]) print(\"Размер после очистки:\", df_clean.shape)"
+    - generic [ref=f4e681]: "Пропусков после to_numeric: 11 Тип TotalCharges после очистки: float64 Пропусков в датасете всего: 0 Полных дубликатов строк: 0 Размер после очистки: (7043, 20)"
+  - generic [ref=f4e691]:
+    - heading "Шаг 3. Визуализация и поиск инсайтов" [level=2] [ref=f4e692]
+    - heading "3.1 Распределение целевой переменной — есть ли дисбаланс классов?" [level=3] [ref=f4e693]
+  - generic [ref=f4e694]:
+    - generic [ref=f4e696]:
+      - generic [ref=f4e697]: "In [7]:"
+      - generic [ref=f4e698]: "fig, axes = plt.subplots(1, 2, figsize=(12, 4.5)) # countplot для Churn sns.countplot(data=df_clean, x=\"Churn\", ax=axes[0], palette=[\"#4C72B0\", \"#C44E52\"]) axes[0].set_title(\"Распределение целевой переменной Churn\") axes[0].set_xlabel(\"Churn (No = остался, Yes = ушёл)\") for p in axes[0].patches: axes[0].annotate(f\"{int(p.get_height())}\\n({p.get_height()/len(df_clean):.1%})\", (p.get_x() + p.get_width()/2, p.get_height()), ha=\"center\", va=\"bottom\", fontsize=11) # доли классов share = df_clean[\"Churn\"].value_counts(normalize=True) axes[1].pie(share, labels=share.index, autopct=\"%1.1f%%\", colors=[\"#4C72B0\", \"#C44E52\"], startangle=90, explode=(0, 0.06)) axes[1].set_title(\"Доли классов\") plt.tight_layout() plt.show() print(share.to_string())"
+    - generic [ref=f4e703]:
+      - img "No description has been provided for this image" [ref=f4e707]
+      - generic [ref=f4e708]: Churn No 0.73463 Yes 0.26537
+  - paragraph [ref=f4e717]:
+    - strong [ref=f4e718]: "Инсайт:"
+    - text: классы несбалансированы — «ушло» примерно четверть клиентов (~26.5%). Это означает, что
+    - strong [ref=f4e719]: Accuracy вводит в заблуждение
+    - text: ": модель, всегда предсказывающая «остался», даст ~73% accuracy, но не найдёт ни одного ушедшего. Поэтому используем Precision / Recall / F1 / ROC-AUC."
+  - 'heading "3.2 Сравнение групп: как отличаются платежи (MonthlyCharges, tenure) у ушедших и оставшихся?" [level=3] [ref=f4e725]'
+  - generic [ref=f4e726]:
+    - generic [ref=f4e728]:
+      - generic [ref=f4e729]: "In [8]:"
+      - generic [ref=f4e730]: "fig, axes = plt.subplots(1, 3, figsize=(16, 4.5)) sns.histplot(data=df_clean, x=\"MonthlyCharges\", hue=\"Churn\", kde=True, palette=[\"#4C72B0\", \"#C44E52\"], ax=axes[0], alpha=0.5) axes[0].set_title(\"MonthlyCharges по группам\") sns.histplot(data=df_clean, x=\"tenure\", hue=\"Churn\", kde=True, palette=[\"#4C72B0\", \"#C44E52\"], ax=axes[1], alpha=0.5) axes[1].set_title(\"Стаж (tenure) по группам\") sns.boxplot(data=df_clean, x=\"Churn\", y=\"MonthlyCharges\", palette=[\"#4C72B0\", \"#C44E52\"], ax=axes[2]) axes[2].set_title(\"MonthlyCharges: boxplot\") plt.tight_layout() plt.show() print(df_clean.groupby(\"Churn\")[[\"tenure\", \"MonthlyCharges\", \"TotalCharges\"]].mean().round(2).to_string())"
+    - generic [ref=f4e735]:
+      - img "No description has been provided for this image" [ref=f4e739]
+      - generic [ref=f4e740]: tenure MonthlyCharges TotalCharges Churn No 37.57 61.27 2549.91 Yes 17.98 74.44 1531.80
+  - generic [ref=f4e748]:
+    - paragraph [ref=f4e749]:
+      - strong [ref=f4e750]: "Инсайты:"
+    - list [ref=f4e751]:
+      - listitem [ref=f4e752]:
+        - text: Уходящие клиенты платят
+        - strong [ref=f4e753]: больше
+        - text: в месяц (в среднем ~74 против ~61).
+      - listitem [ref=f4e754]:
+        - text: Уходящие имеют гораздо
+        - strong [ref=f4e755]: меньший стаж
+        - text: ": максимум уходов — в первые месяцы."
+      - listitem [ref=f4e756]:
+        - text: Значит
+        - code [ref=f4e757]: MonthlyCharges
+        - text: ","
+        - code [ref=f4e758]: tenure
+        - text: ","
+        - code [ref=f4e759]: TotalCharges
+        - text: — потенциально сильные признаки.
+  - heading "3.3 Дисбаланс по типу контракта (важный бизнес-фактор)" [level=3] [ref=f4e765]
+  - generic [ref=f4e766]:
+    - generic [ref=f4e768]:
+      - generic [ref=f4e769]: "In [9]:"
+      - generic [ref=f4e770]: fig, axes = plt.subplots(1, 2, figsize=(13, 5)) sns.countplot(data=df_clean, x="Contract", hue="Churn", palette=["#4C72B0", "#C44E52"], ax=axes[0]) axes[0].set_title("Отток по типу контракта") ct = pd.crosstab(df_clean["Contract"], df_clean["Churn"], normalize="index") ct["Yes"].sort_values().plot(kind="barh", color="#C44E52", ax=axes[1]) axes[1].set_title("Доля ушедших внутри каждого типа контракта") axes[1].set_xlabel("Доля Churn = Yes") plt.tight_layout() plt.show() print(ct.round(3).to_string())
+    - generic [ref=f4e775]:
+      - img "No description has been provided for this image" [ref=f4e779]
+      - generic [ref=f4e780]: Churn No Yes Contract Month-to-month 0.573 0.427 One year 0.887 0.113 Two year 0.972 0.028
+  - paragraph [ref=f4e789]:
+    - strong [ref=f4e790]: "Инсайт:"
+    - text: клиенты на контракте
+    - code [ref=f4e791]: Month-to-month
+    - text: уходят чаще всего (~43%). Долгосрочные контракты (One year, Two year) резко снижают отток — сильный предиктор.
+  - heading "3.4 Корреляционная матрица числовых признаков (heatmap)" [level=3] [ref=f4e797]
+  - generic [ref=f4e798]:
+    - generic [ref=f4e800]:
+      - generic [ref=f4e801]: "In [10]:"
+      - generic [ref=f4e802]: num_cols = ["tenure", "MonthlyCharges", "TotalCharges", "SeniorCitizen"] corr_df = df_clean[num_cols].copy() corr_df["Churn"] = (df_clean["Churn"] == "Yes").astype(int) plt.figure(figsize=(7, 5.5)) sns.heatmap(corr_df.corr(), annot=True, fmt=".2f", cmap="coolwarm", center=0, square=True, linewidths=0.5) plt.title("Корреляция числовых признаков и Churn") plt.tight_layout() plt.show()
+    - img "No description has been provided for this image" [ref=f4e811]
+  - paragraph [ref=f4e817]:
+    - strong [ref=f4e818]: "Инсайт:"
+    - code [ref=f4e819]: tenure
+    - text: отрицательно коррелирует с оттоком (чем дольше клиент — тем реже уходит),
+    - code [ref=f4e820]: MonthlyCharges
+    - text: — положительно.
+    - code [ref=f4e821]: TotalCharges
+    - text: сильно связан с
+    - code [ref=f4e822]: tenure
+    - text: (мультиколлинеарность). Прямые линейные корреляции слабые, поэтому нужны категориальные признаки и нелинейные модели.
+  - generic [ref=f4e827]:
+    - heading "Шаг 4. Feature Engineering (создание признаков)" [level=2] [ref=f4e828]
+    - paragraph [ref=f4e829]: "Модели понимают только числа, поэтому кодируем категориальные признаки:"
+    - list [ref=f4e830]:
+      - listitem [ref=f4e831]:
+        - strong [ref=f4e832]: Label Encoding
+        - text: — для бинарных
+        - code [ref=f4e833]: Yes/No
+        - text: и пола (
+        - code [ref=f4e834]: Male/Female
+        - text: ).
+      - listitem [ref=f4e835]:
+        - strong [ref=f4e836]: One-Hot Encoding
+        - text: — для многозначных (
+        - code [ref=f4e837]: InternetService
+        - text: ","
+        - code [ref=f4e838]: PaymentMethod
+        - text: ","
+        - code [ref=f4e839]: Contract
+        - text: и т.д.).
+    - paragraph [ref=f4e840]:
+      - text: Реализуем через
+      - code [ref=f4e841]: ColumnTransformer
+      - text: ": бинарные —"
+      - code [ref=f4e842]: OneHotEncoder(drop='if_binary')
+      - text: ", остальные —"
+      - code [ref=f4e843]: OneHotEncoder(handle_unknown='ignore')
+      - text: ", числа —"
+      - code [ref=f4e844]: StandardScaler
+      - text: .
+  - generic [ref=f4e845]:
+    - generic [ref=f4e847]:
+      - generic [ref=f4e848]: "In [11]:"
+      - generic [ref=f4e849]: "# Разделяем признаки на группы target = \"Churn\" binary_cols = [c for c in df_clean.columns if df_clean[c].nunique() == 2 and c != target] print(\"Бинарные признаки (Label Encoding):\", binary_cols) numeric_cols = [\"tenure\", \"MonthlyCharges\", \"TotalCharges\"] print(\"Числовые признаки (StandardScaler):\", numeric_cols) multi_cols = [c for c in df_clean.select_dtypes(include=\"object\").columns if c not in binary_cols and c != target] print(\"Многозначные категориальные (One-Hot):\", multi_cols)"
+    - generic [ref=f4e853]: "Бинарные признаки (Label Encoding): ['gender', 'SeniorCitizen', 'Partner', 'Dependents', 'PhoneService', 'PaperlessBilling'] Числовые признаки (StandardScaler): ['tenure', 'MonthlyCharges', 'TotalCharges'] Многозначные категориальные (One-Hot): ['MultipleLines', 'InternetService', 'OnlineSecurity', 'OnlineBackup', 'DeviceProtection', 'TechSupport', 'StreamingTV', 'StreamingMovies', 'Contract', 'PaymentMethod']"
+  - generic [ref=f4e861]:
+    - generic [ref=f4e862]: "In [12]:"
+    - generic [ref=f4e863]: "# y: бинарный таргет, X: признаки y = (df_clean[target] == \"Yes\").astype(int) X = df_clean.drop(columns=[target])"
+  - paragraph [ref=f4e872]:
+    - text: Ручная демонстрация Label Encoding на бинарных признаках (наглядно, что Yes/No -> 1/0) плюс
+    - code [ref=f4e873]: pd.get_dummies
+    - text: для контроля результата One-Hot.
+  - generic [ref=f4e874]:
+    - generic [ref=f4e876]:
+      - generic [ref=f4e877]: "In [13]:"
+      - generic [ref=f4e878]: "# Демонстрация Label Encoding: Yes/No -> 1/0, Male/Female -> 1/0 label_demo = X.copy() for col in binary_cols: vals = sorted(label_demo[col].unique()) mapping = {vals[0]: 0, vals[1]: 1} label_demo[col] = label_demo[col].map(mapping) print(\"После Label Encoding (пример):\") print(label_demo[binary_cols].head()) # Демонстрация One-Hot через pandas ohe_demo = pd.get_dummies(X, columns=multi_cols, drop_first=False) print(\"\\nРазмер после pd.get_dummies:\", ohe_demo.shape) # Проверим, что все столбцы числовые print(\"Осталось нечисловых столбцов:\", ohe_demo.select_dtypes(exclude=np.number).shape[1])"
+    - generic [ref=f4e882]: "После Label Encoding (пример): gender SeniorCitizen Partner Dependents PhoneService PaperlessBilling 0 0 0 1 0 0 1 1 1 0 0 0 1 0 2 1 0 0 0 1 1 3 1 0 0 0 0 0 4 0 0 0 0 1 1 Размер после pd.get_dummies: (7043, 40) Осталось нечисловых столбцов: 36"
+  - generic [ref=f4e892]:
+    - heading "Шаг 5. Разделение, масштабирование и обучение LogisticRegression" [level=2] [ref=f4e893]
+    - paragraph [ref=f4e894]:
+      - text: Собираем
+      - code [ref=f4e895]: Pipeline
+      - text: ": препроцессинг ("
+      - code [ref=f4e896]: ColumnTransformer
+      - text: ) + модель. Это защищает от утечки данных (scaler обучается только на train).
+  - generic [ref=f4e897]:
+    - generic [ref=f4e899]:
+      - generic [ref=f4e900]: "In [14]:"
+      - generic [ref=f4e901]: "from sklearn.preprocessing import OneHotEncoder # Бинарные признаки кодируем в 0/1 (Label Encoding) X_enc = X.copy() for col in binary_cols: vals = sorted(X_enc[col].unique()) X_enc[col] = X_enc[col].map({vals[0]: 0, vals[1]: 1}) X_train, X_test, y_train, y_test = train_test_split( X_enc, y, test_size=0.2, random_state=RANDOM_STATE, stratify=y ) print(\"Train:\", X_train.shape, \"| Test:\", X_test.shape) print(\"Доля Churn в train:\", round(y_train.mean(), 4), \"| в test:\", round(y_test.mean(), 4)) # Препроцессор: числа -> StandardScaler, бинарные уже 0/1 -> passthrough, многозначные -> One-Hot preprocessor = ColumnTransformer( transformers=[ (\"num\", StandardScaler(), numeric_cols), (\"bin\", \"passthrough\", binary_cols), (\"cat\", OneHotEncoder(handle_unknown=\"ignore\"), multi_cols), ] ) log_reg = Pipeline(steps=[ (\"prep\", preprocessor), (\"model\", LogisticRegression(max_iter=1000, random_state=RANDOM_STATE)), ]) log_reg.fit(X_train, y_train) print(\"Модель обучена.\")"
+    - generic [ref=f4e905]: "Train: (5634, 19) | Test: (1409, 19) Доля Churn в train: 0.2654 | в test: 0.2654 Модель обучена."
+  - generic [ref=f4e915]:
+    - 'heading "Шаг 6. Оценка качества: почему Accuracy врёт?" [level=2] [ref=f4e916]'
+    - paragraph [ref=f4e917]:
+      - text: Считаем
+      - code [ref=f4e918]: classification_report
+      - text: ","
+      - code [ref=f4e919]: Confusion Matrix
+      - text: и
+      - code [ref=f4e920]: ROC-AUC
+      - text: .
+  - generic [ref=f4e921]:
+    - generic [ref=f4e923]:
+      - generic [ref=f4e924]: "In [15]:"
+      - generic [ref=f4e925]: "y_pred = log_reg.predict(X_test) y_proba = log_reg.predict_proba(X_test)[:, 1] acc = accuracy_score(y_test, y_pred) prec = precision_score(y_test, y_pred) rec = recall_score(y_test, y_pred) f1 = f1_score(y_test, y_pred) roc = roc_auc_score(y_test, y_proba) print(f\"Accuracy : {acc:.4f}\") print(f\"Precision: {prec:.4f}\") print(f\"Recall : {rec:.4f}\") print(f\"F1-score : {f1:.4f}\") print(f\"ROC-AUC : {roc:.4f}\") print(\"\\n\" + \"=\" * 60) print(classification_report(y_test, y_pred, target_names=[\"Остался (0)\", \"Ушёл (1)\"]))"
+    - generic [ref=f4e929]: "Accuracy : 0.8055 Precision: 0.6572 Recall : 0.5588 F1-score : 0.6040 ROC-AUC : 0.8420 ============================================================ precision recall f1-score support Остался (0) 0.85 0.89 0.87 1035 Ушёл (1) 0.66 0.56 0.60 374 accuracy 0.81 1409 macro avg 0.75 0.73 0.74 1409 weighted avg 0.80 0.81 0.80 1409"
+  - generic [ref=f4e935]:
+    - generic [ref=f4e937]:
+      - generic [ref=f4e938]: "In [16]:"
+      - generic [ref=f4e939]: "fig, axes = plt.subplots(1, 2, figsize=(13, 5)) # Confusion Matrix cm = confusion_matrix(y_test, y_pred) disp = ConfusionMatrixDisplay(cm, display_labels=[\"Остался (0)\", \"Ушёл (1)\"]) disp.plot(ax=axes[0], cmap=\"Blues\", colorbar=False) axes[0].set_title(\"Confusion Matrix — LogisticRegression\") # ROC-кривая fpr, tpr, _ = roc_curve(y_test, y_proba) axes[1].plot(fpr, tpr, color=\"#C44E52\", lw=2, label=f\"LogReg (AUC = {roc:.3f})\") axes[1].plot([0, 1], [0, 1], \"--\", color=\"gray\", label=\"Случайная модель (AUC = 0.5)\") axes[1].set_xlabel(\"False Positive Rate\") axes[1].set_ylabel(\"True Positive Rate\") axes[1].set_title(\"ROC-кривая\") axes[1].legend(loc=\"lower right\") plt.tight_layout() plt.show()"
+    - img "No description has been provided for this image" [ref=f4e948]
+  - generic [ref=f4e953]:
+    - paragraph [ref=f4e954]:
+      - strong [ref=f4e955]: "Разбор матрицы ошибок (LogisticRegression):"
+    - table [ref=f4e956]:
+      - rowgroup [ref=f4e957]:
+        - row [ref=f4e958]:
+          - columnheader [ref=f4e959]
+          - columnheader "предсказано «остался»" [ref=f4e960]
+          - columnheader "предсказано «ушёл»" [ref=f4e961]
+      - rowgroup [ref=f4e962]:
+        - row [ref=f4e963]:
+          - cell [ref=f4e964]:
+            - strong [ref=f4e965]: реально остался
+          - cell "TN — верно" [ref=f4e966]
+          - cell "FP — ложная тревога" [ref=f4e967]
+        - row [ref=f4e968]:
+          - cell [ref=f4e969]:
+            - strong [ref=f4e970]: реально ушёл
+          - cell "FN — пропустили уход" [ref=f4e971]
+          - cell "TP — верно поймали" [ref=f4e972]
+    - paragraph [ref=f4e973]:
+      - text: Наш
+      - code [ref=f4e974]: Recall
+      - text: "(~0.55) означает: модель находит лишь около половины реально уходящих клиентов. Именно"
+      - strong [ref=f4e975]: FN самые дорогие
+      - text: в бизнесе — потерянного клиента уже не удержать. Accuracy (~0.80) при этом выглядит «хорошо», хотя это следствие дисбаланса классов.
+  - generic [ref=f4e980]:
+    - 'heading "Шаг 7 :star: Ансамбли: Random Forest и CatBoost" [level=2] [ref=f4e981]'
+    - paragraph [ref=f4e982]: Заменяем базовую модель на ансамбли и сравниваем метрики.
+  - generic [ref=f4e983]:
+    - generic [ref=f4e985]:
+      - generic [ref=f4e986]: "In [17]:"
+      - generic [ref=f4e987]: "# --- Random Forest --- rf = Pipeline(steps=[ (\"prep\", preprocessor), (\"model\", RandomForestClassifier( n_estimators=300, max_depth=None, random_state=RANDOM_STATE, n_jobs=-1)), ]) rf.fit(X_train, y_train) y_pred_rf = rf.predict(X_test) y_proba_rf = rf.predict_proba(X_test)[:, 1] # --- CatBoost --- from catboost import CatBoostClassifier cb = Pipeline(steps=[ (\"prep\", preprocessor), (\"model\", CatBoostClassifier( iterations=500, learning_rate=0.05, depth=6, random_seed=RANDOM_STATE, verbose=0)), ]) cb.fit(X_train, y_train) y_pred_cb = cb.predict(X_test).ravel() y_proba_cb = cb.predict_proba(X_test)[:, 1] def metrics(name, y_true, y_pred, y_proba): return { \"Модель\": name, \"Accuracy\": accuracy_score(y_true, y_pred), \"Precision\": precision_score(y_true, y_pred), \"Recall\": recall_score(y_true, y_pred), \"F1\": f1_score(y_true, y_pred), \"ROC-AUC\": roc_auc_score(y_true, y_proba), } results = pd.DataFrame([ metrics(\"LogisticRegression\", y_test, y_pred, y_proba), metrics(\"RandomForest\", y_test, y_pred_rf, y_proba_rf), metrics(\"CatBoost\", y_test, y_pred_cb, y_proba_cb), ]).set_index(\"Модель\").round(4) results"
+    - generic [ref=f4e993]:
+      - generic [ref=f4e994]: "Out[17]:"
+      - table [ref=f4e997]:
+        - rowgroup [ref=f4e998]:
+          - row [ref=f4e999]:
+            - columnheader [ref=f4e1000]
+            - columnheader "Accuracy" [ref=f4e1001]
+            - columnheader "Precision" [ref=f4e1002]
+            - columnheader "Recall" [ref=f4e1003]
+            - columnheader "F1" [ref=f4e1004]
+            - columnheader "ROC-AUC" [ref=f4e1005]
+          - row [ref=f4e1006]:
+            - columnheader "Модель" [ref=f4e1007]
+            - columnheader [ref=f4e1008]
+            - columnheader [ref=f4e1009]
+            - columnheader [ref=f4e1010]
+            - columnheader [ref=f4e1011]
+            - columnheader [ref=f4e1012]
+        - rowgroup [ref=f4e1013]:
+          - row [ref=f4e1014]:
+            - rowheader "LogisticRegression" [ref=f4e1015]
+            - cell "0.8055" [ref=f4e1016]
+            - cell "0.6572" [ref=f4e1017]
+            - cell "0.5588" [ref=f4e1018]
+            - cell "0.6040" [ref=f4e1019]
+            - cell "0.8420" [ref=f4e1020]
+          - row [ref=f4e1021]:
+            - rowheader "RandomForest" [ref=f4e1022]
+            - cell "0.7864" [ref=f4e1023]
+            - cell "0.6197" [ref=f4e1024]
+            - cell "0.5053" [ref=f4e1025]
+            - cell "0.5567" [ref=f4e1026]
+            - cell "0.8229" [ref=f4e1027]
+          - row [ref=f4e1028]:
+            - rowheader "CatBoost" [ref=f4e1029]
+            - cell "0.7935" [ref=f4e1030]
+            - cell "0.6343" [ref=f4e1031]
+            - cell "0.5241" [ref=f4e1032]
+            - cell "0.5739" [ref=f4e1033]
+            - cell "0.8369" [ref=f4e1034]
+  - heading "Сравнение метрик F1 и ROC-AUC визуально" [level=3] [ref=f4e1040]
+  - generic [ref=f4e1041]:
+    - generic [ref=f4e1043]:
+      - generic [ref=f4e1044]: "In [18]:"
+      - generic [ref=f4e1045]: "fig, axes = plt.subplots(1, 2, figsize=(14, 5)) # Столбчатое сравнение F1 / ROC-AUC results[[\"Accuracy\", \"F1\", \"ROC-AUC\"]].plot(kind=\"bar\", ax=axes[0], color=[\"#8DA0CB\", \"#FC8D62\", \"#66C2A5\"]) axes[0].set_title(\"Сравнение метрик моделей\") axes[0].set_ylim(0, 1) axes[0].legend(loc=\"lower right\") axes[0].tick_params(axis=\"x\", rotation=15) # ROC-кривые всех моделей for name, proba, color in [ (\"LogisticRegression\", y_proba, \"#4C72B0\"), (\"RandomForest\", y_proba_rf, \"#DD8452\"), (\"CatBoost\", y_proba_cb, \"#55A868\"), ]: fpr, tpr, _ = roc_curve(y_test, proba) axes[1].plot(fpr, tpr, lw=2, color=color, label=f\"{name} (AUC = {roc_auc_score(y_test, proba):.3f})\") axes[1].plot([0, 1], [0, 1], \"--\", color=\"gray\") axes[1].set_xlabel(\"False Positive Rate\") axes[1].set_ylabel(\"True Positive Rate\") axes[1].set_title(\"ROC-кривые: базовая модель vs ансамбли\") axes[1].legend(loc=\"lower right\") plt.tight_layout() plt.show()"
+    - img "No description has been provided for this image" [ref=f4e1054]
+  - generic [ref=f4e1059]:
+    - paragraph [ref=f4e1060]:
+      - strong [ref=f4e1061]: Вывод по звёздочке — стало ли лучше?
+    - paragraph [ref=f4e1062]:
+      - text: На этом датасете —
+      - strong [ref=f4e1063]: нет, не лучше
+      - text: ":"
+      - code [ref=f4e1064]: LogisticRegression
+      - text: обошла ансамбли по всем ключевым метрикам (F1 ≈ 0.60 и ROC-AUC ≈ 0.842 против F1 ≈ 0.56 у RandomForest и ≈ 0.57 у CatBoost).
+    - paragraph [ref=f4e1065]: "Почему так:"
+    - list [ref=f4e1066]:
+      - listitem [ref=f4e1067]:
+        - text: после One-Hot признаки во многом линейно разделимы, а
+        - code [ref=f4e1068]: LogisticRegression
+        - text: со
+        - code [ref=f4e1069]: StandardScaler
+        - text: — очень крепкий baseline для Telco Churn;
+      - listitem [ref=f4e1070]:
+        - text: ансамбли с дефолтными гиперпараметрами на небольшой выборке (5634 train) склонны переобучаться (
+        - code [ref=f4e1071]: RandomForest
+        - text: — из-за глубоких деревьев,
+        - code [ref=f4e1072]: CatBoost
+        - text: — без тюнинга);
+      - listitem [ref=f4e1073]: дисбаланс классов одинаково давит Recall у всех моделей.
+    - paragraph [ref=f4e1074]: "Что стоит попробовать, чтобы ансамбли «выиграли»:"
+    - list [ref=f4e1075]:
+      - listitem [ref=f4e1076]:
+        - text: тюнинг гиперпараметров (
+        - code [ref=f4e1077]: GridSearchCV
+        - text: "/Optuna:"
+        - code [ref=f4e1078]: max_depth
+        - text: ","
+        - code [ref=f4e1079]: n_estimators
+        - text: ","
+        - code [ref=f4e1080]: learning_rate
+        - text: );
+      - listitem [ref=f4e1081]:
+        - text: балансировка классов (
+        - code [ref=f4e1082]: class_weight="balanced"
+        - text: для RF и LogReg,
+        - code [ref=f4e1083]: scale_pos_weight
+        - text: /
+        - code [ref=f4e1084]: auto_class_weights
+        - text: для CatBoost);
+      - listitem [ref=f4e1085]: подбор порога классификации под бизнес-метрику (Recall/F1);
+      - listitem [ref=f4e1086]: "feature engineering: число подключённых услуг, флаг наличия поддержки и т.п."
+    - paragraph [ref=f4e1087]:
+      - strong [ref=f4e1088]: "Главный урок:"
+      - text: ансамбль — не гарантия улучшения. Выбор модели нужно проверять на конкретных данных и метриках, а не выбирать «по умолчанию». При этом важность признаков у ансамблей подтверждает выводы EDA (см. ниже).
+  - generic [ref=f4e1093]:
+    - 'heading ":star: Важность признаков (feature_importances_)" [level=3] [ref=f4e1094]'
+    - paragraph [ref=f4e1095]: Какой фактор главный для оттока?
+  - generic [ref=f4e1096]:
+    - generic [ref=f4e1098]:
+      - generic [ref=f4e1099]: "In [19]:"
+      - generic [ref=f4e1100]: "# Имена признаков после препроцессинга prep = rf.named_steps[\"prep\"] ohe_names = prep.named_transformers_[\"cat\"].get_feature_names_out(multi_cols) feature_names = numeric_cols + binary_cols + list(ohe_names) importances = rf.named_steps[\"model\"].feature_importances_ imp = (pd.Series(importances, index=feature_names) .sort_values(ascending=False)) print(\"ТОП-15 самых важных признаков (RandomForest):\") print(imp.head(15).round(4).to_string()) plt.figure(figsize=(9, 7)) sns.barplot(x=imp.head(15).values, y=imp.head(15).index, palette=\"viridis\", hue=imp.head(15).index, legend=False) plt.xlabel(\"Важность (feature_importances_)\") plt.title(\"ТОП-15 важнейших признаков оттока — RandomForest\") plt.tight_layout() plt.show()"
+    - generic [ref=f4e1105]:
+      - generic [ref=f4e1106]: "ТОП-15 самых важных признаков (RandomForest): TotalCharges 0.1678 MonthlyCharges 0.1457 tenure 0.1433 Contract_Month-to-month 0.0623 TechSupport_No 0.0313 OnlineSecurity_No 0.0304 gender 0.0284 InternetService_Fiber optic 0.0281 PaymentMethod_Electronic check 0.0280 PaperlessBilling 0.0255 Partner 0.0230 SeniorCitizen 0.0199 Dependents 0.0189 OnlineBackup_No 0.0186 Contract_Two year 0.0173"
+      - img "No description has been provided for this image" [ref=f4e1113]
+  - generic [ref=f4e1114]:
+    - generic [ref=f4e1116]:
+      - generic [ref=f4e1117]: "In [20]:"
+      - generic [ref=f4e1118]: "# Важность признаков у CatBoost для сравнения cb_model = cb.named_steps[\"model\"] cb_imp = pd.Series(cb_model.get_feature_importance(), index=feature_names).sort_values(ascending=False) print(\"ТОП-10 признаков (CatBoost):\") print(cb_imp.head(10).round(3).to_string())"
+    - generic [ref=f4e1122]: "ТОП-10 признаков (CatBoost): MonthlyCharges 15.175 TotalCharges 14.674 tenure 14.580 Contract_Month-to-month 5.396 Contract_Two year 4.622 PaperlessBilling 3.902 gender 3.572 PaymentMethod_Electronic check 2.673 Dependents 2.285 OnlineSecurity_No 2.160"
+  - generic [ref=f4e1132]:
+    - paragraph [ref=f4e1133]:
+      - strong [ref=f4e1134]: Ответ на вопрос «какой фактор главный?»
+    - paragraph [ref=f4e1135]:
+      - text: Главные драйверы оттока — признаки, связанные с
+      - strong [ref=f4e1136]: условиями контракта и стажем клиента
+      - text: ":"
+    - list [ref=f4e1137]:
+      - listitem [ref=f4e1138]:
+        - strong [ref=f4e1139]:
+          - code [ref=f4e1140]: Contract
+        - text: (
+        - code [ref=f4e1141]: Month-to-month
+        - text: ) — самый сильный фактор. Помесячный контракт → резко выше риск ухода.
+      - listitem [ref=f4e1142]:
+        - strong [ref=f4e1143]:
+          - code [ref=f4e1144]: tenure
+        - text: "— стаж: чем дольше клиент, тем ниже вероятность ухода (обратная зависимость)."
+      - listitem [ref=f4e1145]:
+        - strong [ref=f4e1146]:
+          - code [ref=f4e1147]: TotalCharges
+          - text: /
+          - code [ref=f4e1148]: MonthlyCharges
+        - text: — дорогие тарифы и малые суммарные платежи повышают отток.
+      - listitem [ref=f4e1149]:
+        - strong [ref=f4e1150]:
+          - code [ref=f4e1151]: OnlineSecurity
+          - text: /
+          - code [ref=f4e1152]: TechSupport
+        - text: (отсутствие услуг) и
+        - strong [ref=f4e1153]:
+          - code [ref=f4e1154]: InternetService
+          - text: (Fiber optic)
+        - text: — тоже заметные факторы.
+    - paragraph [ref=f4e1155]:
+      - strong [ref=f4e1156]: "Бизнес-вывод:"
+      - text: удержание через перевод клиентов с
+      - code [ref=f4e1157]: Month-to-month
+      - text: на срочные контракты и подключение поддерживающих услуг (TechSupport, OnlineSecurity) — наиболее очевидные рычаги снижения оттока.
+  - generic [ref=f4e1162]:
+    - heading "Итоги" [level=2] [ref=f4e1163]
+    - table [ref=f4e1164]:
+      - rowgroup [ref=f4e1165]:
+        - row [ref=f4e1166]:
+          - columnheader "Шаг" [ref=f4e1167]
+          - columnheader "Что сделано" [ref=f4e1168]
+      - rowgroup [ref=f4e1169]:
+        - row [ref=f4e1170]:
+          - cell "EDA" [ref=f4e1171]
+          - cell [ref=f4e1172]:
+            - text: Изучены распределения, дисбаланс классов (~26.5% ушедших), связи с
+            - code [ref=f4e1173]: tenure
+            - text: /
+            - code [ref=f4e1174]: MonthlyCharges
+        - row [ref=f4e1175]:
+          - cell "Cleaning" [ref=f4e1176]
+          - cell [ref=f4e1177]:
+            - code [ref=f4e1178]: TotalCharges
+            - text: →
+            - code [ref=f4e1179]: float64
+            - text: ", пустые значения (tenure=0) заполнены 0, дубликаты и"
+            - code [ref=f4e1180]: customerID
+            - text: удалены
+        - row [ref=f4e1181]:
+          - cell "Feature Eng." [ref=f4e1182]
+          - cell [ref=f4e1183]:
+            - text: Бинарные — Label Encoding, многозначные — One-Hot, числа — StandardScaler (всё внутри
+            - code [ref=f4e1184]: Pipeline
+            - text: )
+        - row [ref=f4e1185]:
+          - cell "Модель" [ref=f4e1186]
+          - cell [ref=f4e1187]:
+            - code [ref=f4e1188]: LogisticRegression
+            - text: (baseline), затем
+            - code [ref=f4e1189]: RandomForest
+            - text: и
+            - code [ref=f4e1190]: CatBoost
+            - text: — baseline оказался лучше
+        - row [ref=f4e1191]:
+          - cell "Оценка" [ref=f4e1192]
+          - cell [ref=f4e1193]:
+            - code [ref=f4e1194]: classification_report
+            - text: ","
+            - code [ref=f4e1195]: Confusion Matrix
+            - text: ", ROC-AUC; сравнение F1/ROC-AUC; важность признаков"
+    - paragraph [ref=f4e1196]:
+      - strong [ref=f4e1197]: "Главный принцип соблюдён:"
+      - text: чистка и корректная подготовка признаков дали осмысленную модель, а метрики выбраны с учётом дисбаланса (F1, Recall, ROC-AUC), а не только Accuracy.

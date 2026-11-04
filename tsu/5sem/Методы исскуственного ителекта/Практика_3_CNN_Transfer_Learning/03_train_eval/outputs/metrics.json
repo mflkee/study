@@ -1,0 +1,376 @@
+{
+  "config": {
+    "epochs": 15,
+    "lr": 0.01,
+    "batch_size": 128,
+    "scheduler": "cosine",
+    "bn_mode": "frozen",
+    "train_size": 10000,
+    "test_size": 10000
+  },
+  "param_stats": {
+    "total_params": 11181642,
+    "total_human": "11.18 млн",
+    "trainable_params": 5130,
+    "trainable_human": "5.1 тыс.",
+    "frozen_params": 11176512,
+    "trainable_share_pct": 0.046
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "lr": 0.01,
+      "train_loss": 1.471,
+      "train_acc": 0.4798,
+      "test_loss": 1.2665,
+      "test_acc": 0.5597,
+      "seconds": 9.2
+    },
+    {
+      "epoch": 2,
+      "lr": 0.009893,
+      "train_loss": 1.28,
+      "train_acc": 0.5465,
+      "test_loss": 1.3327,
+      "test_acc": 0.5477,
+      "seconds": 8.9
+    },
+    {
+      "epoch": 3,
+      "lr": 0.009576,
+      "train_loss": 1.2392,
+      "train_acc": 0.5638,
+      "test_loss": 1.3073,
+      "test_acc": 0.5578,
+      "seconds": 9.4
+    },
+    {
+      "epoch": 4,
+      "lr": 0.009064,
+      "train_loss": 1.2275,
+      "train_acc": 0.5659,
+      "test_loss": 1.2761,
+      "test_acc": 0.5709,
+      "seconds": 9.2
+    },
+    {
+      "epoch": 5,
+      "lr": 0.008379,
+      "train_loss": 1.2083,
+      "train_acc": 0.5778,
+      "test_loss": 1.2067,
+      "test_acc": 0.587,
+      "seconds": 9.1
+    },
+    {
+      "epoch": 6,
+      "lr": 0.00755,
+      "train_loss": 1.1666,
+      "train_acc": 0.5905,
+      "test_loss": 1.2113,
+      "test_acc": 0.5877,
+      "seconds": 9.5
+    },
+    {
+      "epoch": 7,
+      "lr": 0.006614,
+      "train_loss": 1.157,
+      "train_acc": 0.5861,
+      "test_loss": 1.2092,
+      "test_acc": 0.5881,
+      "seconds": 10.2
+    },
+    {
+      "epoch": 8,
+      "lr": 0.005612,
+      "train_loss": 1.14,
+      "train_acc": 0.5967,
+      "test_loss": 1.1891,
+      "test_acc": 0.5876,
+      "seconds": 9.9
+    },
+    {
+      "epoch": 9,
+      "lr": 0.004588,
+      "train_loss": 1.1275,
+      "train_acc": 0.605,
+      "test_loss": 1.2368,
+      "test_acc": 0.5784,
+      "seconds": 8.5
+    },
+    {
+      "epoch": 10,
+      "lr": 0.003586,
+      "train_loss": 1.1439,
+      "train_acc": 0.5932,
+      "test_loss": 1.1609,
+      "test_acc": 0.596,
+      "seconds": 9.1
+    },
+    {
+      "epoch": 11,
+      "lr": 0.00265,
+      "train_loss": 1.0869,
+      "train_acc": 0.6177,
+      "test_loss": 1.1843,
+      "test_acc": 0.5861,
+      "seconds": 10.0
+    },
+    {
+      "epoch": 12,
+      "lr": 0.001821,
+      "train_loss": 1.0717,
+      "train_acc": 0.6236,
+      "test_loss": 1.1419,
+      "test_acc": 0.603,
+      "seconds": 10.6
+    },
+    {
+      "epoch": 13,
+      "lr": 0.001136,
+      "train_loss": 1.0694,
+      "train_acc": 0.6198,
+      "test_loss": 1.1213,
+      "test_acc": 0.6065,
+      "seconds": 13.8
+    },
+    {
+      "epoch": 14,
+      "lr": 0.000624,
+      "train_loss": 1.0554,
+      "train_acc": 0.628,
+      "test_loss": 1.128,
+      "test_acc": 0.6046,
+      "seconds": 11.0
+    },
+    {
+      "epoch": 15,
+      "lr": 0.000307,
+      "train_loss": 1.0586,
+      "train_acc": 0.6227,
+      "test_loss": 1.1157,
+      "test_acc": 0.6059,
+      "seconds": 10.7
+    }
+  ],
+  "test": {
+    "accuracy": 0.6059,
+    "loss": 1.1157,
+    "macro_f1": 0.6049,
+    "per_class": [
+      {
+        "class": "airplane",
+        "precision": 0.6211,
+        "recall": 0.664,
+        "f1": 0.6419,
+        "support": 1000
+      },
+      {
+        "class": "automobile",
+        "precision": 0.6732,
+        "recall": 0.692,
+        "f1": 0.6824,
+        "support": 1000
+      },
+      {
+        "class": "bird",
+        "precision": 0.4792,
+        "recall": 0.564,
+        "f1": 0.5181,
+        "support": 1000
+      },
+      {
+        "class": "cat",
+        "precision": 0.4916,
+        "recall": 0.466,
+        "f1": 0.4784,
+        "support": 1000
+      },
+      {
+        "class": "deer",
+        "precision": 0.5728,
+        "recall": 0.468,
+        "f1": 0.5151,
+        "support": 1000
+      },
+      {
+        "class": "dog",
+        "precision": 0.5971,
+        "recall": 0.572,
+        "f1": 0.5843,
+        "support": 1000
+      },
+      {
+        "class": "frog",
+        "precision": 0.6095,
+        "recall": 0.757,
+        "f1": 0.6753,
+        "support": 1000
+      },
+      {
+        "class": "horse",
+        "precision": 0.6814,
+        "recall": 0.618,
+        "f1": 0.6481,
+        "support": 1000
+      },
+      {
+        "class": "ship",
+        "precision": 0.6895,
+        "recall": 0.653,
+        "f1": 0.6708,
+        "support": 1000
+      },
+      {
+        "class": "truck",
+        "precision": 0.667,
+        "recall": 0.605,
+        "f1": 0.6345,
+        "support": 1000
+      }
+    ],
+    "confusion_matrix": [
+      [
+        664,
+        23,
+        87,
+        29,
+        17,
+        11,
+        6,
+        15,
+        103,
+        45
+      ],
+      [
+        40,
+        692,
+        19,
+        26,
+        4,
+        12,
+        13,
+        12,
+        48,
+        134
+      ],
+      [
+        62,
+        11,
+        564,
+        64,
+        50,
+        56,
+        139,
+        29,
+        20,
+        5
+      ],
+      [
+        26,
+        21,
+        95,
+        466,
+        48,
+        155,
+        103,
+        41,
+        14,
+        31
+      ],
+      [
+        27,
+        10,
+        174,
+        62,
+        468,
+        32,
+        125,
+        80,
+        16,
+        6
+      ],
+      [
+        10,
+        20,
+        76,
+        149,
+        43,
+        572,
+        62,
+        53,
+        9,
+        6
+      ],
+      [
+        3,
+        4,
+        87,
+        51,
+        42,
+        36,
+        757,
+        12,
+        7,
+        1
+      ],
+      [
+        34,
+        13,
+        38,
+        58,
+        113,
+        68,
+        29,
+        618,
+        8,
+        21
+      ],
+      [
+        152,
+        66,
+        24,
+        19,
+        18,
+        5,
+        3,
+        7,
+        653,
+        53
+      ],
+      [
+        51,
+        168,
+        13,
+        24,
+        14,
+        11,
+        5,
+        40,
+        69,
+        605
+      ]
+    ]
+  },
+  "inference": {
+    "images": 5120,
+    "seconds": 2.582,
+    "images_per_second": 1982.8
+  },
+  "bn_compare": [
+    {
+      "bn_mode": "frozen",
+      "acc": 0.6059,
+      "macro_f1": 0.6049,
+      "seconds": 149.2
+    },
+    {
+      "bn_mode": "train",
+      "acc": 0.401,
+      "macro_f1": 0.3987,
+      "seconds": 167.1
+    }
+  ],
+  "total_seconds": 149.2,
+  "eval_seconds": 4.1
+}

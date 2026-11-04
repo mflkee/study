@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<title>ДЗ_лекции_3_Ответы</title>
+<style>
+@page { size: A4; margin: 18mm 16mm 16mm 16mm; }
+body { font-family: "Noto Sans", "DejaVu Sans", sans-serif; font-size: 10.5pt;
+       line-height: 1.45; color: #1a1a1a; max-width: 100%; }
+h1, div.h1 { font-size: 19pt; font-weight: 700; margin: 0 0 2mm 0; line-height: 1.2;
+         color: #111; text-indent: 0; }
+h2, div.h2 { font-size: 13.5pt; font-weight: 700; margin: 7mm 0 2mm 0; padding-bottom: 1mm;
+         border-bottom: 1px solid #d8d8d8; color: #111; text-indent: 0; }
+h3, div.h3 { font-size: 11.5pt; font-weight: 700; margin: 5mm 0 1.5mm 0; color: #222;
+         text-indent: 0; }
+h4, div.h4 { font-size: 10.5pt; font-weight: 700; margin: 4mm 0 1mm 0; color: #333;
+         text-indent: 0; }
+p { margin: 0 0 2.2mm 0; text-align: justify; }
+ul, ol { margin: 0 0 2.5mm 0; padding-left: 6mm; }
+li { margin-bottom: 1mm; }
+code { font-family: "Noto Sans Mono", "DejaVu Sans Mono", monospace; font-size: 9pt;
+       background: #f2f2f2; padding: 0.3mm 1mm; border-radius: 1.5mm; }
+pre { background: #f6f6f6; border: 1px solid #e2e2e2; border-radius: 2mm;
+      padding: 2.5mm 3mm; margin: 0 0 3mm 0; overflow: hidden; }
+pre code { background: none; font-size: 8.6pt; line-height: 1.35; }
+table { border-collapse: collapse; width: 100%; margin: 1mm 0 4mm 0; font-size: 9.2pt; }
+th, td { border: 1px solid #cfcfcf; padding: 1.6mm 2mm; text-align: left;
+         vertical-align: top; }
+th { background: #efefef; font-weight: 600; }
+hr { border: none; border-top: 1px solid #dcdcdc; margin: 5mm 0; }
+.meta { color: #555; font-size: 9.5pt; margin: 0 0 6mm 0; padding-bottom: 2.5mm;
+        border-bottom: 2px solid #333; }
+blockquote { margin: 0 0 3mm 0; padding: 1mm 0 1mm 4mm; border-left: 3px solid #bbb;
+             color: #444; }
+</style></head>
+<body>
+<div class="h1">ДЗ лекции 3. Глубокое обучение и нейронные сети</div>
+<p><strong>Дисциплина:</strong> Методы искусственного интеллекта I<br> <strong>Выполнил:</strong> Макеев Глеб Борисович, группа BHEBDPS-24-MII-5<br> <strong>Тема:</strong> письменные ответы на вопросы лекции 3 (слайд 16) + подготовка к лекции 4<br> <strong>Дата:</strong> 18.10.2026</p>
+<hr>
+<div class="h2">1. Почему Трансформеры «убили» RNN?</div>
+<p><strong>Коротко:</strong> RNN обрабатывает последовательность <em>последовательно</em>, а Attention — <em>сразу всю</em>.</p>
+<table><thead><tr>
+<th>Критерий</th>
+<th>RNN / LSTM</th>
+<th>Transformer</th>
+</tr></thead><tbody>
+<tr>
+<td>Параллелизм по длине</td>
+<td>нет: <code>h_t</code> зависит от <code>h_{t-1}</code>, вычисление строго по шагам</td>
+<td>да: все позиции считаются одновременно (матричные умножения)</td>
+</tr>
+<tr>
+<td>Путь градиента между токенами</td>
+<td>O(n) — ошибка «затухает» по пути</td>
+<td>O(1) — Attention связывает любые две позиции напрямую</td>
+</tr>
+<tr>
+<td>Утилизация GPU</td>
+<td>низкая: узкое место — рекуррентность, а не математика</td>
+<td>высокая: чистые <code>matmul</code>/<code>softmax</code> — идеальные операции для тензорных ядер</td>
+</tr>
+<tr>
+<td>Масштабирование (data + params)</td>
+<td>быстро упирается в потолок качества</td>
+<td>масштабируется до миллиардов параметров (BERT, GPT)</td>
+</tr>
+<tr>
+<td>Память на шаг</td>
+<td>O(1) (один скрытый вектор)</td>
+<td>inference требует KV-cache, растущий с длиной контекста</td>
+</tr>
+</tbody></table>
+<p>Дополнительно: Attention оказался <em>универсальнее</em>. Одна и та же архитектура работает в NLP (перевод, GPT), в зрении (ViT), в аудио (Whisper), в биологии (AlphaFold), тогда как RNN — это архитектура «специально под последовательности». Отсюда историческая смена: 2014–2017 — LSTM/GRU + seq2seq; 2017 «Attention Is All You Need» → 2018+ — Transformer везде.</p>
+<p><strong>Важная оговорка.</strong> «Убили» — это про NLP и про качество на больших данных. Слабое место Transformer — квадратичная сложность по длине <code>O(n²)</code>; поэтому живы линейные аппроксимации внимания и state-space модели (Mamba/S4), а в нишах, где рекуррентность — достоинство, LSTM/GRU никуда не ушли (см. вопрос 2).</p>
+<hr>
+<div class="h2">2. Почему RNN/LSTM критичны для временных рядов и Edge-устройств?</div>
+<p><strong>Edge-устройства (микроконтроллеры, телефоны, камеры, датчики, embedded NPU):</strong></p>
+<ol>
+<li><strong>Размер.</strong> LSTM/GRU — единицы тысяч параметров (десятки КБ), помещается в SRAM</li>
+</ol>
+<p>микроконтроллера; Transformer с attention — сотни МБ и обязательный KV-cache.</p>
+<ol>
+<li><strong>Память и режим потоковой работы.</strong> LSTM хранит <em>один</em> скрытый вектор и обновляет</li>
+</ol>
+<p>его за O(1) на каждый новый отсчёт — естественный streaming/online-инференс. У Transformer память растёт линейно с длиной контекста.</p>
+<ol>
+<li><strong>Энергия и latency.</strong> Один шаг рекуррентности = пара матрично-векторных умножений:</li>
+</ol>
+<p>миллисекунды и милливатты, без пересчёта всей последовательности.</p>
+<ol>
+<li><strong>Готовый тулчейн.</strong> <code>TensorFlow Lite Micro</code>, <code>CMSIS-NN</code>, <code>ONNX Runtime Mobile</code>,</li>
+</ol>
+<p>аппаратные NPU/микроконтроллеры отлично оптимизируют именно рекуррентные ячейки.</p>
+<p><strong>Временные ряды (промышленность, финансы, энергетика, IoT):</strong></p>
+<ol>
+<li><strong>Индуктивный bias под последовательность:</strong> память и ворота «забудь/запомни»</li>
+</ol>
+<p>заложены в архитектуру — это адекватная априорная модель для данных со временем, особенно на <strong>малых</strong> выборках, где Transformer переобучается.</p>
+<ol>
+<li><strong>Онлайн-прогноз.</strong> Предиктивное обслуживание и мониторинг требуют предсказания</li>
+</ol>
+<p>«на лету», по одному измерению: LSTM это умеет по определению.</p>
+<ol>
+<li><strong>Нерегулярные и шумные данные.</strong> Пропуски датчиков, разная частота — LSTM хорошо</li>
+</ol>
+<p>переносит, тогда как attention чувствителен к позиционному кодированию.</p>
+<ol>
+<li><strong>Практика.</strong> В задачах прогноза часто побеждают не «чистые» модели, а гибриды и</li>
+</ol>
+<p>специализированные решения: LSTM/GRU + CNN (ConvLSTM), TCN, N-BEATS, Gradient Boosting на лагах, а из нового — Mamba/SSM. В embedded и на производстве классическая LSTM до сих пор стандарт де-факто.</p>
+<hr>
+<div class="h2">3. Подготовка к лекции 4: механизм Attention (краткий конспект)</div>
+<ul>
+<li><strong>Идея.</strong> Для каждого токена (<code>Query</code>) ищем, на какие позиции (<code>Keys</code>) смотреть, и</li>
+</ul>
+<p>берём взвешенную сумму их представлений (<code>Values</code>) — «мягкий поиск по базе памяти».</p>
+<ul>
+<li><strong>Формула:</strong></li>
+</ul>
+<pre><code>  Attention(Q, K, V) = softmax(Q·Kᵀ / √d_k) · V</code></pre>
+<p>Деление на <code>√d_k</code> нужно, чтобы скалярные произведения не «разъезжались» по модулю и softmax не превращался в one-hot (градиенты не пропадали).</p>
+<ul>
+<li><strong>Self-attention.</strong> Q, K, V получаются из одного и того же входа линейными</li>
+</ul>
+<p>проекциями — токен «смотрит» на все остальные токены последовательности.</p>
+<ul>
+<li><strong>Multi-head.</strong> Несколько независимых голов внимания (разные «точки зрения»:</li>
+</ul>
+<p>синтаксис, семантика, дальние связи), затем конкатенация проекций.</p>
+<ul>
+<li><strong>Позиционность.</strong> В отличие от RNN, attention ничего не знает о порядке, поэтому</li>
+</ul>
+<p>порядок добавляют позиционными кодировками (синусы/косинусы или обучаемые векторы), в современных моделях — RoPE.</p>
+<ul>
+<li><strong>Блок трансформера.</strong> Multi-head attention → Add &amp; LayerNorm → Feed-Forward</li>
+</ul>
+<p>(MLP, GeLU) → Add &amp; LayerNorm; стек из N таких блоков.</p>
+<ul>
+<li><strong>Цена.</strong> Память и время <code>O(n²)</code> по длине последовательности — главный объект</li>
+</ul>
+<p>оптимизации (FlashAttention, sparse/linear attention).</p>
+<p><strong>Связь с лекцией 3:</strong> Attention — это та же «нейронная сеть + градиентный спуск + backpropagation», но вместо рекуррентности он строит обучаемую матрицу связей между всеми элементами последовательности сразу, убирая узкое место RNN.</p>
+</body></html>
