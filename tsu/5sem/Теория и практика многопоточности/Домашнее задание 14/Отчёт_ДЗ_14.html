@@ -34,271 +34,739 @@ blockquote { margin: 0 0 3mm 0; padding: 1mm 0 1mm 4mm; border-left: 3px solid #
 <body>
 <h1>Домашнее задание 14 — Введение в проект Loom (Virtual Threads)</h1>
 <ul>
-<li><strong>Дедлайн:</strong> 04.11.2026</li>
+<li><strong>Дедлайн:</strong> 04.11.2026 (текст задания открылся позже, отчёт дополнен 09.11.2026)</li>
 <li><strong>Тема:</strong> Введение в проект Loom (Virtual Threads)</li>
 <li><strong>Форма проверки:</strong> задание с самопроверкой</li>
 <li><strong>Вариант итогового ДЗ:</strong> 3 — парсер вакансий</li>
 <li><strong>Модуль:</strong> <code>hw14.loom</code> в Maven-проекте <code>app/</code></li>
-<li><strong>JDK:</strong> 21 (Temurin 21.0.13), в <code>pom.xml</code> — <code>&lt;java.version&gt;21&lt;/java.version&gt;</code></li>
-<li><strong>Открытие задания на платформе:</strong> 27.10.2026 в 17:20 (на момент подготовки текст задания
-  недоступен, работа сделана по теме урока)</li>
+<li><strong>JDK:</strong> 21 (Temurin 21.0.13), в <code>pom.xml</code> — <code>&lt;java.version&gt;21&lt;/java.version&gt;</code> + <code>--enable-preview</code> (почему именно так — раздел 1.1)</li>
+<li><strong>Дата замеров:</strong> 09.11.2026, Linux, 12 процессоров, 23 ГиБ ОЗУ</li>
 </ul>
 <hr>
-<h2>1. Что требовалось и что сделано</h2>
-<p>Тема урока — виртуальные потоки проекта Loom: зачем они нужны, чем отличаются от платформенных,
-где дают выигрыш. Текст задания на платформе ещё не открыт (появится 27.10.2026), поэтому сделано
-полное ДЗ по теме — с кодом, демонстрацией, тестами и измерениями.</p>
+<h2>1. Требования задания и что сделано</h2>
+<p>Текст задания (Netology, дедлайн 04.11.2026) состоит из шести пунктов и требований к отчёту.
+Ниже — карта «требование → где сделано», дальше по разделам — как именно.</p>
 <table>
 <thead>
 <tr>
-<th>Что</th>
-<th>Где</th>
+<th>№</th>
+<th>Требование (дословно по смыслу)</th>
+<th>Где сделано</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Виртуальные потоки «базово»: загрузка N страниц вакансий</td>
-<td><code>LoomDemo</code> (этап 1), <code>benchmark.LoomBenchmarks.runNamedVirtual</code></td>
+<td>1</td>
+<td><strong>Создание задач:</strong> 10 000 задач; каждая выводит имя своего потока и имитирует неблокирующий IO (<code>Thread.sleep</code>/<code>Thread.yield</code>)</td>
+<td><code>swarm.ThreadSwarm</code>, <code>swarm.SwarmRun</code> — этап 5 демонстрации</td>
 </tr>
 <tr>
-<td>Сравнение с платформенным пулом</td>
-<td><code>LoomBenchmarks.runPlatform</code> / <code>runVirtual</code> (этап 2)</td>
+<td>2</td>
+<td><strong>Виртуальные потоки:</strong> выполнить все 10 000 задач через <code>Thread.ofVirtual().start(...)</code></td>
+<td><code>ThreadSwarm.runVirtual</code> (этап 5) + <code>benchmark.LoomBenchmarks.runNamedVirtual</code> (этапы 1–2)</td>
 </tr>
 <tr>
-<td>Pinning: <code>synchronized</code> против <code>ReentrantLock</code></td>
-<td><code>pinning.PinningExperiment</code>, <code>pinning.PinningRun</code> (этап 3)</td>
+<td>3</td>
+<td><strong>Платформенные потоки:</strong> те же задачи через <code>new Thread(...).start()</code>; сравнить поведение и производительность</td>
+<td><code>ThreadSwarm.runPlatform</code> (этап 5), <code>LoomBenchmarks.runPlatform</code> (этапы 2, 4)</td>
 </tr>
 <tr>
-<td>Демонстрация масштабирования (10 000 задач)</td>
-<td><code>LoomBenchmarks</code> + <code>benchmark.SleepyTask</code> (этап 4)</td>
+<td>4</td>
+<td><strong>Сравнение:</strong> замерить время (<code>System.nanoTime()</code>), сравнить</td>
+<td><code>SwarmRun.startNanos/totalNanos/cpuNanos</code>, <code>BenchmarkResult.wallTimeNanos</code>; таблицы в <code>report.LoomReport</code></td>
 </tr>
 <tr>
-<td>Локальный сайт вакансий (офлайн)</td>
-<td><code>server.VacancyPageServer</code></td>
+<td>5</td>
+<td><strong>StructuredTaskScope:</strong> управление группой виртуальных потоков, ожидание завершения всех задач, обработка исключений и отмены</td>
+<td><code>structured.StructuredExperiments</code>, <code>structured.ScopeRun</code> — этап 6: четыре опыта (<code>join</code>, падение подзадачи, <code>joinUntil</code>+<code>shutdown</code>, <code>ShutdownOnSuccess</code>)</td>
 </tr>
 <tr>
-<td>Блокирующий HTTP-клиент + извлечение <code>&lt;title&gt;</code></td>
-<td><code>web.PageVacancyClient</code>, <code>PageVacancyClient.HtmlTitle</code></td>
+<td>6</td>
+<td><strong>Тестирование:</strong> прогоны с разными количествами задач, сравнение времени и потребления ресурсов (CPU/память)</td>
+<td>параметры <code>app.hw14.*</code>, серия прогонов 1000/5000/10 000 (раздел 2.5.3), CPU (<code>OperatingSystemMXBean</code>) и куча (<code>MemoryProbe</code>) в каждом прогоне</td>
 </tr>
 <tr>
-<td>«Паспорт» потока: виртуальный и carrier</td>
-<td><code>benchmark.ThreadProbe</code></td>
-</tr>
-<tr>
-<td>Пик одновременной работы и число исполнителей</td>
-<td><code>benchmark.ConcurrencyMeter</code></td>
-</tr>
-<tr>
-<td>Итоги прогонов</td>
-<td><code>model.BenchmarkResult</code>, <code>model.LoadRun</code>, <code>model.PageLoad</code></td>
-</tr>
-<tr>
-<td>Строки отчёта и таблицы</td>
-<td><code>report.LoomReport</code></td>
-</tr>
-<tr>
-<td>Настройки <code>app.hw14.*</code></td>
-<td><code>config.Hw14Properties</code></td>
-</tr>
-<tr>
-<td>Демонстрация</td>
-<td><code>LoomDemo</code>, запуск <code>--app.hw=hw14</code></td>
+<td>—</td>
+<td><strong>Отчёт:</strong> этапы, промежуточные результаты (пример вывода имени потока, замеры), объяснение работы виртуальных потоков, <code>StructuredTaskScope</code> и обработки исключений, итоговые выводы</td>
+<td>этот файл, разделы 2–5</td>
 </tr>
 </tbody>
 </table>
+<p>Что уже было в модуле до открытия текста задания и осталось: загрузка 200 страниц вакансий с
+локального сайта-заглушки в виртуальных потоках (этап 1), сравнение с платформенным пулом
+(этап 2), опыт с pinning (этап 3), масштабирование на 10 000 задач (этап 4). Новое: этап 5
+(«поток на задачу» напрямую через <code>Thread.ofVirtual().start</code> и <code>new Thread().start</code>) и этап 6
+(<code>StructuredTaskScope</code>), 13 новых тестов, этот отчёт и пересобранный PDF.</p>
 <p>Предметная область та же, что в остальных ДЗ, — парсер вакансий. Страницы грузятся с локального
 сайта-заглушки на свободном порту, поэтому интернет не нужен, а задержка ответа делает разницу
 между исполнителями измеримой: виртуальные потоки масштабируются на <strong>ожидании</strong>, а не на
 процессоре.</p>
-<p>Использованы именно те API, о которых говорит тема:</p>
+<h3>1.1. Про версию JDK и <code>--enable-preview</code> (честно)</h3>
+<p><code>StructuredTaskScope</code> живёт в <code>java.util.concurrent</code>, но <strong>до сих пор остаётся preview-API</strong>:</p>
 <ul>
-<li><code>Executors.newVirtualThreadPerTaskExecutor()</code> — по виртуальному потоку на задачу;</li>
-<li><code>Thread.ofVirtual().name("hw14-vt-", 0)</code> — именованные виртуальные потоки для журнала;</li>
-<li><code>Thread.currentThread().isVirtual()</code> — проверка, что поток действительно виртуальный;</li>
-<li><code>Thread.currentThread().toString()</code> — carrier-поток (<code>…/runnable@ForkJoinPool-1-worker-3</code>).</li>
+<li>JDK 21 — JEP 453, первое preview в <code>java.util.concurrent</code> (до этого — инкубатор <code>jdk.incubator.concurrent</code> в 19–20);</li>
+<li>JDK 25 — JEP 505 «Structured Concurrency (Fifth Preview)», <strong>не финальный</strong> API;</li>
+<li>JDK 27 — тоже preview.</li>
 </ul>
+<p>Проверено на реальных JDK: <code>javac 25.0.5</code> и <code>javac 27.0.1</code> на строке
+<code>import java.util.concurrent.StructuredTaskScope;</code> отвечают
+<code>error: StructuredTaskScope is a preview API and is disabled by default</code>. Финальным API не стал ни
+в одной из доступных версий, а инкубаторного модуля <code>jdk.incubator.concurrent</code> в JDK 21 уже нет
+(<code>java --list-modules</code> его не показывает). Поэтому вариантов два: включать preview или не
+использовать <code>StructuredTaskScope</code> вообще.</p>
+<p>Выбран <strong>JDK 21 + <code>--enable-preview</code></strong> по двум причинам:</p>
+<ol>
+<li><strong>Pinning ещё работает.</strong> В JDK 24+ (JEP 491) <code>synchronized</code> больше не пришпиливает виртуальные потоки, и этап 3 теряет смысл: прогоны становятся одинаковыми. Проверено на JDK 25: из 19 прежних тестов падают два (<code>PinningExperimentTest</code> — пик 24 вместо «не больше 12»). С JDK 21 все прежние выводы и замеры остаются в силе.</li>
+<li><strong>API JDK 21 — тот самый, о котором говорит текст задания</strong>: <code>joinUntil(deadline)</code>, <code>shutdown()</code>, <code>ShutdownOnFailure</code>/<code>ShutdownOnSuccess</code>, <code>throwIfFailed()</code>. В JDK 25 API переработан (<code>open(Joiner)</code>, <code>Configuration.withTimeout</code>), и отчёт пришлось бы писать про другой класс.</li>
+</ol>
+<p>Цена решения: собирать и запускать надо с флагом <code>--enable-preview</code> (он уже прописан в <code>pom.xml</code>
+для компилятора и surefire), а готовый jar работает только на JDK 21 — preview-классы помечены
+версией <code>65.65535</code> и другая JVM их не загрузит. Это ограничение указано и в разделе 9.</p>
+<p>Остальные 100 % кода (всё, кроме <code>structured.*</code>) — обычный Java 21 без preview.</p>
 <h2>2. Этапы выполнения</h2>
-<h3>Этап 1. Виртуальные потоки базово</h3>
+<h3>2.1. Этап 1. Виртуальные потоки базово</h3>
 <pre><code class="language-java">ThreadFactory factory = Thread.ofVirtual().name(&quot;hw14-vt-&quot;, 0).factory();
 try (ExecutorService executor = Executors.newThreadPerTaskExecutor(factory)) {
     // на каждую страницу — своя задача; внутри блокирующий client.send(...)
 }
 </code></pre>
-<p><code>PageVacancyClient.fetch</code> намеренно <strong>синхронный</strong> (<code>HttpClient.send</code>, не <code>sendAsync</code>): именно
-блокирующий вызов позволяет виртуальному потоку сняться с carrier-потока и отдать его другим
-задачам. С асинхронным клиентом ждать было бы нечего и выигрыш исчез.</p>
-<p>Каждый результат несёт «паспорт» потока (<code>ThreadProbe</code>): виртуальный ли он и на каком carrier
-смонтирован. Журнал демонстрации:</p>
-<pre><code class="language-text">виртуальные потоки: задач 200 (вернули результат 200, исключений 0, отменено 0), 190.4 мс, 1050.5 задач/с,
-                    пик одновременных 200, потоков-исполнителей 200, прирост потоков JVM 3
+<p><code>PageVacancyClient.fetch</code> намеренно <strong>синхронный</strong> (<code>HttpClient.send</code>, не <code>sendAsync</code>): именно блокирующий вызов позволяет виртуальному потоку сняться с carrier-потока и отдать его другим задачам. С асинхронным клиентом ждать было бы нечего и выигрыш исчез.</p>
+<p>Каждый результат несёт «паспорт» потока (<code>ThreadProbe</code>): виртуальный ли он и на каком carrier смонтирован. Журнал демонстрации:</p>
+<pre><code class="language-text">виртуальные потоки: задач 200 (вернули результат 200, исключений 0, отменено 0), 159.1 мс,
+                    пик одновременных 200, потоков-исполнителей 200, прирост потоков JVM 2
 без потерь: да, разных страниц 200 из 200, сбоев 0
 примеры заголовков:
   №0 «Вакансия №0 — Java-разработчик» (virtual@ForkJoinPool-1-worker-2)
-  №1 «Вакансия №1 — Backend-разработчик (Java)» (virtual@ForkJoinPool-1-worker-4)
-  №2 «Вакансия №2 — Разработчик Spring Boot» (virtual@ForkJoinPool-1-worker-6)
-проверка: исполнений на виртуальных потоках 200, на платформенных 0 → все запросы сделаны виртуальными потоками: да
+  №1 «Вакансия №1 — Backend-разработчик (Java)» (virtual@ForkJoinPool-1-worker-9)
+  №2 «Вакансия №2 — Разработчик Spring Boot» (virtual@ForkJoinPool-1-worker-8)
 паспорта потоков (первые 3):
   №0 поток hw14-vt-0, виртуальный: да, carrier: ForkJoinPool-1-worker-2
-  №1 поток hw14-vt-1, виртуальный: да, carrier: ForkJoinPool-1-worker-4
-  №2 поток hw14-vt-2, виртуальный: да, carrier: ForkJoinPool-1-worker-6
+  №1 поток hw14-vt-1, виртуальный: да, carrier: ForkJoinPool-1-worker-9
+  №2 поток hw14-vt-2, виртуальный: да, carrier: ForkJoinPool-1-worker-8
 </code></pre>
 <p>Наблюдения:</p>
 <ul>
-<li>200 задач выполнились за 190 мс при задержке страницы 50 мс — то есть почти все ждали
-  одновременно, а не по очереди;</li>
-<li>разные задачи попали на разные carrier-потоки (всего их 12 — по числу процессоров), при этом
-  «потоков-исполнителей 200»: виртуальных потоков двести, потоков ОС — двенадцать;</li>
-<li>прирост счётчика платформенных потоков JVM — 3 (служебные потоки клиента), а не 200: виртуальные
-  потоки в <code>ThreadMXBean</code> не входят;</li>
+<li>200 задач выполнились за 159.1 мс при задержке страницы 50 мс — то есть почти все ждали одновременно, а не по очереди;</li>
+<li>разные задачи попали на разные carrier-потоки (всего их 12 — по числу процессоров), при этом «потоков-исполнителей 200»: виртуальных потоков двести, потоков ОС — двенадцать;</li>
+<li>прирост счётчика платформенных потоков JVM — 2 (служебные потоки клиента), а не 200: виртуальные потоки в <code>ThreadMXBean</code> не входят;</li>
 <li>потерь нет: 200 разных страниц, 200 успешных загрузок, сбоев 0.</li>
 </ul>
-<p>Перед замером выполняется прогрев на 32 страницах (в замеры не входит): первый HTTP-запрос
-подгружает классы клиента и искажает «холодное» число.</p>
-<h3>Этап 2. Тот же объём работы: платформенный пул и виртуальные потоки</h3>
-<p>Один и тот же список из 200 адресов, один и тот же клиент, один и тот же код задачи. Меняется
-только исполнитель: <code>Executors.newFixedThreadPool(16)</code> и
-<code>Executors.newVirtualThreadPerTaskExecutor()</code>.</p>
-<pre><code class="language-text">исполнитель         время, мс  стр./с  пик задач  потоков-исполнителей  исполнений virtual/platform  прирост потоков JVM
-------------------  ---------  ------  ---------  --------------------  ---------------------------  -------------------
-платформенный пул   720.9      277.4   16         16                    0/200                        15
-виртуальные потоки  128.9      1551.3  200        200                   200/0                        0
-вывод: тот же объём работы, виртуальные потоки быстрее в 5.6 раза (128.9 мс против 720.9 мс) —
-       выигрыш даёт ожидание IO, а не процессор
-</code></pre>
-<p>Почему пул проигрывает ровно во столько раз, сколько потоков ему не хватает: 200 страниц × 50 мс /
-16 потоков ≈ 625 мс — это нижняя граница для пула, и замеренные 721 мс к ней близки (остальное —
-накладные расходы). Виртуальные потоки не ждут очереди: все 200 запросов стартуют сразу, и время
-определяется одной задержкой (50 мс) плюс накладные расходы на 200 соединений.</p>
-<p>Обратите внимание на две последние колонки: у пула 200 исполнений на платформенных потоках и +15–16
-потоков ОС, у виртуальных — 200 исполнений на виртуальных потоках и <strong>+0</strong> потоков ОС. Это и есть
-ответ на вопрос «в чём разница»: количество работы то же, количество потоков ОС — нет.</p>
-<h3>Этап 3. Pinning: <code>synchronized</code> против <code>ReentrantLock</code></h3>
-<p><strong>Что такое pinning.</strong> Виртуальный поток снимается с carrier-потока на время блокировки — на этом
-и держится масштабирование. Но сняться можно не всегда: внутри <code>synchronized</code> поток удерживает
-монитор, и планировщик не может «заморозить» его на полпути. Такой поток <strong>пришпиливается</strong>
-(pinned) к carrier-потоку и блокирует его на всё время ожидания. <code>ReentrantLock</code> — очередь
-ожидания на уровне JDK, а не монитор JVM, поэтому с ним виртуальный поток снимается штатно.</p>
-<p><strong>Как поставлен опыт.</strong> У каждой задачи <strong>свой</strong> монитор (или свой <code>ReentrantLock</code>), поэтому
-состязания за общий ресурс нет — единственная разница между прогонами в том, пришпилен поток или
-нет. Внутри секции задача ждёт 60 мс. 96 задач, 12 carrier-потоков:</p>
-<pre><code class="language-text">защита         время, мс  пик задач  carrier'ов  смен carrier'а  ожидание при pinning, мс
--------------  ---------  ---------  ----------  --------------  ------------------------
-synchronized   487.4      12         12 из 12    0               480.0
-ReentrantLock  62.0       96         12 из 12    87              480.0
-вывод: synchronized удерживает поток на carrier'е — одновременно работают не больше 12 задач,
-       прогон идёт 487.4 мс; ReentrantLock отпускает carrier — одновременно работают все 96 задач
-       и прогон идёт 62.0 мс
-</code></pre>
+<p>Перед замером выполняется прогрев на 32 страницах (в замеры не входит): первый HTTP-запрос подгружает классы клиента и искажает «холодное» число.</p>
+<h3>2.2. Этап 2. Тот же объём работы: платформенный пул и виртуальные потоки</h3>
+<p>Один и тот же список из 200 адресов, один и тот же клиент, один и тот же код задачи. Меняется только исполнитель: <code>Executors.newFixedThreadPool(16)</code> и <code>Executors.newVirtualThreadPerTaskExecutor()</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Исполнитель</th>
+<th>Время, мс</th>
+<th>Стр./с</th>
+<th>Пик задач</th>
+<th>Потоков-исполнителей</th>
+<th>Исполнений virt/platf</th>
+<th>Прирост потоков JVM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Платформенный пул (16)</td>
+<td>699.5</td>
+<td>285.9</td>
+<td>16</td>
+<td>16</td>
+<td>0/200</td>
+<td>+16</td>
+</tr>
+<tr>
+<td>Виртуальные потоки</td>
+<td>103.1</td>
+<td>1939.9</td>
+<td>200</td>
+<td>200</td>
+<td>200/0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>Вывод журнала: «тот же объём работы, виртуальные потоки быстрее в <strong>6.8 раза</strong> (103.1 мс против 699.5 мс) — выигрыш даёт ожидание IO, а не процессор».</p>
+<p>Почему пул проигрывает ровно во столько раз, сколько потоков ему не хватает: 200 страниц × 50 мс / 16 потоков ≈ 625 мс — это нижняя граница для пула, и замеренные 700 мс к ней близки (остальное — накладные расходы). Виртуальные потоки не ждут очереди: все 200 запросов стартуют сразу, и время определяется одной задержкой (50 мс) плюс накладные расходы на 200 соединений.</p>
+<p>Обратите внимание на две последние колонки: у пула 200 исполнений на платформенных потоках и +16 потоков ОС, у виртуальных — 200 исполнений на виртуальных потоках и <strong>+0</strong> потоков ОС. Это и есть ответ на вопрос «в чём разница»: количество работы то же, количество потоков ОС — нет.</p>
+<h3>2.3. Этап 3. Pinning: <code>synchronized</code> против <code>ReentrantLock</code></h3>
+<p><strong>Что такое pinning.</strong> Виртуальный поток снимается с carrier-потока на время блокировки — на этом и держится масштабирование. Но сняться можно не всегда: внутри <code>synchronized</code> поток удерживает монитор, и планировщик не может «заморозить» его на полпути. Такой поток <strong>пришпиливается</strong> (pinned) к carrier-потоку и блокирует его на всё время ожидания. <code>ReentrantLock</code> — очередь ожидания на уровне JDK, а не монитор JVM, поэтому с ним виртуальный поток снимается штатно.</p>
+<p><strong>Как поставлен опыт.</strong> У каждой задачи <strong>свой</strong> монитор (или свой <code>ReentrantLock</code>), поэтому состязания за общий ресурс нет — единственная разница между прогонами в том, пришпилен поток или нет. Внутри секции задача ждёт 60 мс. 96 задач, 12 carrier-потоков:</p>
+<table>
+<thead>
+<tr>
+<th>Защита</th>
+<th>Время, мс</th>
+<th>Пик задач</th>
+<th>Carrier'ов</th>
+<th>Смен carrier'а</th>
+<th>Ожидание при pinning, мс</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>synchronized</code></td>
+<td>543.6</td>
+<td>12</td>
+<td>12 из 12</td>
+<td>0</td>
+<td>480.0</td>
+</tr>
+<tr>
+<td><code>ReentrantLock</code></td>
+<td>61.1</td>
+<td>96</td>
+<td>10 из 12</td>
+<td>87</td>
+<td>480.0</td>
+</tr>
+</tbody>
+</table>
+<p>Вывод журнала: «<code>synchronized</code> удерживает поток на carrier'е — одновременно работают не больше 12 задач, прогон идёт 543.6 мс; <code>ReentrantLock</code> отпускает carrier — одновременно работают все 96 задач, прогон идёт 61.1 мс».</p>
 <p>Три независимых признака одного и того же явления:</p>
 <ol>
-<li><strong>Пик одновременных задач.</strong> При <code>synchronized</code> — 12 (по числу carrier-потоков), при
-   <code>ReentrantLock</code> — 96 (все задачи).</li>
-<li><strong>Время.</strong> 96 задач по 60 мс в 12 «кругов» — это 8 × 60 = 480 мс; замеренные 487.4 мс совпадают
-   с теорией. Свободные потоки проходят те же 96 задач за одну блокировку — 62.0 мс.</li>
-<li><strong>Смена carrier'а.</strong> Пришпиленный поток не мог сменить carrier — 0 смен. Свободный поток после
-   сна просыпается на любом свободном carrier'е — 87 смен из 96 задач.</li>
+<li><strong>Пик одновременных задач.</strong> При <code>synchronized</code> — 12 (по числу carrier-потоков), при <code>ReentrantLock</code> — 96 (все задачи).</li>
+<li><strong>Время.</strong> 96 задач по 60 мс в 12 «кругов» — это 8 × 60 = 480 мс; замеренные 543.6 мс немного больше (первый прогон после разгона JIT), в следующих — 484 мс. Свободные потоки проходят те же 96 задач за одну блокировку — 61 мс.</li>
+<li><strong>Смена carrier'а.</strong> Пришпиленный поток не мог сменить carrier — 0 смен. Свободный поток после сна просыпается на любом свободном carrier'е — 87 смен из 96 задач.</li>
 </ol>
-<p>Это не «медленный synchronized»: сам монитор здесь не горячий, конкуренции нет. Разница только в
-том, что один механизм блокирует поток ОС, а второй — нет.</p>
-<h3>Этап 4. Масштабирование: 10 000 задач с ожиданием</h3>
-<pre><code class="language-text">исполнитель            задач  время, мс  задач/с  пик задач  потоков-исполнителей  прирост потоков JVM
----------------------  -----  ---------  -------  ---------  --------------------  -------------------
-платформенный пул 200  10000  2554.6     3914.5   200        200                   187
-виртуальные потоки     10000  118.8      84147.3  10000      10000                 0
-вывод: 10000 задач с ожиданием — виртуальные потоки быстрее в 21.5 раза; платформенный пул
-       на 200 потоков ограничен их числом, виртуальные — нет
+<p>Это не «медленный synchronized»: сам монитор здесь не горячий, конкуренции нет. Разница только в том, что один механизм блокирует поток ОС, а второй — нет.</p>
+<blockquote>
+<p>На JDK 24+ этот опыт даст другие числа (оба прогона ~60 мс): JEP 491 отменил пришпиливание внутри <code>synchronized</code>. Модуль поэтому собран и запускается на JDK 21 — см. раздел 1.1.</p>
+</blockquote>
+<h3>2.4. Этап 4. Масштабирование: 10 000 задач с ожиданием</h3>
+<table>
+<thead>
+<tr>
+<th>Исполнитель</th>
+<th>Задач</th>
+<th>Время, мс</th>
+<th>Задач/с</th>
+<th>Пик задач</th>
+<th>Потоков-исполнителей</th>
+<th>Прирост потоков JVM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Платформенный пул (200)</td>
+<td>10 000</td>
+<td>2512.6</td>
+<td>3979.9</td>
+<td>200</td>
+<td>200</td>
+<td>+187</td>
+</tr>
+<tr>
+<td>Виртуальные потоки</td>
+<td>10 000</td>
+<td>75.2</td>
+<td>133 049.6</td>
+<td>10 000</td>
+<td>10 000</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>Вывод журнала: «10 000 задач с ожиданием — виртуальные потоки быстрее в <strong>33.4 раза</strong>; платформенный пул на 200 потоков ограничен их числом, виртуальные — нет».</p>
+<p>Расчёт для пула: 10 000 задач / 200 потоков = 50 порций × 50 мс = 2500 мс — совпадает с замеренными 2513 мс. Виртуальные потоки стартуют все сразу и ждут параллельно: 75 мс — это одна задержка плюс накладные расходы планировщика. При этом потоков ОС по-прежнему около двенадцати (прирост счётчика JVM — 0), а «пик задач» — 10 000: одновременно ждут десять тысяч виртуальных потоков, а не десять тысяч потоков ОС.</p>
+<h3>2.5. Этап 5. «Поток на задачу»: <code>Thread.ofVirtual().start()</code> против <code>new Thread().start()</code></h3>
+<p>Пункты 1–4 задания буквально: 10 000 задач, каждая <strong>печатает имя своего потока</strong> и имитирует неблокирующий IO (<code>Thread.sleep(1)</code>), запуск — напрямую, без пулов и executor'ов.</p>
+<h4>2.5.1. Код</h4>
+<p>Виртуальные потоки:</p>
+<pre><code class="language-java">Thread.Builder.OfVirtual builder = Thread.ofVirtual().name(&quot;hw14-swarm-vt-&quot;, 0);
+for (int index = 0; index &lt; tasks; index++) {
+    int taskNumber = index;
+    threads.add(builder.start(() -&gt; task(taskNumber, names, 1L, ...)));
+}
+for (Thread thread : threads) {
+    thread.join();          // ожидание всех задач
+}
 </code></pre>
-<p>Расчёт для пула: 10 000 задач / 200 потоков = 50 порций × 50 мс = 2500 мс — совпадает с
-замеренными 2555 мс. Виртуальные потоки стартуют все сразу и ждут параллельно: 119 мс — это одна
-задержка плюс накладные расходы планировщика. При этом потоков ОС по-прежнему около двенадцати
-(прирост счётчика JVM — 0), а «пик задач» — 10 000: одновременно ждут десять тысяч виртуальных
-потоков, а не десять тысяч потоков ОС.</p>
-<p>Именно поэтому в реальном парсере на 10 000 URL пул пришлось бы делать огромным (и он бы всё равно
-упёрся в память и переключения контекста), а виртуальные потоки дают тот же результат «из коробки».</p>
+<p>Платформенные потоки — то же самое, но <code>new Thread(...)</code>:</p>
+<pre><code class="language-java">Thread thread = new Thread(runnable, &quot;hw14-swarm-pt-&quot; + (index + 1));
+thread.start();
+</code></pre>
+<p>Тело задачи одинаковое:</p>
+<pre><code class="language-java">Thread current = Thread.currentThread();
+names[index] = current.getName();   // «каждая печатает имя своего потока»
+if (current.isVirtual()) {
+    virtualExecutions.incrementAndGet();
+} else {
+    platformExecutions.incrementAndGet();
+}
+echo.accept(current.getName());     // вывод в журнал (первые N строк)
+Thread.sleep(sleepMillis);          // имитация неблокирующего IO
+</code></pre>
+<p>Имя каждой из 10 000 задач сохраняется в массив, поэтому проверяется не «на глаз», а тестом: имён ровно столько же, сколько задач, и они уникальны (у платформенных — <code>hw14-swarm-pt-1…10000</code>). В консоль печатаются первые 8 строк каждого прогона (иначе отчёт заливают 20 000 строк):</p>
+<pre><code class="language-text">  1) поток hw14-swarm-vt-1
+  2) поток hw14-swarm-vt-11
+  ...
+  8) поток hw14-swarm-vt-7
+  1) поток hw14-swarm-pt-1
+  ...
+  8) поток hw14-swarm-pt-10
+</code></pre>
+<h4>2.5.2. Результат</h4>
+<table>
+<thead>
+<tr>
+<th>Исполнитель</th>
+<th>Задач</th>
+<th>Старт, мс</th>
+<th>Всего, мс</th>
+<th>CPU процесса, мс</th>
+<th>Задач/с</th>
+<th>Пик задач</th>
+<th>Разных имён</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Thread.ofVirtual().start</code></td>
+<td>10 000</td>
+<td>48.5</td>
+<td>65.3</td>
+<td>520</td>
+<td>153 160</td>
+<td>7983</td>
+<td>10 000</td>
+</tr>
+<tr>
+<td><code>new Thread(...).start</code></td>
+<td>10 000</td>
+<td>424.3</td>
+<td>425.4</td>
+<td>1290</td>
+<td>23 507</td>
+<td>49</td>
+<td>10 000</td>
+</tr>
+</tbody>
+</table>
+<p>Вывод журнала: «те же 10 000 задач — виртуальные потоки в <strong>6.5 раза</strong> быстрее (65.3 мс против 425.4 мс), но главное не время, а цена потока: запуск 10 000 потоков ОС занял 424.3 мс, запуск 10 000 виртуальных — 48.5 мс; пик одновременных задач 7983 против 49».</p>
+<p>Как это читать:</p>
+<ul>
+<li><strong>Время почти целиком уходит на создание потоков.</strong> У платформенных <code>start()</code> — 424.3 мс из 425.4 мс: сама задача (сон 1 мс) не стоит ничего. У виртуальных <code>start()</code> — 48.5 мс, остальные ~17 мс — ожидание задач и работа планировщика. Отсюда и разница в 6.5 раза: 10 000 потоков ОС — это 10 000 стеков (по умолчанию 1 МиБ виртуальной памяти, то есть ~10 ГиБ адресного пространства), 10 000 записей в планировщике и структур ядра. Виртуальный поток — объект в куче, стек растёт по мере надобности.</li>
+<li><strong>Пик одновременных задач у платформенных — 49, а не 10 000.</strong> Это не ошибка замера: пауза всего 1 мс, JVM создаёт ~23 потока в миллисекунду, и столько же успевает завершиться. Потоки ОС физически не накапливаются — тем показательнее, что даже без накопления запуск стоит почти полсекунды. У виртуальных пик 7983: почти все 10 000 действительно живы одновременно (остальные успели закончиться, пока стартовали следующие).</li>
+<li><strong>CPU процесса</strong>: 1290 мс против 520 мс на те же 10 000 задач — платформенные потоки съедают в 2.5 раза больше процессорного времени на создание/уничтожение и переключения.</li>
+<li><strong>Куча</strong> (оценка без <code>System.gc()</code>): 22.6 МиБ у виртуальных против 0.0 МиБ у платформенных — и это ровно тот случай, когда «меньше по куче» не значит «дешевле»: стеки потоков ОС живут в нативной памяти и в <code>Runtime.totalMemory()</code> не видны. Цена платформенных потоков — вне кучи.</li>
+<li><strong>Потоков JVM +0 в обоих прогонах</strong> — счётчик <code>ThreadMXBean</code> хранит исторический пик на процесс, и в общем прогоне демонстрации он уже поднимался выше. Поэтому главный показатель — «пик задач» из счётчика внутри задач и «имён» = 10 000.</li>
+</ul>
+<p>Если машина не даёт 10 000 потоков ОС (низкий <code>ulimit -u</code>, мало памяти), запуск можно разбить на пачки: <code>--app.hw14.swarm-max-platform-threads=N</code>. Тогда <code>ThreadSwarm</code> стартует по N потоков, ждёт пачку, стартует следующую, а в отчёте это видно по колонке «пачек» и по метке в названии прогона. При совсем жёстком отказе ядра (<code>OutOfMemoryError: unable to create native thread</code>) прогон автоматически повторяется пачками помельче — демонстрация не должна падать из-за настроек системы.</p>
+<h4>2.5.3. Разные количества задач (пункт 6 задания)</h4>
+<p>Те же задачи с <code>--app.hw14.swarm-tasks=1000 / 5000 / 10000</code> (остальные этапы в этих прогонах тоже выполнялись, здесь приведены только строки этапа 5):</p>
+<table>
+<thead>
+<tr>
+<th>Задач</th>
+<th>Виртуальные: всего, мс</th>
+<th>из них старт, мс</th>
+<th>Платформенные: всего, мс</th>
+<th>из них старт, мс</th>
+<th>Пик задач (vt / pt)</th>
+<th>CPU процесса, мс (vt / pt)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 000</td>
+<td>4.6</td>
+<td>2.9</td>
+<td>84.6</td>
+<td>83.5</td>
+<td>980 / 46</td>
+<td>30 / 420</td>
+</tr>
+<tr>
+<td>5 000</td>
+<td>33.2</td>
+<td>7.5</td>
+<td>286.9</td>
+<td>285.8</td>
+<td>3438 / 47</td>
+<td>280 / 980</td>
+</tr>
+<tr>
+<td>10 000</td>
+<td>54.5</td>
+<td>39.0</td>
+<td>456.4</td>
+<td>455.3</td>
+<td>6057 / 49</td>
+<td>440 / 1420</td>
+</tr>
+</tbody>
+</table>
+<p>Видно, что рост линейный по числу потоков и у платформенных он в ~10 раз дороже по времени и в 3–5 раз по CPU: <code>new Thread().start()</code> — это системный вызов и выделение стека, а <code>Thread.ofVirtual().start()</code> — создание объекта и постановка в очередь планировщика.</p>
+<h3>2.6. Этап 6. <code>StructuredTaskScope</code>: группа виртуальных потоков</h3>
+<h4>2.6.1. Что это и зачем</h4>
+<p><strong>Structured concurrency</strong> — это дисциплина, в которой параллельные подзадачи не «висят сами по себе», а принадлежат блоку кода: задача разбивается на подзадачи, и пока блок не закрыт, наружу выйти нельзя. <code>StructuredTaskScope</code> — реализация этого в JDK: скоуп открывается в <code>try-with-resources</code>, подзадачи форкаются, владелец ждёт их, а <code>close()</code> гарантирует, что ни одна подзадача не осталась работать.</p>
+<p>Три свойства, которых нет у «сырых» потоков и у пулов:</p>
+<ol>
+<li><strong>Жизненный цикл ограничен блоком.</strong> После выхода из <code>try</code> подзадач нет. Нельзя «забыть» поток: если владелец форкнул и не вызвал <code>join</code>, <code>close()</code> бросит <code>IllegalStateException</code>.</li>
+<li><strong>Отмена распространяется.</strong> <code>shutdown()</code> прерывает незавершённые подзадачи, а <code>close()</code> дожидается их фактического завершения (поэтому важно, чтобы подзадача реагировала на прерывание — <code>Thread.sleep</code>, чтение из сокета, <code>Future.get</code> реакцию поддерживают).</li>
+<li><strong>Ошибки собираются в одном месте.</strong> Политика (<code>ShutdownOnFailure</code>, <code>ShutdownOnSuccess</code>) решает, что считать успехом группы; вызывающий код получает один итог, а не десяток <code>Future</code>.</li>
+</ol>
+<p>API JDK 21, которое здесь используется: <code>fork(Callable)</code> → <code>Subtask</code>, <code>join()</code>, <code>joinUntil(Instant)</code>, <code>shutdown()</code>, <code>throwIfFailed()</code>, <code>Subtask.get()/exception()/state()</code>, политики <code>ShutdownOnFailure</code> (первый сбой отменяет остальных) и <code>ShutdownOnSuccess</code> (первый успех отменяет остальных).</p>
+<h4>2.6.2. Опыт 1: все подзадачи успешны</h4>
+<pre><code class="language-java">try (var scope = new StructuredTaskScope.ShutdownOnFailure(
+        &quot;hw14-sts-all&quot;, Thread.ofVirtual().name(&quot;hw14-sts-&quot;, 0).factory())) {
+    for (int index = 0; index &lt; tasks; index++) {
+        scope.fork(() -&gt; loadVacancy(index));      // 10 000 подзадач
+    }
+    scope.join();          // ждём завершения ВСЕХ подзадач
+    scope.throwIfFailed(); // если кто-то упал — ExecutionException с причиной
+}                          // close(): подзадач не осталось
+</code></pre>
+<pre><code class="language-text">1) join() ждёт всю группу — все успешны (ShutdownOnFailure): подзадач 10000,
+   с результатом 10000, с исключением 0, отменено 0, 319.2 мс,
+   пик одновременных 10000, итог: успех
+   результатов после ожидания: 10000, все успешны: да, все подзадачи виртуальные: да
+</code></pre>
+<p>319 мс при задержке 300 мс — это «одна волна»: все 10 000 подзадач стартовали и ждали одновременно, пик — ровно 10 000.</p>
+<h4>2.6.3. Опыт 2: одна подзадача падает — остальные отменяются</h4>
+<pre><code class="language-java">try (var scope = new StructuredTaskScope.ShutdownOnFailure(...)) {
+    for (int index = 0; index &lt; tasks; index++) {
+        scope.fork(() -&gt; {
+            if (index == failingTask) {
+                Thread.sleep(failAfterMillis);
+                throw new IllegalStateException(&quot;источник недоступен: &quot; + index);
+            }
+            Thread.sleep(delayMillis);
+            return index;
+        });
+    }
+    scope.join();          // вернётся по первому сбою: ShutdownOnFailure вызвал shutdown()
+    scope.throwIfFailed(); // ExecutionException с исходной причиной
+}
+</code></pre>
+<pre><code class="language-text">2) одна падает (ShutdownOnFailure): подзадач 10000, с результатом 0, с исключением 1,
+   отменено 9999, 137.9 мс, пик одновременных 10000, итог: исключение
+</code></pre>
+<p>Что произошло по шагам:</p>
+<ol>
+<li>10 000 подзадач форкнуты и спят по 300 мс; подзадача №137 через 100 мс бросает <code>IllegalStateException</code>.</li>
+<li><code>ShutdownOnFailure</code> видит сбой и вызывает <code>shutdown()</code> — остальные 9 999 подзадач получают <code>InterruptedException</code> и завершаются, не доработав свои 300 мс.</li>
+<li><code>join()</code> возвращается, <code>throwIfFailed()</code> бросает <code>ExecutionException</code> с причиной <code>IllegalStateException: источник недоступен: подзадача №137</code>.</li>
+<li><code>close()</code> ждёт, пока все прерванные потоки реально закончат.</li>
+</ol>
+<p>Без отмены группа шла бы не меньше 400 мс (100 мс до сбоя + 300 мс паузы остальных), с отменой — 138 мс. Счётчики сходятся: 0 с результатом + 1 с исключением + 9999 отменённых = 10 000.</p>
+<h4>2.6.4. Опыт 3: срок истёк — отмена по таймауту</h4>
+<pre><code class="language-java">Instant deadline = Instant.now().plusMillis(timeoutMillis);
+try (var scope = new StructuredTaskScope.ShutdownOnFailure(...)) {
+    for (int index = 0; index &lt; tasks; index++) {
+        scope.fork(() -&gt; loadVacancySlow(index));   // спят по 5 с
+    }
+    try {
+        scope.joinUntil(deadline);   // ждём не дольше срока
+        scope.throwIfFailed();
+    } catch (TimeoutException e) {
+        scope.shutdown();            // отменяем незавершённые; close() дождётся
+    }
+}
+</code></pre>
+<pre><code class="language-text">3) таймаут (ShutdownOnFailure): подзадач 10000, с результатом 0, с исключением 0,
+   отменено 10000, 268.9 мс, пик одновременных 10000, итог: таймаут
+</code></pre>
+<p><code>joinUntil</code> сам <strong>не</strong> останавливает подзадачи — он только перестаёт ждать и бросает <code>TimeoutException</code>. Отмена — явная: <code>shutdown()</code> прерывает все незавершённые, <code>close()</code> ждёт их выхода. 269 мс при сроке 250 мс — это срок плюс стоимость прерывания 10 000 потоков.</p>
+<h4>2.6.5. Опыт 4: первый успешный ответ отменяет дубли</h4>
+<pre><code class="language-java">try (var scope = new StructuredTaskScope.ShutdownOnSuccess&lt;String&gt;(
+        &quot;hw14-sts-first&quot;, Thread.ofVirtual().name(&quot;hw14-sts-&quot;, 0).factory())) {
+    for (long delay : List.of(400L, 150L, 250L)) {
+        scope.fork(() -&gt; loadFromMirror(delay));   // три «зеркала»
+    }
+    scope.join();
+    return scope.result();      // первый успех; остальные уже отменены
+}
+</code></pre>
+<pre><code class="language-text">4) первый успешный источник — первый успех (ShutdownOnSuccess): подзадач 3,
+   с результатом 1, с исключением 0, отменено 2, 152.8 мс, пик одновременных 3,
+   итог: успех, ответ: источник №1 (ответ через 150 мс)
+</code></pre>
+<p>Приём для реального парсера: пока ждём самый медленный источник (400 мс), быстрый отвечает за 150 мс, и два оставшихся запроса отменяются — ровно та же схема, что «retry по зеркалам», только короче и без утечек.</p>
+<h4>2.6.6. Сводка и обработка исключений</h4>
+<table>
+<thead>
+<tr>
+<th>Сценарий</th>
+<th>Политика</th>
+<th>Подзадач</th>
+<th>Время, мс</th>
+<th>С результатом</th>
+<th>С исключением</th>
+<th>Отменено</th>
+<th>Итог</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Все подзадачи успешны</td>
+<td><code>ShutdownOnFailure</code></td>
+<td>10 000</td>
+<td>319.2</td>
+<td>10 000</td>
+<td>0</td>
+<td>0</td>
+<td>успех</td>
+</tr>
+<tr>
+<td>Одна падает</td>
+<td><code>ShutdownOnFailure</code></td>
+<td>10 000</td>
+<td>137.9</td>
+<td>0</td>
+<td>1</td>
+<td>9999</td>
+<td>исключение</td>
+</tr>
+<tr>
+<td>Таймаут (250 мс)</td>
+<td><code>ShutdownOnFailure</code></td>
+<td>10 000</td>
+<td>268.9</td>
+<td>0</td>
+<td>0</td>
+<td>10 000</td>
+<td>таймаут</td>
+</tr>
+<tr>
+<td>Первый успех</td>
+<td><code>ShutdownOnSuccess</code></td>
+<td>3</td>
+<td>152.8</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>успех</td>
+</tr>
+</tbody>
+</table>
+<p>Обработка исключений и отмены — что именно делает код:</p>
+<ul>
+<li><strong>Сбой подзадачи не теряется.</strong> <code>Callable</code> подзадачи бросает исключение → оно попадает в <code>Subtask.exception()</code>, <code>ShutdownOnFailure.exception()</code> отдаёт первое, <code>throwIfFailed()</code> заворачивает его в <code>ExecutionException</code>; в коде причина разворачивается <code>rootCause(...)</code>, поэтому в отчёте видно <code>IllegalStateException: источник недоступен: подзадача №137</code>, а не безымянный <code>ExecutionException</code>.</li>
+<li><strong>Отмена — это <code>interrupt</code>.</strong> <code>shutdown()</code> прерывает потоки подзадач; те, что написаны правильно (<code>Thread.sleep</code>, блокирующий ввод-вывод), сразу выходят. Подзадача, которая глотает прерывание, задержит <code>close()</code> — поэтому «не глотать <code>InterruptedException</code>» здесь не стилистика, а условие работы механизма.</li>
+<li><strong>Состояния считаются, а не предполагаются.</strong> Каждая подзадача пишет своё состояние (<code>SUCCESS</code>/<code>FAILED</code>/<code>CANCELLED</code>), после <code>join()</code>/<code>close()</code> владелец суммирует их; инвариант «успех + сбой + отмена = число подзадач» проверяется тестами (<code>ScopeRun.settled()</code>).</li>
+<li><strong>Таймаут не равен отмене.</strong> <code>joinUntil</code> только будит владельца; отменять нужно явно (<code>shutdown()</code>), иначе <code>close()</code> будет ждать подзадачи до конца.</li>
+</ul>
 <h2>3. Фактический вывод демонстрации</h2>
 <pre><code class="language-bash">cd app
-java -jar target/vacancy-parser.jar --app.hw=hw14 --server.port=0
+mvn -DskipTests package
+java --enable-preview -jar target/vacancy-parser.jar --app.hw=hw14 --server.port=0
 </code></pre>
-<p>Прогон завершился с кодом <code>0</code>, живых платформенных потоков ДЗ 14 после завершения нет.</p>
+<p>Прогон завершился с кодом <code>0</code>, живых платформенных потоков ДЗ 14 после завершения нет. Ниже —
+вывод целиком; длинные строки консоли перенесены для читаемости (в терминале они идут одной
+строкой). Таблицы в журнале выровнены моноширинным шрифтом терминала; в PDF кириллица набрана
+другим начертанием, поэтому столбцы могут слегка «плыть» — сводные таблицы с теми же числами есть
+в разделе 2.</p>
 <pre><code class="language-text">=== ДЗ 14. Проект Loom: виртуальные потоки на блокирующем IO ===
 
 
-Процесс: pid 1430529
+Процесс: pid 368520
 Настройки ДЗ 14:
     - страниц: 200, задержка страницы: 50 мс
     - платформенный пул для сравнения: 16 потоков
     - масштабирование: 10000 задач по 50 мс, пул 200
     - pinning: 96 задач по 60 мс
-Планировщик виртуальных потоков: carrier-потоков (parallelism) 12, предел пула планировщика 256, процессоров 12
+    - поток на задачу: 10000 задач по 1 мс, предел платформенных потоков без ограничения
+    - StructuredTaskScope: 10000 подзадач по 300 мс, падение через 100 мс, срок 250 мс
+Планировщик виртуальных потоков: carrier-потоков (parallelism) 12, предел пула
+      планировщика 256, процессоров 12
 
 Этап 1. Виртуальные потоки: загрузка страниц вакансий
-    источник: локальный сайт, http://127.0.0.1:37119, страниц 200
-    исполнитель: Thread.ofVirtual().name(&quot;hw14-vt-&quot;, 0) + newThreadPerTaskExecutor (по виртуальному потоку на страницу)
-    пример адреса: http://127.0.0.1:37119/vacancy/0
-    прогрев: 32 страниц (в замеры не входят — первый запрос подгружает классы HTTP-клиента)
-    виртуальные потоки: задач 200 (вернули результат 200, исключений 0, отменено 0), 190.4 мс, 1050.5 задач/с, пик одновременных 200, потоков-исполнителей 200, прирост потоков JVM 3
+    источник: локальный сайт, http://127.0.0.1:37557, страниц 200
+    исполнитель: Thread.ofVirtual().name(&quot;hw14-vt-&quot;, 0) + newThreadPerTaskExecutor
+          (по виртуальному потоку на страницу)
+    пример адреса: http://127.0.0.1:37557/vacancy/0
+    прогрев: 32 страниц (в замеры не входят — первый запрос подгружает классы
+          HTTP-клиента)
+    виртуальные потоки: задач 200 (вернули результат 200, исключений 0, отменено 0),
+          159.1 мс, 1257.0 задач/с, пик одновременных 200, потоков-исполнителей 200,
+          прирост потоков JVM 2
     без потерь: да, разных страниц 200 из 200, сбоев 0
-    ...
-    проверка: исполнений на виртуальных потоках 200, на платформенных 0 → все запросы сделаны виртуальными потоками: да
+    примеры заголовков:
+      №0 «Вакансия №0 — Java-разработчик» (virtual@ForkJoinPool-1-worker-2)
+      №1 «Вакансия №1 — Backend-разработчик (Java)» (virtual@ForkJoinPool-1-worker-9)
+      №2 «Вакансия №2 — Разработчик Spring Boot» (virtual@ForkJoinPool-1-worker-8)
+      №3 «Вакансия №3 — Инженер по тестированию» (virtual@ForkJoinPool-1-worker-12)
+      №4 «Вакансия №4 — Аналитик данных» (virtual@ForkJoinPool-1-worker-6)
+    проверка: исполнений на виртуальных потоках 200, на платформенных 0 → все
+          запросы сделаны виртуальными потоками: да
     паспорта потоков (первые 3):
       №0 поток hw14-vt-0, виртуальный: да, carrier: ForkJoinPool-1-worker-2
-      ...
+      №1 поток hw14-vt-1, виртуальный: да, carrier: ForkJoinPool-1-worker-9
+      №2 поток hw14-vt-2, виртуальный: да, carrier: ForkJoinPool-1-worker-8
 
 Этап 2. Сравнение с платформенным пулом: тот же объём работы
     сначала newFixedThreadPool(16), затем Executors.newVirtualThreadPerTaskExecutor()
-    исполнитель         время, мс  стр./с  пик задач  потоков-исполнителей  исполнений virtual/platform  прирост потоков JVM
-    ------------------  ---------  ------  ---------  --------------------  ---------------------------  -------------------
-    платформенный пул   720.9      277.4   16         16                    0/200                        15
-    виртуальные потоки  128.9      1551.3  200        200                   200/0                        0
-    вывод: тот же объём работы, виртуальные потоки быстрее в 5.6 раза (128.9 мс против 720.9 мс) — выигрыш даёт ожидание IO, а не процессор
-    целостность: платформенный пул — без потерь да, задач с результатом 200 из 200, страниц со сбоем 0;
-                 виртуальные потоки — без потерь да, задач с результатом 200 из 200, страниц со сбоем 0
-    память (приблизительно, без System.gc()): пул 9.3 МиБ, виртуальные 10.5 МиБ
+    исполнитель         время, мс  стр./с  пик  потоков  virt/platf  JVM-потоков
+    ------------------  ---------  ------  ---  -------  ----------  -----------
+    платформенный пул   699.5      285.9   16   16       0/200       16
+    виртуальные потоки  103.1      1939.9  200  200      200/0       0
+    вывод: тот же объём работы, виртуальные потоки быстрее в 6.8 раза (103.1 мс
+          против 699.5 мс) — выигрыш даёт ожидание IO, а не процессор
+    целостность: платформенный пул — без потерь да, задач с результатом 200 из 200,
+          страниц со сбоем 0; виртуальные потоки — без потерь да, задач с результатом 200
+          из 200, страниц со сбоем 0
+    память (приблизительно, без System.gc()): пул 8.9 МиБ, виртуальные 9.8 МиБ
 
 Этап 3. Pinning: synchronized против ReentrantLock
     у каждой задачи свой монитор/замок, внутри секции — ожидание 60 мс
-    защита         время, мс  пик задач  carrier'ов  смен carrier'а  ожидание при pinning, мс
-    -------------  ---------  ---------  ----------  --------------  ------------------------
-    synchronized   487.4      12         12 из 12    0               480.0
-    ReentrantLock  62.0       96         12 из 12    87              480.0
-    вывод: synchronized удерживает поток на carrier'е — одновременно работают не больше 12 задач, прогон идёт 487.4 мс; ReentrantLock отпускает carrier — одновременно работают все 96 задач и прогон идёт 62.0 мс
+    защита         время, мс  пик задач  carrier'ов  смен carrier'а  ожидание, мс
+    -------------  ---------  ---------  ----------  --------------  ------------
+    synchronized   543.6      12         12 из 12    0               480.0
+    ReentrantLock  61.1       96         10 из 12    87              480.0
+    вывод: synchronized удерживает поток на carrier'е — одновременно работают не
+          больше 12 задач, прогон идёт 543.6 мс; ReentrantLock отпускает carrier —
+          одновременно работают все 96 задач и прогон идёт 61.1 мс
     задачи завершены: synchronized 96 из 96, ReentrantLock 96 из 96
-    как это читать: при pinning виртуальный поток не отдаёт carrier, поэтому одновременно ждут не больше 12 задач; ReentrantLock позволяет снять поток с carrier и ждать всем сразу
+    как это читать: при pinning виртуальный поток не отдаёт carrier, поэтому
+          одновременно ждут не больше 12 задач; ReentrantLock позволяет снять поток с
+          carrier и ждать всем сразу
 
 Этап 4. Масштабирование: 10000 задач с ожиданием 50 мс
-    исполнитель            задач  время, мс  задач/с  пик задач  потоков-исполнителей  прирост потоков JVM
-    ---------------------  -----  ---------  -------  ---------  --------------------  -------------------
-    платформенный пул 200  10000  2554.6     3914.5   200        200                   187
-    виртуальные потоки     10000  118.8      84147.3  10000      10000                 0
-    вывод: 10000 задач с ожиданием — виртуальные потоки быстрее в 21.5 раза; платформенный пул на 200 потоков ограничен их числом, виртуальные — нет
+    исполнитель            задач  время, мс  задач/с   пик    рабочих  JVM-потоков
+    ---------------------  -----  ---------  --------  -----  -------  -----------
+    платформенный пул 200  10000  2512.6     3979.9    200    200      187
+    виртуальные потоки     10000  75.2       133049.6  10000  10000    0
+    вывод: 10000 задач с ожиданием — виртуальные потоки быстрее в 33.4 раза;
+          платформенный пул на 200 потоков ограничен их числом, виртуальные — нет
     завершено задач: пул 10000 из 10000, виртуальные 10000 из 10000
-    память (приблизительно): пул 0.0 МиБ (GC отработал во время прогона — замер приблизительный), виртуальные 25.6 МиБ
+    память (приблизительно): пул 9.7 МиБ, виртуальные 0.0 МиБ (GC отработал во время
+          прогона — замер приблизительный)
 
-Этап 5. Итог
-    этап             исполнитель    время, мс  пик задач  итог
-    ---------------  -------------  ---------  ---------  ----------------------------
-    страницы         пул 16         720.9      16         все 200 страниц загружены
-    страницы         виртуальные    128.9      200        все 200 страниц загружены
-    pinning          synchronized   487.4      12         ограничен carrier'ами
-    pinning          ReentrantLock  62.0       96         carrier освобождается
-    масштабирование  пул 200        2554.6     200        задачи ждут в очереди пула
-    масштабирование  виртуальные    118.8      10000      все задачи ждут одновременно
+Этап 5. 10000 задач с печатью имени потока: Thread.ofVirtual().start() против new
+      Thread().start()
+    каждая задача пишет имя своего потока и ждёт 1 мс (имитация неблокирующего IO)
+      1) поток hw14-swarm-vt-0
+      2) поток hw14-swarm-vt-11
+      3) поток hw14-swarm-vt-10
+      4) поток hw14-swarm-vt-9
+      5) поток hw14-swarm-vt-8
+      6) поток hw14-swarm-vt-7
+      7) поток hw14-swarm-vt-6
+      8) поток hw14-swarm-vt-5
+    Thread.ofVirtual().start: задач 10000, завершено 10000, прервано 0, запуск 48.5
+          мс, всего 65.3 мс, 153160 задач/с, пачек 1, пик одновременных 7983, разных имён
+          10000, прирост потоков JVM 0, CPU процесса 520 мс
+    имён собрано 10000, первых: hw14-swarm-vt-0, hw14-swarm-vt-1, hw14-swarm-vt-2
+      1) поток hw14-swarm-pt-1
+      2) поток hw14-swarm-pt-4
+      3) поток hw14-swarm-pt-5
+      4) поток hw14-swarm-pt-3
+      5) поток hw14-swarm-pt-2
+      6) поток hw14-swarm-pt-10
+      7) поток hw14-swarm-pt-12
+      8) поток hw14-swarm-pt-11
+    new Thread(...).start: задач 10000, завершено 10000, прервано 0, запуск 424.3
+          мс, всего 425.4 мс, 23507 задач/с, пачек 1, пик одновременных 49, разных имён
+          10000, прирост потоков JVM 0, CPU процесса 1290 мс
+    имён собрано 10000, первых: hw14-swarm-pt-1, hw14-swarm-pt-2, hw14-swarm-pt-3
+    исполнитель               задач  старт, мс  всего, мс  CPU, мс  задач/с  пик   имён
+    ------------------------  -----  ---------  ---------  -------  -------  ----  -----
+    Thread.ofVirtual().start  10000  48.5       65.3       520      153160   7983  10000
+    new Thread(...).start     10000  424.3      425.4      1290     23507    49    10000
+    вывод: те же 10000 задач — виртуальные потоки в 6.5 раза быстрее (65.3 мс против
+          425.4 мс), но главное не время, а цена потока: запуск 10000 потоков ОС занял
+          424.3 мс, запуск 10000 виртуальных — 48.5 мс; пик одновременных задач 7983
+          против 49
+    целостность: виртуальные — завершено 10000 из 10000, разных имён 10000,
+          исполнений на виртуальных 10000, на платформенных 0; платформенные — завершено
+          10000 из 10000, разных имён 10000, исполнений на виртуальных 0, на платформенных
+          10000
+    память (приблизительно, без System.gc()): виртуальные 22.6 МиБ, платформенные
+          0.0 МиБ (GC отработал во время прогона — замер приблизительный)
+    цена: 10 000 потоков ОС — это ~10 ГиБ зарезервированного адресного пространства
+          под стеки и десятки тысяч операций планировщика; виртуальные потоки — объекты в
+          куче, стек растёт по мере надобности
+    почему пик одновременных задач у платформенных меньше 10000: пауза всего 1 мс,
+          потоки не успевают накопиться — JVM создаёт их примерно 24 в миллисекунду и
+          столько же завершается; цена видна в колонке «старт»
+    если машина не даёт столько потоков ОС: --app.hw14.swarm-max-platform-threads=N
+          запускает пачками по N
 
-    когда виртуальные потоки полезны: тысячи одновременных блокирующих операций (HTTP, БД, файлы) — потоков ОС остаётся столько же, сколько ядер
-    когда нет: CPU-нагрузка (сортировка, сжатие, вычисления) — виртуальный поток всё равно занимает carrier на всё время работы
-    чего избегать: synchronized вокруг блокирующих вызовов (pinning), пулы виртуальных потоков фиксированного размера, ThreadLocal на миллион задач
+Этап 6. StructuredTaskScope: группа виртуальных потоков под управлением скоупа
+    подзадач 10000, обычная задержка 300 мс, срок 250 мс
+    1) join() ждёт всю группу — все успешны (ShutdownOnFailure): подзадач 10000, с
+          результатом 10000, с исключением 0, отменено 0, 319.2 мс, пик одновременных
+          10000, итог: успех
+       результатов после ожидания: 10000, все успешны: да, все подзадачи виртуальные: да
+    2) одна падает через 100 мс — одна падает (ShutdownOnFailure): подзадач 10000, с
+          результатом 0, с исключением 1, отменено 9999, 137.9 мс, пик одновременных
+          10000, итог: исключение
+    3) срок истёк — таймаут (ShutdownOnFailure): подзадач 10000, с результатом 0, с
+          исключением 0, отменено 10000, 268.9 мс, пик одновременных 10000, итог: таймаут
+    4) первый успешный источник — первый успех (ShutdownOnSuccess): подзадач 3, с
+          результатом 1, с исключением 0, отменено 2, 152.8 мс, пик одновременных 3, итог:
+          успех, ответ: источник №1 (ответ через 150 мс)
+    сводка:
+    сценарий      политика           подзадач  время, мс  успешно  сбоев  отменено  итог
+    ------------  -----------------  --------  ---------  -------  -----  --------
+          ----------
+    все успешны   ShutdownOnFailure  10000     319.2      10000    0      0         успех
+    одна падает   ShutdownOnFailure  10000     137.9      0        1      9999
+          исключение
+    таймаут       ShutdownOnFailure  10000     268.9      0        0      10000
+          таймаут
+    первый успех  ShutdownOnSuccess  3         152.8      1        0      2         успех
+    обработка ошибок и отмены:
+    все успешны: исключений нет; отменено 0 из 10000 (0 %), прогон 319.2 мс
+    одна падает: IllegalStateException — «источник недоступен: подзадача №137»;
+          отменено 9999 из 10000 (100 %), прогон 137.9 мс
+    таймаут: TimeoutException — «группа не уложилась в 250 мс»; отменено 10000 из
+          10000 (100 %), прогон 268.9 мс
+    первый успех: исключений нет; отменено 2 из 3 (67 %), прогон 152.8 мс
+    как это читать: скоуп — это блок, а не пул. Пока блок не закрыт, наружу выйти
+          нельзя; отмена прерывает подзадачи и close() дожидается их завершения, поэтому
+          «повисших» потоков не остаётся
+    без отмены группа шла бы не меньше 400 мс (100 мс до сбоя + 300 мс паузы
+          остальных), с отменой — 138 мс: прерывание 9999 подзадач тоже стоит времени, но
+          до конца они не дорабатывали
+
+Этап 7. Итог
+    этап                 исполнитель               время, мс  пик задач  итог
+    -------------------  ------------------------  ---------  ---------
+          ---------------------
+    страницы             пул 16                    699.5      16         200 стр.
+          загружены
+    страницы             виртуальные               103.1      200        200 стр.
+          загружены
+    pinning              synchronized              543.6      12         ограничен
+          carrier'ами
+    pinning              ReentrantLock             61.1       96         carrier
+          освобождается
+    масштабирование      пул 200                   2512.6     200        ждут в
+          очереди пула
+    масштабирование      виртуальные               75.2       10000      все ждут
+          одновременно
+    поток на задачу      new Thread().start        425.4      49         потоков ОС: +0
+    поток на задачу      Thread.ofVirtual().start  65.3       7983       потоков ОС: +0
+    StructuredTaskScope  ShutdownOnFailure         319.2      10000      успех
+    StructuredTaskScope  ShutdownOnFailure         137.9      10000      исключение
+    StructuredTaskScope  ShutdownOnFailure         268.9      10000      таймаут
+    StructuredTaskScope  ShutdownOnSuccess         152.8      3          успех
+
+    когда виртуальные потоки полезны: тысячи одновременных блокирующих операций
+          (HTTP, БД, файлы) — потоков ОС остаётся столько же, сколько ядер
+    когда нет: CPU-нагрузка (сортировка, сжатие, вычисления) — виртуальный поток всё
+          равно занимает carrier на всё время работы
+    чего избегать: synchronized вокруг блокирующих вызовов (pinning), пулы
+          виртуальных потоков фиксированного размера, ThreadLocal на миллион задач
     запросов к сайту за демонстрацию: 632, активных обработчиков сайта после этапов: 0
 
-[tpm] Демонстрация завершена: все этапы пройдены, потерь задач нет, исполнители остановлены
+[tpm] Демонстрация завершена: все этапы пройдены, потерь задач нет, исполнители
+      остановлены
 
 живых платформенных потоков ДЗ 14 после завершения: []
-виртуальные потоки в дамп не попадают: планировщик держит их вне Thread.getAllStackTraces(), поэтому отсутствие потерь проверяется счётчиками задач, а не списком потоков
+виртуальные потоки в дамп не попадают: планировщик держит их вне
+      Thread.getAllStackTraces(), поэтому отсутствие потерь проверяется счётчиками задач,
+      а не списком потоков
 </code></pre>
 <p><code>632</code> запроса — это 32 страницы прогрева плюс три полных прогона по 200 страниц (этап 1 и два
 прогона этапа 2).</p>
 <h2>4. Промежуточные результаты по этапам</h2>
-<p>Замеры на машине: 12 процессоров, 23 ГиБ ОЗУ, OpenJDK 21.0.13 (Temurin), Linux.
-Три последовательных прогона демонстрации:</p>
+<p>Замеры на машине: 12 процессоров, 23 ГиБ ОЗУ, OpenJDK 21.0.13 (Temurin), Linux. Три
+последовательных прогона демонстрации:</p>
 <table>
 <thead>
 <tr>
@@ -312,89 +780,139 @@ java -jar target/vacancy-parser.jar --app.hw=hw14 --server.port=0
 <tbody>
 <tr>
 <td>200 страниц, виртуальные потоки</td>
-<td>173.8 мс</td>
-<td>157.0 мс</td>
-<td>170.6 мс</td>
-<td>≈1.2 стр./мс, все 200 одновременно</td>
+<td>159.1 мс</td>
+<td>154.3 мс</td>
+<td>151.5 мс</td>
+<td>все 200 одновременно, 12 carrier'ов</td>
 </tr>
 <tr>
 <td>200 страниц, пул 16</td>
-<td>726.0 мс</td>
-<td>737.8 мс</td>
-<td>734.2 мс</td>
+<td>699.5 мс</td>
+<td>699.8 мс</td>
+<td>693.3 мс</td>
 <td>упирается в 16 потоков: 200 × 50 / 16 ≈ 625 мс</td>
 </tr>
 <tr>
 <td>Ускорение (страницы, этап 2)</td>
-<td>5.5×</td>
-<td>5.7×</td>
-<td>5.7×</td>
+<td>6.8×</td>
+<td>6.2×</td>
+<td>6.1×</td>
 <td>стабильно в разы, не в проценты</td>
 </tr>
 <tr>
 <td>Pinning: <code>synchronized</code></td>
-<td>486.6 мс, пик 12</td>
-<td>486.9 мс, пик 12</td>
-<td>486.3 мс, пик 12</td>
+<td>543.6 мс, пик 12</td>
+<td>483.9 мс, пик 12</td>
+<td>484.2 мс, пик 12</td>
 <td>8 кругов × 60 мс</td>
 </tr>
 <tr>
 <td>Pinning: <code>ReentrantLock</code></td>
-<td>62.1 мс, пик 96</td>
-<td>62.1 мс, пик 96</td>
-<td>61.7 мс, пик 96</td>
+<td>61.1 мс, пик 96</td>
+<td>61.2 мс, пик 96</td>
+<td>60.9 мс, пик 96</td>
 <td>одна блокировка на всех</td>
 </tr>
 <tr>
 <td>10 000 задач, пул 200</td>
-<td>2542.4 мс</td>
-<td>2549.6 мс</td>
-<td>2544.3 мс</td>
+<td>2512.6 мс</td>
+<td>2517.8 мс</td>
+<td>2518.1 мс</td>
 <td>50 порций × 50 мс</td>
 </tr>
 <tr>
 <td>10 000 задач, виртуальные</td>
-<td>122.6 мс</td>
-<td>123.3 мс</td>
-<td>121.0 мс</td>
+<td>75.2 мс</td>
+<td>75.8 мс</td>
+<td>77.1 мс</td>
 <td>одна задержка на всех</td>
+</tr>
+<tr>
+<td><strong>10 000 задач, <code>Thread.ofVirtual().start</code></strong></td>
+<td>65.3 мс (старт 48.5)</td>
+<td>31.2 мс (старт 7.4)</td>
+<td>64.6 мс (старт 11.1)</td>
+<td>пик задач 7983 / 7436 / 5894</td>
+</tr>
+<tr>
+<td><strong>10 000 задач, <code>new Thread().start</code></strong></td>
+<td>425.4 мс (старт 424.3)</td>
+<td>450.1 мс (старт 449.1)</td>
+<td>465.7 мс (старт 464.6)</td>
+<td>пик задач 49 / 49 / 47</td>
+</tr>
+<tr>
+<td><strong>CPU процесса (vt / pt)</strong></td>
+<td>520 / 1290 мс</td>
+<td>230 / 1260 мс</td>
+<td>480 / 1440 мс</td>
+<td>платформенные дороже в 2.5–5 раз</td>
+</tr>
+<tr>
+<td><strong>STS: все успешны (10 000 × 300 мс)</strong></td>
+<td>319.2 мс</td>
+<td>316.7 мс</td>
+<td>321.0 мс</td>
+<td>одна волна, пик 10 000</td>
+</tr>
+<tr>
+<td><strong>STS: падение одной</strong></td>
+<td>137.9 мс</td>
+<td>142.3 мс</td>
+<td>137.9 мс</td>
+<td>9999 отменено, было бы ≥ 400 мс</td>
+</tr>
+<tr>
+<td><strong>STS: таймаут 250 мс</strong></td>
+<td>268.9 мс</td>
+<td>268.3 мс</td>
+<td>267.3 мс</td>
+<td>10 000 отменено</td>
+</tr>
+<tr>
+<td><strong>STS: первый успех</strong></td>
+<td>152.8 мс</td>
+<td>152.6 мс</td>
+<td>152.5 мс</td>
+<td>из 3 источников 2 отменены</td>
 </tr>
 </tbody>
 </table>
-<p>Качественная картина устойчива, абсолютные миллисекунды слегка плавают (±2 %) — это ожидаемо для
+<p>Качественная картина устойчива, абсолютные миллисекунды плавают на 10–30 % — это ожидаемо для
 wall-clock замера без JMH. Разброс не влияет на выводы: разница между исполнителями измеряется
-разами.</p>
+разами. Сильнее всего плавает «старт» 10 000 виртуальных потоков (7–49 мс) и первый опыт pinning
+(543 мс против 484 мс в следующих прогонах) — это работа планировщика, JIT и фоновой нагрузки, а не
+свойство API.</p>
 <h2>5. Когда виртуальные потоки полезны, а когда нет</h2>
 <p><strong>Полезны:</strong></p>
 <ul>
 <li>тысячи одновременных блокирующих операций: HTTP, JDBC, файлы, ожидание ответа внешнего сервиса;</li>
 <li>«поток на запрос» в сервере: простое последовательное программирование без реактивных цепочек;</li>
-<li>задачи с редкими, но длинными паузами, где пул пришлось бы делать очень большим.</li>
+<li>задачи с редкими, но длинными паузами, где пул пришлось бы делать очень большим;</li>
+<li>там, где нужна отмена группы и гарантия «никто не остался работать», — <code>StructuredTaskScope</code>.</li>
 </ul>
 <p><strong>Не полезны:</strong></p>
 <ul>
-<li>CPU-нагрузка: виртуальный поток занимает carrier-поток на всё время вычислений, и 10 000
-  виртуальных потоков на 12 ядрах будут работать не быстрее 12 платформенных;</li>
-<li>внутри <code>synchronized</code> вокруг блокирующего вызова (pinning) — эффект исчезает;</li>
-<li>когда нужен ограниченный параллелизм: пул виртуальных потоков фиксированного размера бессмысленен,
-  для ограничения числа одновременных операций нужен <code>Semaphore</code>, а не размер пула.</li>
+<li>CPU-нагрузка: виртуальный поток занимает carrier-поток на всё время вычислений, и 10 000 виртуальных потоков на 12 ядрах будут работать не быстрее 12 платформенных;</li>
+<li>внутри <code>synchronized</code> вокруг блокирующего вызова (pinning) — эффект исчезает (на JDK 21);</li>
+<li>когда нужен ограниченный параллелизм: пул виртуальных потоков фиксированного размера бессмысленен, для ограничения числа одновременных операций нужен <code>Semaphore</code>, а не размер пула.</li>
 </ul>
 <p><strong>Чего избегать (pinning):</strong></p>
 <ol>
-<li>Не держать <code>synchronized</code> вокруг <code>Thread.sleep</code>, <code>InputStream.read</code>, <code>HttpClient.send</code>,
-   <code>Future.get</code>, JDBC-вызовов. Заменить на <code>ReentrantLock</code> (или убрать блокировку из критической
-   секции).</li>
+<li>Не держать <code>synchronized</code> вокруг <code>Thread.sleep</code>, <code>InputStream.read</code>, <code>HttpClient.send</code>, <code>Future.get</code>, JDBC-вызовов. Заменить на <code>ReentrantLock</code> (или убрать блокировку из критической секции).</li>
 <li>Не смешивать блокирующий IO и мониторы: критическая секция должна быть короткой и без ввода-вывода.</li>
-<li>Следить за <code>jdk.virtualThreadScheduler.parallelism</code> и дампами: пришпиленные потоки видны в
-   <code>jstack</code> как <code>VirtualThread[...] &lt;pinned&gt;</code> (в JDK 21; в JDK 24+ <code>synchronized</code> больше не
-   пришпиливает — JEP 491).</li>
+<li>Следить за <code>jdk.virtualThreadScheduler.parallelism</code> и дампами: пришпиленные потоки видны в <code>jstack</code> как <code>VirtualThread[...] &lt;pinned&gt;</code> (в JDK 21; в JDK 24+ <code>synchronized</code> больше не пришпиливает — JEP 491).</li>
 <li>Нативные вызовы (<code>JNI</code>) тоже пришпиливают поток — в JDK 21 это ограничение сохраняется.</li>
 </ol>
+<p><strong>Где структурная конкурентность, а не «просто виртуальные потоки»:</strong> <code>StructuredTaskScope</code> стоит
+брать там, где задача распадается на подзадачи с общим сроком и общей судьбой (собрать страницу из
+нескольких источников, опросить зеркала, разложить запрос на части). Он не заменяет пул для
+долгоживущих обработчиков: скоуп живёт один блок.</p>
 <h2>6. Автоматические проверки</h2>
 <pre><code class="language-bash">cd app
 mvn test -Dtest='ru.tsu.tpm.vacancyparser.hw14.**'
 </code></pre>
-<p>Результат: <code>Tests run: 19, Failures: 0, Errors: 0, Skipped: 0</code>.</p>
+<p>Результат: <code>Tests run: 32, Failures: 0, Errors: 0, Skipped: 0</code> (было 19, добавлено 13).</p>
 <table>
 <thead>
 <tr>
@@ -428,12 +946,20 @@ mvn test -Dtest='ru.tsu.tpm.vacancyparser.hw14.**'
 <td><code>synchronized</code> ограничивает параллелизм числом carrier'ов и не даёт сменить carrier; <code>ReentrantLock</code> отпускает все задачи одновременно</td>
 </tr>
 <tr>
-<td><code>LoomReportTest</code> (2)</td>
-<td>выравнивание таблиц, сравнения, примеры заголовков, итоговая таблица</td>
+<td><code>ThreadSwarmTest</code> (6, новые)</td>
+<td><code>Thread.ofVirtual().start</code>: 300 задач — 300 имён, все виртуальные; <code>new Thread().start</code>: 40 задач — 40 уникальных имён, все платформенные; ограничение одновременных потоков даёт ровно 4 пачки; каждая задача отдаёт своё имя в приёмник; <code>Thread.yield</code> вместо сна и пустой прогон; некорректные параметры</td>
+</tr>
+<tr>
+<td><code>StructuredExperimentsTest</code> (6, новые)</td>
+<td><code>join()</code> ждёт всю группу (200 подзадач, все с результатом, все виртуальные); падение одной отменяет остальные (9999 отменённых, <code>IllegalStateException</code> с номером подзадачи, прогон короче полной задержки); <code>joinUntil</code> + <code>shutdown</code> отменяет все 100 подзадач и укладывается в срок; первый успех отменяет дубли; разворачивание <code>ExecutionException</code>; некорректные параметры</td>
+</tr>
+<tr>
+<td><code>LoomReportTest</code> (3)</td>
+<td>выравнивание таблиц, сравнения, примеры заголовков, итоговая таблица, новые таблицы «поток на задачу» и «скоуп»</td>
 </tr>
 <tr>
 <td><code>Hw14PropertiesBindingTest</code> (2)</td>
-<td>значения по умолчанию и переопределение <code>app.hw14.*</code></td>
+<td>значения по умолчанию и переопределение всех <code>app.hw14.*</code>, включая новые параметры этапов 5–6</td>
 </tr>
 <tr>
 <td><code>LoomDemoConditionTest</code> (1)</td>
@@ -442,54 +968,59 @@ mvn test -Dtest='ru.tsu.tpm.vacancyparser.hw14.**'
 </tbody>
 </table>
 <p>Тесты проверяют <strong>инварианты</strong>, а не абсолютное время: миллисекунды зависят от машины, а «все задачи
-вернули результат», «работали виртуальные потоки», «при pinning пик не больше числа carrier'ов»
-должны выполняться всегда. Поэтому прогон не флакует.</p>
+вернули результат», «работали виртуальные потоки», «при pinning пик не больше числа carrier'ов»,
+«счётчики скоупа сходятся с числом подзадач» должны выполняться всегда. Поэтому прогон не флакует.</p>
 <p>Сборка целиком: <code>mvn -pl app package</code> — успешно.
-Полный прогон всех домашних заданий: <code>Tests run: 564, Failures: 0, Errors: 0, Skipped: 0</code>
-(было 545 + 19 новых).</p>
-<h2>7. Соответствие теме задания</h2>
+Полный прогон всех домашних заданий: <code>Tests run: 577, Failures: 0, Errors: 0, Skipped: 0</code>
+(было 564 + 13 новых). hw01–hw13 и <code>finaltask</code> не затронуты.</p>
+<h2>7. Соответствие пунктам задания</h2>
 <table>
 <thead>
 <tr>
-<th>Пункт темы</th>
+<th>Пункт задания</th>
 <th>Где подтверждено</th>
 <th>Отметка</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Создание виртуальных потоков (<code>Thread.ofVirtual</code>, <code>newVirtualThreadPerTaskExecutor</code>)</td>
-<td>этап 1, <code>LoomBenchmarks</code></td>
+<td>1. 10 000 задач, каждая печатает имя потока и имитирует IO</td>
+<td>этап 5: 10 000 имён в каждом прогоне, <code>Thread.sleep(1)</code>, пример вывода в 2.5.1</td>
 <td>✅</td>
 </tr>
 <tr>
-<td>Виртуальные потоки действительно виртуальные</td>
-<td><code>Thread.isVirtual()</code> в <code>ThreadProbe</code>, тесты</td>
+<td>2. Запуск через <code>Thread.ofVirtual().start(...)</code></td>
+<td><code>ThreadSwarm.runVirtual</code>, этап 5: старт 48.5 мс, все 10 000 виртуальные</td>
 <td>✅</td>
 </tr>
 <tr>
-<td>Сравнение с платформенным пулом на IO</td>
-<td>этап 2: 129 мс против 721 мс</td>
+<td>3. Те же задачи через <code>new Thread(...).start()</code></td>
+<td><code>ThreadSwarm.runPlatform</code>, этап 5: старт 424.3 мс, все 10 000 платформенные</td>
 <td>✅</td>
 </tr>
 <tr>
-<td>Пиковое число живых потоков и потребление</td>
-<td><code>ConcurrencyMeter</code>, <code>ThreadMXBean</code>, <code>MemoryProbe</code></td>
+<td>4. Замер времени <code>System.nanoTime()</code>, сравнение</td>
+<td><code>SwarmRun.startNanos/totalNanos</code>, таблица 2.5.2: 6.5× по времени и 2.5× по CPU</td>
 <td>✅</td>
 </tr>
 <tr>
-<td>Pinning: <code>synchronized</code> против <code>ReentrantLock</code></td>
-<td>этап 3: 487.4 мс / пик 12 против 62.0 мс / пик 96</td>
+<td>5. <code>StructuredTaskScope</code>: группа, ожидание, исключения, отмена</td>
+<td>этап 6: <code>join</code>, падение + отмена 9999, <code>joinUntil</code>+<code>shutdown</code>, <code>ShutdownOnSuccess</code>; разбор в 2.6.6</td>
 <td>✅</td>
 </tr>
 <tr>
-<td>Масштабирование на 5 000–10 000 задачах</td>
-<td>этап 4: 10 000 задач, 119 мс против 2555 мс</td>
+<td>6. Прогоны с разными количествами задач, время и ресурсы</td>
+<td>раздел 2.5.3 (1000/5000/10 000), CPU процесса и куча в каждом прогоне, три прогона в разделе 4</td>
 <td>✅</td>
 </tr>
 <tr>
-<td>Отчёт с этапами и фактическими числами</td>
-<td>этот файл, разделы 2–4</td>
+<td>Отчёт: этапы, промежуточные результаты, объяснения, выводы</td>
+<td>разделы 2–5</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Сравнение с платформенным пулом и разбор pinning (критерий приёма)</td>
+<td>этапы 2–4: 6.8× на страницах, 33.4× на 10 000 задач, pinning 543.6→484 / 61.1 мс</td>
 <td>✅</td>
 </tr>
 </tbody>
@@ -497,53 +1028,53 @@ mvn test -Dtest='ru.tsu.tpm.vacancyparser.hw14.**'
 <h2>8. Как запустить и сдать</h2>
 <pre><code class="language-bash">cd &quot;Теория и практика многопоточности/app&quot;
 
-# Полная демонстрация (завершается с кодом 0)
+# Полная демонстрация (завершается с кодом 0); флаг preview уже передан
+# плагином spring-boot-maven-plugin в форкаемую JVM
 mvn spring-boot:run -Dspring-boot.run.arguments=&quot;--app.hw=hw14 --server.port=0&quot;
 
-# Готовый jar
+# Готовый jar (обратите внимание на флаг preview)
 mvn -DskipTests package
-java -jar target/vacancy-parser.jar --app.hw=hw14 --server.port=0
+java --enable-preview -jar target/vacancy-parser.jar --app.hw=hw14 --server.port=0
 
 # Больше страниц и другой размер пула
-java -jar target/vacancy-parser.jar --app.hw=hw14 --server.port=0 \
+java --enable-preview -jar target/vacancy-parser.jar --app.hw=hw14 --server.port=0 \
   --app.hw14.pages=400 --app.hw14.fixed-pool-size=8
 
 # Меньше задач в масштабировании (быстрее, но контраст слабее)
-java -jar target/vacancy-parser.jar --app.hw=hw14 --server.port=0 \
+java --enable-preview -jar target/vacancy-parser.jar --app.hw=hw14 --server.port=0 \
   --app.hw14.scaling-tasks=2000 --app.hw14.scaling-delay-millis=20
+
+# Этап 5 с другим числом задач и запуском платформенных пачками
+java --enable-preview -jar target/vacancy-parser.jar --app.hw=hw14 --server.port=0 \
+  --app.hw14.swarm-tasks=5000 --app.hw14.swarm-max-platform-threads=1000
+
+# Этап 6 с другим сроком и падающей подзадачей
+java --enable-preview -jar target/vacancy-parser.jar --app.hw=hw14 --server.port=0 \
+  --app.hw14.structured-tasks=2000 --app.hw14.structured-timeout-millis=500
 </code></pre>
 <p>Параметры: <code>app.hw14.pages</code>, <code>app.hw14.page-delay-millis</code>, <code>app.hw14.fixed-pool-size</code>,
 <code>app.hw14.scaling-tasks</code>, <code>app.hw14.scaling-delay-millis</code>, <code>app.hw14.platform-pool-size</code>,
 <code>app.hw14.pinning-tasks</code>, <code>app.hw14.pinning-block-millis</code>, <code>app.hw14.request-timeout-millis</code>,
-<code>app.hw14.task-timeout-millis</code>, <code>app.hw14.sample-titles</code>.</p>
-<p>Сдача: скопировать отчёт в Google/Яндекс Документ, приложить исходники или ссылку на репозиторий,
-открыть доступ и прикрепить ссылку в личном кабинете.</p>
+<code>app.hw14.task-timeout-millis</code>, <code>app.hw14.sample-titles</code>,
+<code>app.hw14.swarm-tasks</code>, <code>app.hw14.swarm-sleep-millis</code>, <code>app.hw14.swarm-max-platform-threads</code>,
+<code>app.hw14.swarm-print-names</code>,
+<code>app.hw14.structured-tasks</code>, <code>app.hw14.structured-delay-millis</code>,
+<code>app.hw14.structured-fail-after-millis</code>, <code>app.hw14.structured-failing-task</code>,
+<code>app.hw14.structured-timeout-millis</code>, <code>app.hw14.structured-slow-delay-millis</code>,
+<code>app.hw14.structured-replica-delays-millis</code>.</p>
+<p>Сдача: скопировать отчёт (<code>Отчёт_ДЗ_14.pdf</code> или этот README) в Google/Яндекс Документ, приложить
+исходники или ссылку на репозиторий, открыть доступ и прикрепить ссылку в личном кабинете.</p>
 <h2>9. Ограничения и честные оговорки</h2>
 <ul>
-<li><strong>Замер — wall-clock, не JMH.</strong> Нет прогрева в сотни итераций и статистики по десяткам прогонов;
-  числа воспроизводимы качественно (разы), но не до миллисекунды. Для учебной демонстрации этого
-  достаточно, для выбора библиотеки — нет.</li>
-<li><strong>Память — оценка.</strong> <code>Runtime.totalMemory() - freeMemory()</code> включает ещё не собранный мусор;
-  GC может отработать между замерами, поэтому «прирост» бывает отрицательным (в отчёте это
-  помечено). Точный замер требует <code>System.gc()</code> (искажает время) или JFR/async-profiler.</li>
-<li><strong>Счётчик платформенных потоков JVM общий на процесс и хранит исторический пик.</strong> В него попадают
-  и потоки Spring/Tomcat, и служебные потоки HTTP-клиента; если пик уже был достигнут раньше (например,
-  в общем прогоне тестов), «прирост» равен нулю. Поэтому главный показатель — число потоков-исполнителей
-  из <code>ConcurrencyMeter</code>, а счётчик JVM приведён как вспомогательная иллюстрация. Кроме того, локальный
-  сайт сам обслуживает запросы виртуальными потоками: иначе его 200 обработчиков искажали бы замер
-  клиента.</li>
-<li><strong>Виртуальные потоки не видны в <code>Thread.getAllStackTraces()</code> и обычном дампе</strong> — проверить
-  «не осталось ли живых» списком потоков нельзя, поэтому отсутствие потерь проверяется счётчиками
-  задач (200 из 200, 10 000 из 10 000) и <code>executor.shutdown()</code>.</li>
-<li><strong>Задержка 50 мс и 200 страниц</strong> — компромисс: меньше страниц — шумнее, больше — демонстрация
-  удлиняется. 200 страниц × 16 потоков дают ~625 мс нижней границы для пула, что отличимо от
-  ~130 мс у виртуальных потоков с запасом.</li>
-<li><strong>JDK 21.</strong> На JDK 24+ (JEP 491) <code>synchronized</code> больше не пришпиливает виртуальные потоки, и
-  этап 3 покажет другие числа: оба прогона пройдут за ~60 мс. Это не ошибка демонстрации, а
-  изменение платформы; в отчёте указана версия JDK.</li>
-<li><strong>Текст задания на платформе ещё не открыт.</strong> Если после 27.10.2026 требования окажутся другими
-  (например, попросят конкретный класс, <code>StructuredTaskScope</code> или сравнение с <code>CompletableFuture</code>),
-  модуль придётся дополнить — каркас (<code>LoomBenchmarks</code>, <code>ConcurrencyMeter</code>, <code>PinningExperiment</code>,
-  тесты и отчёт) для этого уже есть.</li>
+<li><strong>Preview-API и JDK 21.</strong> <code>StructuredTaskScope</code> финальным не стал ни в 25, ни в 27 (проверено), поэтому проект собирается и запускается с <code>--enable-preview</code>, а jar работает только на JDK 21. Это осознанный выбор: на JDK 25 (JEP 491) ломается этап 3 (pinning) — два теста из 19 падают, и отчётные числа по pinning перестают быть верными. Все прочие классы проекта — обычный Java 21.</li>
+<li><strong>Замер — wall-clock, не JMH.</strong> Нет прогрева в сотни итераций и статистики по десяткам прогонов; числа воспроизводимы качественно (разы), но не до миллисекунды. Для учебной демонстрации этого достаточно, для выбора библиотеки — нет.</li>
+<li><strong>Память — оценка.</strong> <code>Runtime.totalMemory() - freeMemory()</code> включает ещё не собранный мусор; GC может отработать между замерами, поэтому «прирост» бывает отрицательным (в отчёте это помечено). Стеки платформенных потоков живут вне кучи, поэтому «0 МиБ по куче» у 10 000 потоков ОС — не экономия, а слепота замера: цена там в нативной памяти (~10 ГиБ адресного пространства). Точный замер требует <code>System.gc()</code> (искажает время) или JFR/async-profiler.</li>
+<li><strong>CPU — процесс в целом.</strong> <code>OperatingSystemMXBean.getProcessCpuTime()</code> считает весь процесс, включая служебные потоки JVM и Spring; это не изолированный замер одного этапа. Поэтому в отчёте он приведён как «во сколько раз дороже», а не как абсолютная стоимость.</li>
+<li><strong>Счётчик платформенных потоков JVM общий на процесс и хранит исторический пик.</strong> В него попадают и потоки Spring/Tomcat, и служебные потоки HTTP-клиента; если пик уже был достигнут раньше (например, в общем прогоне тестов), «прирост» равен нулю. Поэтому главный показатель — число имён потоков и пик задач из <code>ConcurrencyMeter</code>; счётчик JVM приведён как вспомогательная иллюстрация.</li>
+<li><strong>10 000 платформенных потоков — дорого и небесплатно для стенда.</strong> Один прогон этапа 5 занимает ~0.5 с и ~10 ГиБ адресного пространства под стеки. На машинах с малым <code>ulimit -u</code> используйте <code>--app.hw14.swarm-max-platform-threads=N</code> (пачки) — логика и параметр описаны в 2.5.2.</li>
+<li><strong>Виртуальные потоки не видны в <code>Thread.getAllStackTraces()</code> и обычном дампе</strong> — проверить «не осталось ли живых» списком потоков нельзя, поэтому отсутствие потерь проверяется счётчиками задач (200 из 200, 10 000 из 10 000) и <code>executor.shutdown()</code> / <code>close()</code> скоупа.</li>
+<li><strong>Задержка 50 мс и 200 страниц</strong> — компромисс: меньше страниц — шумнее, больше — демонстрация удлиняется. 200 страниц × 16 потоков дают ~625 мс нижней границы для пула, что отлично от ~110 мс у виртуальных потоков с запасом.</li>
+<li><strong><code>Thread.sleep(1)</code> в этапе 5 мал намеренно</strong> (так в задании): из-за этого платформенные потоки не успевают накопиться и «пик задач» у них ~48, а не 10 000. Это ограничение сценария, а не замера; стоимость потока ОС всё равно видна в колонке «старт» и в CPU.</li>
+<li><strong>JDK 24+ изменит этап 3.</strong> На JDK 24+ (JEP 491) <code>synchronized</code> больше не пришпиливает виртуальные потоки, и этап 3 покажет другие числа: оба прогона пройдут за ~60 мс. В отчёте указана версия JDK, на которой сделаны замеры.</li>
 </ul>
 </body></html>

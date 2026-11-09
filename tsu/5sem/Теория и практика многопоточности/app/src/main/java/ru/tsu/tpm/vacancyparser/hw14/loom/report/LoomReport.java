@@ -7,6 +7,8 @@ import ru.tsu.tpm.vacancyparser.hw14.loom.model.BenchmarkResult;
 import ru.tsu.tpm.vacancyparser.hw14.loom.model.LoadRun;
 import ru.tsu.tpm.vacancyparser.hw14.loom.model.PageLoad;
 import ru.tsu.tpm.vacancyparser.hw14.loom.pinning.PinningRun;
+import ru.tsu.tpm.vacancyparser.hw14.loom.structured.ScopeRun;
+import ru.tsu.tpm.vacancyparser.hw14.loom.swarm.SwarmRun;
 
 /**
  * Строки отчёта ДЗ 14 — чистые функции от результатов прогонов.
@@ -71,8 +73,8 @@ public final class LoomReport {
 
     /** Сравнение «один объём работы, два исполнителя» для загрузки страниц. */
     public static List<String> loadComparisonLines(LoadRun platform, LoadRun virtual) {
-        List<String> headers = List.of("исполнитель", "время, мс", "стр./с", "пик задач",
-                "потоков-исполнителей", "исполнений virtual/platform", "прирост потоков JVM");
+        List<String> headers = List.of("исполнитель", "время, мс", "стр./с", "пик",
+                "потоков", "virt/platf", "JVM-потоков");
         List<List<String>> rows = List.of(
                 row("платформенный пул", platform),
                 row("виртуальные потоки", virtual));
@@ -133,7 +135,7 @@ public final class LoomReport {
     /** Сравнение pinning: synchronized против ReentrantLock. */
     public static List<String> pinningLines(PinningRun synchronizedRun, PinningRun lockRun) {
         List<String> headers = List.of("защита", "время, мс", "пик задач", "carrier'ов", "смен carrier'а",
-                "ожидание при pinning, мс");
+                "ожидание, мс");
         List<List<String>> rows = List.of(
                 List.of(synchronizedRun.lockKind(),
                         format("%.1f", synchronizedRun.wallMillis()),
@@ -160,8 +162,8 @@ public final class LoomReport {
 
     /** Сравнение масштабирования: тысячи спящих задач на пуле и на виртуальных потоках. */
     public static List<String> scalingLines(BenchmarkResult platform, BenchmarkResult virtual) {
-        List<String> headers = List.of("исполнитель", "задач", "время, мс", "задач/с", "пик задач",
-                "потоков-исполнителей", "прирост потоков JVM");
+        List<String> headers = List.of("исполнитель", "задач", "время, мс", "задач/с", "пик",
+                "рабочих", "JVM-потоков");
         List<List<String>> rows = List.of(
                 List.of(platform.label(),
                         String.valueOf(platform.tasks()),
@@ -187,7 +189,7 @@ public final class LoomReport {
         return lines;
     }
 
-    /** Итоговая таблица «этап — что показал». */
+    /** Итоговая таблица без новых этапов — удобно там, где они не запускались. */
     public static List<String> summaryLines(
             LoadRun platformLoad,
             LoadRun virtualLoad,
@@ -195,16 +197,105 @@ public final class LoomReport {
             PinningRun lock,
             BenchmarkResult platformScaling,
             BenchmarkResult virtualScaling) {
-        List<String> headers = List.of("этап", "исполнитель", "время, мс", "пик задач", "итог");
+        return summaryLines(
+                platformLoad, virtualLoad, pinned, lock, platformScaling, virtualScaling,
+                null, null, List.of());
+    }
+
+    /**
+     * Строки сравнения «10 000 задач через {@code Thread.ofVirtual().start()} и через
+     * {@code new Thread().start()}».
+     *
+     * <p>Отдельная таблица нужна потому, что вопрос этого этапа — не «кто быстрее выполняет работу»
+     * (работа одинаковая и почти пустая), а «сколько стоит сам поток»: запуск, память, число потоков
+     * ОС. Поэтому в таблице есть колонка «старт, мс» — цена {@code start()} без ожидания задач.
+     */
+    public static List<String> swarmLines(SwarmRun virtual, SwarmRun platform) {
+        List<String> headers = List.of("исполнитель", "задач", "старт, мс", "всего, мс", "CPU, мс",
+                "задач/с", "пик", "имён");
         List<List<String>> rows = List.of(
+                List.of(virtual.label(),
+                        String.valueOf(virtual.tasks()),
+                        format("%.1f", virtual.startMillis()),
+                        format("%.1f", virtual.wallMillis()),
+                        format("%.0f", virtual.cpuMillis()),
+                        format("%.0f", virtual.throughputPerSecond()),
+                        String.valueOf(virtual.peakConcurrentTasks()),
+                        String.valueOf(virtual.distinctNames())),
+                List.of(platform.label(),
+                        String.valueOf(platform.tasks()),
+                        format("%.1f", platform.startMillis()),
+                        format("%.1f", platform.wallMillis()),
+                        format("%.0f", platform.cpuMillis()),
+                        format("%.0f", platform.throughputPerSecond()),
+                        String.valueOf(platform.peakConcurrentTasks()),
+                        String.valueOf(platform.distinctNames())));
+        List<String> lines = new ArrayList<>(table(headers, rows));
+        lines.add(String.format(
+                Locale.ROOT,
+                "вывод: те же %d задач — виртуальные потоки в %.1f раза быстрее (%.1f мс против %.1f мс), "
+                        + "но главное не время, а цена потока: запуск %d потоков ОС занял %.1f мс, "
+                        + "запуск %d виртуальных — %.1f мс; пик одновременных задач %d против %d",
+                virtual.tasks(),
+                SwarmRun.speedup(platform, virtual),
+                virtual.wallMillis(), platform.wallMillis(),
+                platform.tasks(), platform.startMillis(),
+                virtual.tasks(), virtual.startMillis(),
+                virtual.peakConcurrentTasks(), platform.peakConcurrentTasks()));
+        return lines;
+    }
+
+    /** Таблица опытов со {@code StructuredTaskScope}: чем закончилась каждая группа. */
+    public static List<String> structuredLines(List<ScopeRun> runs) {
+        List<String> headers = List.of("сценарий", "политика", "подзадач", "время, мс",
+                "успешно", "сбоев", "отменено", "итог");
+        List<List<String>> rows = new ArrayList<>(runs.size());
+        for (ScopeRun run : runs) {
+            rows.add(List.of(
+                    run.label(),
+                    run.policy(),
+                    String.valueOf(run.tasks()),
+                    format("%.1f", run.wallMillis()),
+                    String.valueOf(run.succeeded()),
+                    String.valueOf(run.failed()),
+                    String.valueOf(run.cancelled()),
+                    run.outcome()));
+        }
+        return table(headers, rows);
+    }
+
+    /** Пояснения к опытам: тип исключения, сообщение и сколько подзадач успело уцелеть. */
+    public static List<String> structuredExplanationLines(List<ScopeRun> runs) {
+        List<String> lines = new ArrayList<>(runs.size());
+        for (ScopeRun run : runs) {
+            lines.add(run.exceptionLine() + "; отменено " + run.cancelled() + " из " + run.tasks()
+                    + " (" + format("%.0f", run.cancelledPercent()) + " %), прогон "
+                    + format("%.1f", run.wallMillis()) + " мс");
+        }
+        return lines;
+    }
+
+    /** Итоговая таблица «этап — что показал». */
+    public static List<String> summaryLines(
+            LoadRun platformLoad,
+            LoadRun virtualLoad,
+            PinningRun pinned,
+            PinningRun lock,
+            BenchmarkResult platformScaling,
+            BenchmarkResult virtualScaling,
+            SwarmRun swarmVirtual,
+            SwarmRun swarmPlatform,
+            List<ScopeRun> structured) {
+        List<String> headers = List.of("этап", "исполнитель", "время, мс", "пик задач", "итог");
+        List<List<String>> rows = new ArrayList<>(List.of(
                 List.of("страницы", "пул " + platformLoad.metrics().workerThreads(),
                         format("%.1f", platformLoad.metrics().wallMillis()),
                         String.valueOf(platformLoad.metrics().peakConcurrentTasks()),
-                        "все " + platformLoad.metrics().succeeded() + " страниц загружены"),
+                        platformLoad.metrics().succeeded() + " стр. загружены"),
                 List.of("страницы", "виртуальные",
                         format("%.1f", virtualLoad.metrics().wallMillis()),
                         String.valueOf(virtualLoad.metrics().peakConcurrentTasks()),
-                        "все " + virtualLoad.metrics().succeeded() + " страниц загружены"),
+                        virtualLoad.metrics().succeeded() + " стр. загружены"),
                 List.of("pinning", "synchronized",
                         format("%.1f", pinned.wallMillis()),
                         String.valueOf(pinned.peakConcurrentTasks()),
@@ -216,11 +307,27 @@ public final class LoomReport {
                 List.of("масштабирование", "пул " + platformScaling.workerThreads(),
                         format("%.1f", platformScaling.wallMillis()),
                         String.valueOf(platformScaling.peakConcurrentTasks()),
-                        "задачи ждут в очереди пула"),
+                        "ждут в очереди пула"),
                 List.of("масштабирование", "виртуальные",
                         format("%.1f", virtualScaling.wallMillis()),
                         String.valueOf(virtualScaling.peakConcurrentTasks()),
-                        "все задачи ждут одновременно"));
+                        "все ждут одновременно")));
+        if (swarmVirtual != null && swarmPlatform != null) {
+            rows.add(List.of("поток на задачу", "new Thread().start",
+                    format("%.1f", swarmPlatform.wallMillis()),
+                    String.valueOf(swarmPlatform.peakConcurrentTasks()),
+                    "потоков ОС: +" + swarmPlatform.peakPlatformThreads()));
+            rows.add(List.of("поток на задачу", "Thread.ofVirtual().start",
+                    format("%.1f", swarmVirtual.wallMillis()),
+                    String.valueOf(swarmVirtual.peakConcurrentTasks()),
+                    "потоков ОС: +" + swarmVirtual.peakPlatformThreads()));
+        }
+        for (ScopeRun run : structured) {
+            rows.add(List.of("StructuredTaskScope", run.policy(),
+                    format("%.1f", run.wallMillis()),
+                    String.valueOf(run.peakConcurrentTasks()),
+                    run.outcome()));
+        }
         return table(headers, rows);
     }
 

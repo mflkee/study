@@ -33,6 +33,17 @@ class Hw14PropertiesBindingTest {
             assertThat(properties.getPinningTasks()).isEqualTo(96);
             assertThat(properties.getPinningBlockMillis()).isEqualTo(60L);
             assertThat(properties.getTaskTimeoutMillis()).isEqualTo(60_000L);
+            assertThat(properties.getSwarmTasks()).isEqualTo(10_000);
+            assertThat(properties.getSwarmSleepMillis()).isEqualTo(1L);
+            assertThat(properties.getSwarmMaxPlatformThreads()).isZero();
+            assertThat(properties.getSwarmPrintNames()).isEqualTo(8);
+            assertThat(properties.getStructuredTasks()).isEqualTo(10_000);
+            assertThat(properties.getStructuredDelayMillis()).isEqualTo(300L);
+            assertThat(properties.getStructuredFailAfterMillis()).isEqualTo(100L);
+            assertThat(properties.getStructuredFailingTask()).isEqualTo(137);
+            assertThat(properties.getStructuredTimeoutMillis()).isEqualTo(250L);
+            assertThat(properties.getStructuredSlowDelayMillis()).isEqualTo(5_000L);
+            assertThat(properties.getStructuredReplicaDelaysMillis()).containsExactly(400L, 150L, 250L);
         });
     }
 
@@ -52,7 +63,18 @@ class Hw14PropertiesBindingTest {
                         "app.hw14.request-timeout-millis=500",
                         "app.hw14.task-timeout-millis=1500",
                         "app.hw14.shutdown-timeout-millis=1000",
-                        "app.hw14.sample-titles=2")
+                        "app.hw14.sample-titles=2",
+                        "app.hw14.swarm-tasks=128",
+                        "app.hw14.swarm-sleep-millis=2",
+                        "app.hw14.swarm-max-platform-threads=32",
+                        "app.hw14.swarm-print-names=4",
+                        "app.hw14.structured-tasks=64",
+                        "app.hw14.structured-delay-millis=20",
+                        "app.hw14.structured-fail-after-millis=10",
+                        "app.hw14.structured-failing-task=3",
+                        "app.hw14.structured-timeout-millis=50",
+                        "app.hw14.structured-slow-delay-millis=2000",
+                        "app.hw14.structured-replica-delays-millis=300,80,150")
                 .run(context -> {
                     Hw14Properties properties = context.getBean(Hw14Properties.class);
                     assertThat(properties.getPages()).isEqualTo(7);
@@ -67,6 +89,18 @@ class Hw14PropertiesBindingTest {
                     assertThat(properties.getTaskTimeoutMillis()).isEqualTo(1_500L);
                     assertThat(properties.getShutdownTimeoutMillis()).isEqualTo(1_000L);
                     assertThat(properties.getSampleTitles()).isEqualTo(2);
+                    assertThat(properties.getSwarmTasks()).isEqualTo(128);
+                    assertThat(properties.getSwarmSleepMillis()).isEqualTo(2L);
+                    assertThat(properties.getSwarmMaxPlatformThreads()).isEqualTo(32);
+                    assertThat(properties.getSwarmPrintNames()).isEqualTo(4);
+                    assertThat(properties.getStructuredTasks()).isEqualTo(64);
+                    assertThat(properties.getStructuredDelayMillis()).isEqualTo(20L);
+                    assertThat(properties.getStructuredFailAfterMillis()).isEqualTo(10L);
+                    assertThat(properties.getStructuredFailingTask()).isEqualTo(3);
+                    assertThat(properties.getStructuredTimeoutMillis()).isEqualTo(50L);
+                    assertThat(properties.getStructuredSlowDelayMillis()).isEqualTo(2_000L);
+                    assertThat(properties.getStructuredReplicaDelaysMillis())
+                            .containsExactly(300L, 80L, 150L);
                 });
     }
 }

@@ -11,6 +11,8 @@ import ru.tsu.tpm.vacancyparser.hw14.loom.model.BenchmarkResult;
 import ru.tsu.tpm.vacancyparser.hw14.loom.model.LoadRun;
 import ru.tsu.tpm.vacancyparser.hw14.loom.model.PageLoad;
 import ru.tsu.tpm.vacancyparser.hw14.loom.pinning.PinningRun;
+import ru.tsu.tpm.vacancyparser.hw14.loom.structured.ScopeRun;
+import ru.tsu.tpm.vacancyparser.hw14.loom.swarm.SwarmRun;
 
 /**
  * Строки отчёта: таблицы, выводы и примеры. Числа задаются вручную, поэтому проверка не зависит от
@@ -77,8 +79,69 @@ class LoomReportTest {
                 .contains("быстрее в 5.8 раза");
     }
 
-    private static List<PageLoad> pages(int count) {
-        return java.util.stream.IntStream.range(0, count)
+    @Test
+    @DisplayName("10 000 задач «поток на задачу» и опыты со скоупом попадают в таблицы")
+    void swarmAndStructuredLines() {
+        SwarmRun virtualSwarm = new SwarmRun(
+                "Thread.ofVirtual().start", 10_000, 10_000, 0, 1, 0, 10_000,
+                90_000_000L, 260_000_000L,
+                java.util.stream.IntStream.range(0, 10_000)
+                        .mapToObj(index -> "hw14-swarm-vt-" + index).toList(),
+                10_000, 0, 2048L, 150_000_000L);
+        SwarmRun platformSwarm = new SwarmRun(
+                "new Thread(...).start", 10_000, 10_000, 0, 1, 9_990, 45,
+                950_000_000L, 1_400_000_000L,
+                java.util.stream.IntStream.range(0, 10_000)
+                        .mapToObj(index -> "hw14-swarm-pt-" + (index + 1)).toList(),
+                0, 10_000, 4096L, 700_000_000L);
+
+        List<String> swarm = LoomReport.swarmLines(virtualSwarm, platformSwarm);
+        assertThat(swarm).anyMatch(line -> line.contains("ofVirtual"));
+        assertThat(swarm).anyMatch(line -> line.contains("new Thread"));
+        String swarmConclusion = swarm.get(swarm.size() - 1);
+        assertThat(swarmConclusion).contains("вывод").contains("5.4");
+        assertThat(swarmConclusion).contains("45").contains("10000");
+
+        ScopeRun all = new ScopeRun("все подзадачи успешны", "ShutdownOnFailure", 10_000,
+                10_000, 0, 0, 120_000_000L, 10_000, 10_000, 0,
+                "успех", null, null, List.of("задача №0"));
+        ScopeRun failure = new ScopeRun("одна подзадача падает", "ShutdownOnFailure", 10_000,
+                0, 1, 9_999, 104_000_000L, 10_000, 10_000, 0,
+                "исключение", "IllegalStateException", "источник недоступен: подзадача №137",
+                List.of());
+
+        List<String> structured = LoomReport.structuredLines(List.of(all, failure));
+        assertThat(structured).hasSize(4);
+        assertThat(structured).anyMatch(line -> line.contains("ShutdownOnFailure"));
+        assertThat(structured.get(2)).contains("10000");
+
+        List<String> explanation = LoomReport.structuredExplanationLines(List.of(all, failure));
+        assertThat(explanation).hasSize(2);
+        assertThat(explanation.get(0)).contains("исключений нет");
+        assertThat(explanation.get(1)).contains("IllegalStateException").contains("9999");
+
+        List<String> summary = LoomReport.summaryLines(
+                new LoadRun(PLATFORM, pages(200)), new LoadRun(VIRTUAL, pages(200)),
+                pinned(), free(), PLATFORM, VIRTUAL,
+                virtualSwarm, platformSwarm, List.of(all, failure));
+        assertThat(summary).hasSize(8 + 2 + 2);
+        assertThat(summary).anyMatch(line -> line.contains("поток на задачу"));
+        assertThat(summary).anyMatch(line -> line.contains("StructuredTaskScope"));
+    }
+
+    private static PinningRun pinned() {
+        return new PinningRun(
+                "synchronized (монитор JVM)", "synchronized", 96, 60L, 486_000_000L,
+                12, 12, Set.of("ForkJoinPool-1-worker-1"), 0, 96, 12);
+    }
+
+    private static PinningRun free() {
+        return new PinningRun(
+                "ReentrantLock (очередь JDK)", "ReentrantLock", 96, 60L, 62_000_000L,
+                96, 12, Set.of("ForkJoinPool-1-worker-1"), 88, 96, 12);
+    }
+
+    private static List<PageLoad> pages(int count) {        return java.util.stream.IntStream.range(0, count)
                 .mapToObj(index -> PageLoad.success(
                         "http://127.0.0.1:1/vacancy/" + index,
                         index,
