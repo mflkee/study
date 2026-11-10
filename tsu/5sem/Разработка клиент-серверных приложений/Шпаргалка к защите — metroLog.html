@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<title>metroLog — шпаргалка к защите</title>
+<style>
+@page { size: A4; margin: 18mm 16mm 16mm 16mm; }
+body { font-family: "Noto Sans", "DejaVu Sans", sans-serif; font-size: 10.5pt;
+       line-height: 1.45; color: #1a1a1a; max-width: 100%; }
+h1, div.h1 { font-size: 19pt; font-weight: 700; margin: 0 0 2mm 0; line-height: 1.2;
+         color: #111; text-indent: 0; }
+h2, div.h2 { font-size: 13.5pt; font-weight: 700; margin: 7mm 0 2mm 0; padding-bottom: 1mm;
+         border-bottom: 1px solid #d8d8d8; color: #111; text-indent: 0; }
+h3, div.h3 { font-size: 11.5pt; font-weight: 700; margin: 5mm 0 1.5mm 0; color: #222;
+         text-indent: 0; }
+h4, div.h4 { font-size: 10.5pt; font-weight: 700; margin: 4mm 0 1mm 0; color: #333;
+         text-indent: 0; }
+p { margin: 0 0 2.2mm 0; text-align: justify; }
+ul, ol { margin: 0 0 2.5mm 0; padding-left: 6mm; }
+li { margin-bottom: 1mm; }
+code { font-family: "Noto Sans Mono", "DejaVu Sans Mono", monospace; font-size: 9pt;
+       background: #f2f2f2; padding: 0.3mm 1mm; border-radius: 1.5mm; }
+pre { background: #f6f6f6; border: 1px solid #e2e2e2; border-radius: 2mm;
+      padding: 2.5mm 3mm; margin: 0 0 3mm 0; overflow: hidden; }
+pre code { background: none; font-size: 8.6pt; line-height: 1.35; }
+table { border-collapse: collapse; width: 100%; margin: 1mm 0 4mm 0; font-size: 9.2pt; }
+th, td { border: 1px solid #cfcfcf; padding: 1.6mm 2mm; text-align: left;
+         vertical-align: top; }
+th { background: #efefef; font-weight: 600; }
+hr { border: none; border-top: 1px solid #dcdcdc; margin: 5mm 0; }
+.meta { color: #555; font-size: 9.5pt; margin: 0 0 6mm 0; padding-bottom: 2.5mm;
+        border-bottom: 2px solid #333; }
+blockquote { margin: 0 0 3mm 0; padding: 1mm 0 1mm 4mm; border-left: 3px solid #bbb;
+             color: #444; }
+</style></head>
+<body>
+<h1>metroLog — шпаргалка к защите (РКСП)</h1>
+<p><strong>Проект:</strong> metroLog — система учёта средств измерений (СИ) и эталонов (ЭСИ)
+<strong>Репозиторий:</strong> https://github.com/mflkee/metroLog · <strong>Стенд:</strong> metrolog.mkair-it.ru
+<strong>Студент:</strong> Макеев Глеб Борисович, BHEBDPS-24-RKSP-5</p>
+<hr>
+<h2>1. Карточка проекта (держи в голове)</h2>
+<table>
+<thead>
+<tr>
+<th>Что</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Назначение</td>
+<td>единый реестр оборудования, контроль сроков поверки, ремонты, интеграция с ФГИС «Аршин»</td>
+</tr>
+<tr>
+<td>Пользователи</td>
+<td>разработчик, администратор, сотрудник метрологической службы (MKAIR), заказчик</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>Python 3.12, FastAPI, SQLAlchemy 2.0, Alembic, Pydantic</td>
+</tr>
+<tr>
+<td>БД</td>
+<td>PostgreSQL (+ Redis для очереди задач, RQ)</td>
+</tr>
+<tr>
+<td>Frontend</td>
+<td>React 19 + TypeScript, Vite, TanStack Query, Zustand, Tailwind</td>
+</tr>
+<tr>
+<td>Инфраструктура</td>
+<td>Docker Compose, nginx, GitHub Actions (GHCR)</td>
+</tr>
+<tr>
+<td>API</td>
+<td><strong>94 пути / 127 операций</strong>, OpenAPI/Swagger на <code>/docs</code></td>
+</tr>
+<tr>
+<td>БД-схема</td>
+<td><strong>30 сущностей</strong>, <strong>66 миграций</strong> Alembic</td>
+</tr>
+<tr>
+<td>Тесты</td>
+<td><strong>229 pytest</strong> (14 файлов) + 33 файла vitest</td>
+</tr>
+<tr>
+<td>Нагрузка</td>
+<td>locust: 30 и 60 пользователей, 0 ошибок</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Цифры, которые называют вслух:</strong> 30 сущностей, 66 миграций, 94/127 эндпоинтов, 229 тестов, 2 протокола (HTTP/REST + SMTP).</p>
+<hr>
+<h2>2. Рассказ на 60 секунд</h2>
+<blockquote>
+<p>metroLog — система учёта средств измерений для метрологической службы. Раньше реестр вёлся в Excel
+по папкам, сроки поверки контролировали вручную, данные из ФГИС «Аршин» копировали руками.
+Сейчас это клиент-серверное приложение: SPA на React, REST API на FastAPI, PostgreSQL, фоновая
+очередь на Redis. Есть иерархия «папка → группа → оборудование», поверки и ремонты с этапами,
+импорт из «Аршина», комментарии и вложения, email-уведомления, аудит и выгрузка в XLSX.
+Доступ разграничен по ролям и по папкам, при отсутствии прав сервер отвечает 404, чтобы не
+раскрывать существование данных.</p>
+</blockquote>
+<hr>
+<h2>3. ТЗ: что важно помнить</h2>
+<p><strong>AS IS:</strong> Excel-файлы по подразделениям, ручной контроль сроков, ручной ввод из «Аршина»,
+история в переписке, нет разграничения доступа.</p>
+<p><strong>TO BE:</strong> единый реестр, автоматический импорт и пакетное обновление из «Аршина», процессы
+поверки/ремонта с этапами и сроками, комментарии и уведомления, роли + доступ по папкам,
+журнал событий, дашборд, экспорт XLSX.</p>
+<p><strong>Границы (спросят почти наверняка):</strong>
+- <strong>В системе:</strong> реестр СИ/ЭСИ/ИО/ВО, поверки, ремонты, Аршин, коммуникации, роли, отчёты.
+- <strong>Вне системы:</strong> бухгалтерия и 1С, мобильное приложение, закупки, выпуск бумажных свидетельств.</p>
+<p><strong>Роли:</strong> <code>DEVELOPER</code> (диагностика), <code>ADMINISTRATOR</code> (пользователи, права, справочники),
+<code>MKAIR</code> (ведение реестра, поверки, ремонты), <code>CUSTOMER</code> (просмотр своих папок, комментарии).</p>
+<hr>
+<h2>4. Архитектура</h2>
+<pre><code>Браузер (React 19 SPA)
+   │ HTTPS / REST (JSON)
+   ▼
+nginx :80 ── статика SPA + reverse proxy /api/ → backend:8000
+   │
+   ▼
+FastAPI (uvicorn, 2 воркера)
+   ├── PostgreSQL 16 (30 таблиц)
+   ├── Redis + RQ (email-уведомления в фоне)
+   ├── ФГИС «Аршин» (HTTP API, httpx)
+   └── SMTP (email)
+</code></pre>
+<p><strong>Почему так:</strong>
+- <strong>SPA + REST</strong> — один API на веб и будущие клиенты; nginx отделяет статику от API.
+- <strong>Очередь (RQ)</strong> — отправка писем не должна блокировать HTTP-запрос: тяжёлое выносим в фон.
+- <strong>PostgreSQL</strong> — связи M:N, частичные индексы, JSON-поля; транзакции для операций с оборудованием.
+- <strong>Миграции Alembic</strong> — схема версионируется и применяется автоматически при старте.</p>
+<hr>
+<h2>5. Аутентификация и доступ</h2>
+<ul>
+<li><strong>Свой токен, не JWT:</strong> base64url(payload) + подпись <strong>HMAC-SHA256</strong>, payload — <code>sub</code>, <code>role</code>,
+  <code>iat</code>, <code>exp</code>. Токен stateless: сервер не хранит сессии, проверка = пересчёт подписи.</li>
+<li><strong>Почему не JWT:</strong> не нужен весь JWT-набор (алгоритмы, kid, JWKS), проще контролировать формат;
+  отзыв — ротацией <code>secret_key</code> (все сессии разом).</li>
+<li><strong>Пароли:</strong> PBKDF2-HMAC-SHA256, <strong>600 000 итераций</strong>, соль на пользователя; временный пароль
+  при выдаче учётки + смена при первом входе.</li>
+<li><strong>Права:</strong> роль + список разрешённых/скрытых папок. Нет доступа к объекту → <strong>404 вместо 403</strong>
+  (soft-denial: не раскрываем, что объект существует).</li>
+<li><strong>Где смотреть:</strong> <code>app/utils/security.py</code> (токен, хеши), <code>app/api/deps.py</code> (текущий пользователь,
+  проверка ролей), <code>app/services/equipment_service.py</code> (проверка доступа к папке).</li>
+</ul>
+<hr>
+<h2>6. База данных</h2>
+<p><strong>30 сущностей</strong>, основные группы:
+- реестр: <code>users</code>, <code>equipment_folders</code>, <code>equipment_groups</code>, <code>equipment</code>, <code>deadline_presets</code>;
+- процессы: <code>verifications</code>, <code>si_verifications</code>, <code>repairs</code>, <code>equipment_process_templates</code>;
+- коммуникации: <code>equipment_comments</code>, <code>*_messages</code>, <code>*_attachments</code>, <code>*_subscriptions</code>;
+- задачи: <code>tasks</code>, <code>task_checklist_items</code>, <code>task_participants</code>, <code>task_reminders</code>;
+- служебное: <code>event_logs</code>, <code>equipment_folder_refresh_tasks/rows</code>, <code>auth_codes</code>.</p>
+<p><strong>Что помнить:</strong>
+- иерархия «папка → группа → оборудование» — 1:N на каждом уровне;
+- подписки на процессы — M:N через промежуточные таблицы (<code>*_subscriptions</code>);
+- <strong>66 миграций</strong> — история схемы, накатывается <code>alembic upgrade head</code>;
+- нормализация до 3НФ; осознанные денормализации — снимки названий в истории (например,
+  <code>deadline_preset_name</code>) и агрегаты для дашборда;
+- индексы: частичные и составные под фильтры списков (80 индексов в выгрузке схемы).</p>
+<hr>
+<h2>7. API</h2>
+<p><strong>REST, JSON, версия в пути:</strong> <code>/api/v1/...</code>. Документация — <code>/docs</code> (Swagger) и <code>slumber.yml</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Что</th>
+<th>Как</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Списки</td>
+<td>пагинация <code>page</code>/<code>per_page</code> (и совместимые <code>limit</code>/<code>offset</code>), в ответе <code>total</code>, <code>total_pages</code></td>
+</tr>
+<tr>
+<td>Сортировка</td>
+<td><code>sort_key</code> + <code>sort_direction</code>, поле — из белого списка (Literal-тип, иначе 422)</td>
+</tr>
+<tr>
+<td>Фильтры</td>
+<td>папка, группа, статус, тип, объект, местоположение + поиск <code>query</code></td>
+</tr>
+<tr>
+<td>Поиск</td>
+<td>термовый ILIKE по нескольким колонкам (<code>app/repositories/search.py</code>), термы могут быть в разных полях</td>
+</tr>
+<tr>
+<td>Ошибки</td>
+<td>единый формат <code>{detail, error_code, field}</code>; коды <code>NOT_FOUND</code>, <code>CONFLICT</code>, <code>FORBIDDEN</code>, <code>VALIDATION_ERROR</code>, <code>INTERNAL_ERROR</code></td>
+</tr>
+<tr>
+<td>Статистика</td>
+<td><code>/api/v1/stats/summary</code>, <code>/stats/equipment?group_by=status\|equipment_type\|folder_id</code>, <code>/stats/verifications?group_by=status</code> — с учётом прав на папки</td>
+</tr>
+<tr>
+<td>Экспорт</td>
+<td>XLSX: оборудование, поверки, ремонты, журнал событий</td>
+</tr>
+<tr>
+<td>Служебное</td>
+<td><code>/health</code>, <code>/health/ready</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Второй протокол — SMTP:</strong> email-уведомления (упоминания, выдача пароля, изменения статусов,
+проверка SMTP отдельным эндпоинтом). HTTP/REST — основной.</p>
+<hr>
+<h2>8. Тесты и нагрузка</h2>
+<ul>
+<li><strong>229 pytest</strong>: аутентификация и права, CRUD оборудования, поверки/ремонты, Аршин (с моками),
+  формат ошибок, статистика (включая изоляцию по папкам), пагинация, health.</li>
+<li><strong>33 файла vitest</strong> на фронте (компоненты, хуки, API-клиент).</li>
+<li><strong>locust</strong>, read-профиль:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Прогон</th>
+<th>Запросов</th>
+<th>Ошибок</th>
+<th>Медиана</th>
+<th>p95</th>
+<th>RPS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>30 users</td>
+<td>2 311</td>
+<td>0</td>
+<td>53 мс</td>
+<td>1.4 с</td>
+<td>19.3</td>
+</tr>
+<tr>
+<td>60 users</td>
+<td>3 255</td>
+<td>0</td>
+<td>660 мс</td>
+<td>2.4 с</td>
+<td>27.3</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Вывод из нагрузки (сказать честно):</strong> при удвоении нагрузки медиана выросла в 12 раз — узкое
+место найдено: <code>POST /auth/login</code>, PBKDF2 с 600 000 итераций выполняется в event loop и блокирует
+обработку остальных запросов. Правильное решение — вынести хеширование в пул потоков
+(<code>anyio.to_thread.run_sync</code>), но ослаблять 600k итераций нельзя.</p>
+<hr>
+<h2>9. Код: где что искать</h2>
+<pre><code>backend/app/
+  api/v1/routes/     equipment, users, tasks, events, arshin, health, stats
+  api/deps.py        текущий пользователь, проверки ролей
+  services/          бизнес-логика (equipment_*, user_service, arshin_service, stats_service)
+  repositories/      запросы к БД (SQLAlchemy), поиск, агрегаты
+  models/            SQLAlchemy-модели (30 сущностей)
+  schemas/           Pydantic: запросы/ответы, ErrorResponse
+  core/              конфиг, ошибки, обработчики
+  tasks/             Redis + RQ (очередь уведомлений)
+  utils/             токены, хеши, экспорт XLSX
+frontend/src/        pages, components, api (Axios), hooks (TanStack Query)
+</code></pre>
+<hr>
+<h2>10. Вопросы, которые задают, и короткие ответы</h2>
+<ol>
+<li><strong>Что делает система?</strong> — реестр СИ/ЭСИ, поверки, ремонты, Аршин, уведомления, отчёты.</li>
+<li><strong>Почему FastAPI, а не Django/Spring?</strong> — асинхронный, Pydantic-валидация из коробки,
+   OpenAPI генерируется сам; для API-центричного сервиса этого достаточно.</li>
+<li><strong>Почему свой токен, а не JWT?</strong> — нужен stateless-токен с ролью; JWT тянет за собой
+   алгоритмы/kid/JWKS, а отзыв всё равно через секрет. Свой формат проще проверять.</li>
+<li><strong>Где хранятся пароли?</strong> — PBKDF2-HMAC-SHA256, 600k итераций, соль на пользователя, в БД только хеш.</li>
+<li><strong>Что при отсутствии прав?</strong> — 404, а не 403: не раскрываем существование объекта.</li>
+<li><strong>Как ограничен доступ к папкам?</strong> — у пользователя списки разрешённых и скрытых папок;
+   каждый запрос к оборудованию проверяет папку.</li>
+<li><strong>Как устроена пагинация?</strong> — <code>page</code>/<code>per_page</code> (по умолчанию 20, максимум 200),
+   <code>limit</code>/<code>offset</code> как совместимый вариант; конфликт параметров → 422; в ответе <code>total</code>, <code>total_pages</code>.</li>
+<li><strong>Почему сортировка по белом списку?</strong> — имя поля из запроса нельзя подставлять в <code>ORDER BY</code>:
+   это SQL-инъекция; поле валидируется enum-типом.</li>
+<li><strong>Как ищет поиск?</strong> — разбивает строку на термы, каждый ищется через ILIKE по нескольким
+   колонкам, термы могут быть в разных полях («Мкаир Кужим» находится).</li>
+<li><strong>Зачем очередь Redis?</strong> — письма отправляются в фоне, HTTP-запрос не ждёт SMTP.</li>
+<li><strong>Как обеспечивается целостность?</strong> — транзакции на операции, FK с политиками удаления,
+    миграции Alembic, инварианты в сервисах (например, «один активный ремонт»).</li>
+<li><strong>Что с безопасностью файлов?</strong> — ограничение размера, белый список типов, хранение вне
+    статики, отдача через API с проверкой прав.</li>
+<li><strong>Как проверяли нагрузку?</strong> — locust, read-профиль, 30 и 60 пользователей; нашли узкое место в логине.</li>
+<li><strong>Второй протокол?</strong> — SMTP. WebSocket/SSE не реализованы (честно).</li>
+<li><strong>Что бы улучшил?</strong> — вынести PBKDF2 в пул потоков, добавить SSE для уведомлений в UI,
+    кеш дашборда, e2e-тесты.</li>
+<li><strong>Как тестировали?</strong> — pytest с фикстурами на SQLite/in-memory и моками Аршина; на фронте vitest.</li>
+<li><strong>Как деплоится?</strong> — Docker Compose, nginx, self-hosted GitHub Actions: сборка образов в GHCR.</li>
+<li><strong>Что самое сложное было?</strong> — интеграция с «Аршином» (нестабильный внешний API) и права
+    по папкам сквозь все запросы.</li>
+<li><strong>Где бизнес-логика?</strong> — в <code>services/</code>; роуты только принимают запрос и вызывают сервис.</li>
+<li><strong>Что если внешний сервис упал?</strong> — таймауты, ретраи, ошибка 502 с <code>error_code</code>,
+    локальные данные не теряются.</li>
+</ol>
+<hr>
+<h2>11. Что сказать, если спросят про слабые места (честность = плюс)</h2>
+<ol>
+<li><strong>Логин медленный под нагрузкой</strong> — PBKDF2 в event loop; решение известно, не применено.</li>
+<li><strong>Второй протокол — SMTP</strong>, а не WebSocket; реалтайм-обновления в UI не сделаны.</li>
+<li><strong>Фронтенд</strong> покрыт частично (33 файла тестов), e2e нет.</li>
+<li><strong>Нет горизонтального масштабирования</strong> приложения из коробки (несколько воркеров без sticky-сессий
+   работают, потому что токены stateless — но очередь и файлы требуют общего хранилища).</li>
+<li><strong>Мобильного клиента нет</strong> — по ТЗ вне границ.</li>
+</ol>
+<hr>
+<h2>12. Мини-шпаргалка «одной строкой»</h2>
+<ul>
+<li>30 сущностей · 66 миграций · 94 пути / 127 операций · 229 pytest · 33 vitest</li>
+<li>HMAC-SHA256, PBKDF2 600k, TTL токена, 404 вместо 403</li>
+<li>пагинация page/per_page + limit/offset, сортировка по enum, поиск по термам</li>
+<li>ошибки <code>{detail, error_code, field}</code>; <code>stats/*</code> с правами; XLSX-экспорт</li>
+<li>SMTP = второй протокол; узкое место — логин (PBKDF2 в event loop)</li>
+</ul>
+</body></html>
