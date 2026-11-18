@@ -1,0 +1,153 @@
+/* Речь на защиту ФМС: A4, крупный шрифт, поля для пометок */
+
+@page {
+  size: A4;
+  margin: 20mm 18mm 18mm 24mm;
+
+  @bottom-center {
+    content: counter(page) " / " counter(pages);
+    font: 8.5pt "Liberation Sans", sans-serif;
+    color: #8a929d;
+  }
+}
+
+@page :first {
+  margin: 0;
+  @bottom-center { content: none; }
+}
+
+html {
+  font-family: "Liberation Serif", serif;
+  font-size: 13.5pt;
+  line-height: 1.52;
+  color: #14181d;
+  hyphens: auto;
+}
+
+body { margin: 0; }
+
+p { margin: 0 0 3mm; }
+
+h1, h2, h3 {
+  font-family: "Liberation Sans", sans-serif;
+  color: #1c3554;
+  break-after: avoid;
+}
+
+h2 {
+  font-size: 15pt;
+  margin: 0 0 4mm;
+  padding-bottom: 1.8mm;
+  border-bottom: 0.4pt solid #c9d2dd;
+}
+
+h3 { font-size: 11.5pt; margin: 5mm 0 2mm; }
+
+/* ---- титул ---- */
+
+.cover {
+  height: 297mm;
+  box-sizing: border-box;
+  padding: 52mm 26mm 22mm 26mm;
+  break-after: page;
+}
+
+.cover .kick {
+  font-family: "Liberation Sans", sans-serif;
+  font-size: 9.5pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8a929d;
+}
+
+.cover h1 {
+  font-size: 30pt;
+  line-height: 1.14;
+  margin: 7mm 0 0;
+}
+
+.cover .topic {
+  font-size: 15pt;
+  color: #a04d14;
+  margin-top: 5mm;
+}
+
+.cover .meta {
+  margin-top: 34mm;
+  font-size: 11pt;
+  color: #3a4552;
+  line-height: 1.7;
+}
+
+.cover .meta b { color: #1c3554; }
+
+/* ---- блоки ---- */
+
+section { break-before: page; }
+section.cont { break-before: auto; }
+
+.cue {
+  font-family: "Liberation Sans", sans-serif;
+  font-size: 9.5pt;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #a04d14;
+  margin: 6mm 0 2mm;
+}
+
+.cue:first-child { margin-top: 0; }
+
+.say {
+  font-size: 13.5pt;
+  margin: 0 0 4mm;
+}
+
+.say b { color: #1c3554; }
+
+.time {
+  font-family: "Liberation Sans", sans-serif;
+  font-size: 10pt;
+  font-weight: 700;
+  color: #fff;
+  background: #1c3554;
+  border-radius: 1mm;
+  padding: 0.6mm 2.2mm;
+  margin-right: 2mm;
+}
+
+.tip {
+  border-left: 1pt solid #c8611f;
+  padding-left: 4mm;
+  margin: 4mm 0;
+  font-size: 11pt;
+  color: #4a5563;
+  font-style: italic;
+}
+
+.tip b { font-style: normal; }
+
+ul.short { margin: 0 0 3mm; padding-left: 6mm; }
+ul.short li { margin-bottom: 1.8mm; }
+
+table { width: 100%; border-collapse: collapse; font-size: 11pt; }
+th {
+  text-align: left;
+  font-family: "Liberation Sans", sans-serif;
+  font-size: 9.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8a929d;
+  border-bottom: 0.5pt solid #c9d2dd;
+  padding: 0 3mm 1.5mm 0;
+}
+td { padding: 2mm 3mm 2mm 0; border-bottom: 0.3pt solid #e6eaf0; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+td.q { font-weight: 700; color: #1c3554; width: 62mm; }
+
+.mono { font-family: "DejaVu Sans Mono", monospace; font-size: 9.5pt; }
+
+/* не отрывать пометку от текста и строки таблиц друг от друга */
+
+.cue { break-after: avoid; }
+.say { break-inside: avoid; }
+tr { break-inside: avoid; }

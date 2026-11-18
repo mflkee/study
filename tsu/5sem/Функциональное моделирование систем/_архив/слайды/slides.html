@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ФМС — слайды к защите</title>
+<link rel="stylesheet" href="slides.css">
+</head>
+<body>
+
+<!-- ============ 1. ТИТУЛ ============ -->
+<section class="slide cover">
+  <div class="cover-inner">
+    <div class="kicker">ТюмГУ · 5 семестр · 2026</div>
+    <h1>Функциональное<br>моделирование систем</h1>
+    <div class="cover-topic">Тема 7. Действия после получения патента</div>
+    <div class="cover-line">Защита лабораторных работ · 6 работ, 42 диаграммы, 84 теста</div>
+    <div class="cover-authors">Малышева Елена · Макеев Глеб</div>
+  </div>
+  <div class="cover-repo">github.com/mflkee/fms-course</div>
+</section>
+
+<!-- ============ 2. РАМКИ ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Рамки работы</div>
+      <h2>Две обязанности с одним сроком</h2>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="timeline">
+    <div class="tl-line"></div>
+    <div class="tl-mark" style="left:0"></div>
+    <div class="tl-badge">2 календарных месяца</div>
+    <div class="tl-mark end"></div>
+    <div class="tl-label start"><b>Дата выдачи патента</b><br>единственная точка отсчёта</div>
+    <div class="tl-label end"><b>Крайний срок</b><br>для обеих обязанностей</div>
+  </div>
+
+  <div class="cards" style="margin-top:2mm">
+    <div class="card">
+      <h3>п. 7.1 · иностранный гражданин</h3>
+      <p>Трудоустроиться — заключить трудовой договор или договор ГПХ —
+         <b>не позднее 2 месяцев с даты выдачи патента</b>.</p>
+    </div>
+    <div class="card accent">
+      <h3>п. 7.2 · работодатель</h3>
+      <p>Уведомить МВД после заключения договора — тоже
+         <b>не позднее 2 месяцев с даты выдачи патента</b>.</p>
+    </div>
+  </div>
+
+  <div style="margin-top:6mm; display:flex; gap:4mm; align-items:center; font-size:12pt">
+    <div style="flex:0 0 auto; color:#7d8798; font-size:10pt; letter-spacing:.08em; text-transform:uppercase">Следствие</div>
+    <div style="flex:1 1 0; border-top:0.25mm solid #e3e7ec; height:0"></div>
+  </div>
+
+  <div class="cards" style="margin-top:4mm">
+    <div class="card" style="border-top-color:#7d8798"><h3>Одна дата</h3><p>Срок у обеих обязанностей считается от даты выдачи патента.</p></div>
+    <div class="card" style="border-top-color:#7d8798"><h3>Два исполнителя</h3><p>7.1 ведёт гражданин, 7.2 — работодатель: основной актор меняется.</p></div>
+    <div class="card" style="border-top-color:#7d8798"><h3>Точки и напоминания</h3><p>Дедлайн превращается в контрольные точки и серию напоминаний.</p></div>
+  </div>
+
+  <div class="note" style="margin-top:5mm">
+    Разделы 1–6 дорожной карты — <b>предусловия</b>; выдача и аннулирование патента — работа МВД,
+    поэтому МВД у нас вспомогательный актор.
+  </div>
+
+  <div class="s-foot"><span>ФМС · тема 7 · защита</span><span>2</span></div>
+</section>
+
+<!-- ============ 3. МАРШРУТ ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Маршрут работы</div>
+      <h2>Шесть лабораторных — шесть вопросов</h2>
+    </div>
+    <div class="hint">Каждый следующий шаг не переделывает предыдущий, а уточняет его.</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="chain">
+    <div class="step">
+      <div class="n">1</div>
+      <div class="q">Кто и зачем пользуется системой?</div>
+      <div class="r">7 прецедентов, 8 акторов</div>
+    </div>
+    <div class="step">
+      <div class="n">2</div>
+      <div class="q">Из каких понятий состоит тема?</div>
+      <div class="r">18 классов, 9 инвариантов</div>
+    </div>
+    <div class="step">
+      <div class="n">3</div>
+      <div class="q">Что система умеет снаружи?</div>
+      <div class="r">16 операций, 19 сценариев</div>
+    </div>
+    <div class="step">
+      <div class="n">4</div>
+      <div class="q">Как она это делает внутри?</div>
+      <div class="r">16 диаграмм взаимодействия</div>
+    </div>
+    <div class="step">
+      <div class="n">5</div>
+      <div class="q">Какие обязанности у объектов?</div>
+      <div class="r">46 классов проектирования</div>
+    </div>
+    <div class="step">
+      <div class="n">6</div>
+      <div class="q">Работает ли это?</div>
+      <div class="r">код, 28 маршрутов, 84 теста</div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:7mm">
+    <b>Сквозная нить — девять инвариантов:</b> правил, которые верны в любой момент времени.
+    Из каждого получается предусловие операции, проверка в сервисе и отдельный тест.
+  </div>
+
+  <table style="margin-top:6mm">
+    <tr><th style="width:60mm">Шаг</th><th>Папка в репозитории</th></tr>
+    <tr><td>1 · прецеденты</td><td class="mono">lab1-usecases/</td></tr>
+    <tr><td>2 · модель предметной области</td><td class="mono">lab2-domain-model/</td></tr>
+    <tr><td>3–4 · операции и взаимодействие</td><td class="mono">lab3-sequence-diagrams/ · lab4-communication-diagrams/</td></tr>
+    <tr><td>5–6 · классы и код</td><td class="mono">lab5-design-classes/ · lab6-implementation/</td></tr>
+  </table>
+
+  <div class="s-foot"><span>ФМС · тема 7 · защита</span><span>3</span></div>
+</section>
+
+<!-- ============ 4. ЦИФРЫ ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Цифры, которые спрашивают</div>
+      <h2>Работа в числах</h2>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <table class="grid">
+    <tr>
+      <td><div class="num-box"><div class="v">7</div><div class="k">прецедентов (П01–П07)</div></div></td>
+      <td><div class="num-box"><div class="v">8</div><div class="k">акторов: 3 основных, 5 вспомогательных</div></div></td>
+      <td><div class="num-box"><div class="v">18</div><div class="k">классов модели: 13 + 5 подклассов</div></div></td>
+      <td><div class="num-box"><div class="v">9</div><div class="k">инвариантов (ИНВ-1…ИНВ-9)</div></div></td>
+      <td><div class="num-box"><div class="v">16</div><div class="k">системных операций</div></div></td>
+    </tr>
+    <tr>
+      <td><div class="num-box"><div class="v">19</div><div class="k">диаграмм последовательностей</div></div></td>
+      <td><div class="num-box"><div class="v">16</div><div class="k">диаграмм коммуникаций</div></div></td>
+      <td><div class="num-box"><div class="v">46</div><div class="k">классов проектирования</div></div></td>
+      <td><div class="num-box"><div class="v">28</div><div class="k">HTTP-маршрутов</div></div></td>
+      <td><div class="num-box"><div class="v">84</div><div class="k">теста, все проходят</div></div></td>
+    </tr>
+  </table>
+
+  <div class="note" style="margin-top:5mm">
+    Каждая цифра проверяется в репозитории: она стоит в README соответствующей лабораторной
+    и подтверждается <span class="mono">pytest</span> — 84 теста проходят.
+  </div>
+
+  <div class="s-foot"><span>ФМС · тема 7 · защита</span><span>4</span></div>
+</section>
+
+<!-- ============ 5. ЛАБ 1 ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Лабораторная 1 · прецеденты</div>
+      <h2>Два основных исполнителя — два пункта темы</h2>
+    </div>
+    <div class="hint">7.1 адресован гражданину, 7.2 — работодателю. Поэтому в теме два основных актора.</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="cols">
+    <div class="col-img"><img src="../книга/img/l1-usecases.png" style="width:150mm" class="full-img"></div>
+    <div class="col-text">
+      <p><b>Основные акторы:</b> иностранный гражданин, работодатель, администратор.</p>
+      <p><b>Вспомогательные:</b> МВД, ЕПГУ, Почта, ФНС, банк — они обслуживают систему:
+         уведомление уходит через ЕПГУ или Почту, платежи НДФЛ идут через ФНС и банк.</p>
+      <p><b>7 прецедентов:</b> П01 учёт патента, П02 трудоустройство, П03 уведомление МВД,
+         П04 контроль срока — обязанности темы; П05 НДФЛ, П06 прекращение договора,
+         П07 реестр — расширения.</p>
+      <p style="margin-top:4mm"><b>Прецедент</b> — обязанность системы, у которой есть
+         измеримый результат для исполнителя, а не кнопка и не экран.</p>
+    </div>
+  </div>
+
+  <div class="s-foot"><span>Лаб. 1 · 7 прецедентов, 8 акторов</span><span>5</span></div>
+</section>
+
+<!-- ============ 6. ЛАБ 2 ЯДРО ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Лабораторная 2 · модель предметной области</div>
+      <h2>Ядро: гражданин — патент — договор — уведомление</h2>
+    </div>
+    <div class="hint">Кратности на диаграмме и есть инварианты: «один действующий» — это 0..1.</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="cols">
+    <div class="col-img"><img src="../книга/img/l2-core.png" style="height:127mm" class="full-img"></div>
+    <div class="col-text">
+      <p><b>13 корневых классов + 5 подклассов = 18.</b> Абстрактных два:
+         «Договор» (трудовой / ГПХ) и «Пользователь» (три роли).</p>
+      <p><b>Цепочка:</b> у гражданина 0..* патентов, но действующий — только один (ИНВ-6);
+         у патента 0..1 действующего договора (ИНВ-1); по договору 0..1 уведомление;
+         у патента 2..* контрольных точки (ИНВ-9).</p>
+      <p><b>Уведомление — отдельный класс</b>, а не атрибут договора: у него свой срок, канал,
+         доказательства и статус — это самостоятельная обязанность п. 7.2.</p>
+      <p><b>Документ — один класс</b> с атрибутом «тип»: поведение одинаковое, различие
+         только в содержимом.</p>
+    </div>
+  </div>
+
+  <div class="s-foot"><span>Лаб. 2 · 18 классов модели</span><span>6</span></div>
+</section>
+
+<!-- ============ 7. СРОКИ ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Лабораторная 2 · сроки</div>
+      <h2>Из одной даты получается вся дисциплина сроков</h2>
+    </div>
+    <div class="hint">Правило «два месяца» живёт в одном классе — «Модуль контроля сроков».</div>
+  </div>
+  <div class="rule"></div>
+
+  <img src="../книга/img/l2-sroki.png" class="full-img" style="width:248mm">
+
+  <div class="cards" style="margin-top:6mm">
+    <div class="card">
+      <h3>Точки — композиция</h3>
+      <p>Без патента точек не существует; при архивации они каскадно отменяются (ИНВ-9).</p>
+    </div>
+    <div class="card">
+      <h3>Напоминания — отдельная сущность</h3>
+      <p>За 30, 14, 7, 3 и 1 день: нужен не только факт предупреждения, но и канал и статус доставки.</p>
+    </div>
+    <div class="card accent">
+      <h3>Поздний ввод срок не сдвигает</h3>
+      <p>Патент выдан 1 марта, внесён 20 апреля — дедлайн всё равно 1 мая.</p>
+    </div>
+  </div>
+
+  <div class="s-foot"><span>Лаб. 2 · сроки и напоминания</span><span>7</span></div>
+</section>
+
+<!-- ============ 8. ИНВАРИАНТЫ ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Лабораторная 2 · правила</div>
+      <h2>Девять инвариантов</h2>
+    </div>
+    <div class="hint">Из каждого инварианта — предусловие операции, проверка в сервисе и тест.</div>
+  </div>
+  <div class="rule"></div>
+
+  <table class="grid three">
+    <tr>
+      <td><div class="card"><h3>ИНВ-1</h3><p>На патент — не более одного действующего договора.</p></div></td>
+      <td><div class="card"><h3>ИНВ-2</h3><p>Уведомление — не раньше договора и не позднее 2 месяцев с даты выдачи.</p></div></td>
+      <td><div class="card"><h3>ИНВ-3</h3><p>Договор — не позднее 2 месяцев с даты выдачи патента.</p></div></td>
+    </tr>
+    <tr>
+      <td><div class="card"><h3>ИНВ-4</h3><p>Профессия по договору входит в перечень профессий патента.</p></div></td>
+      <td><div class="card"><h3>ИНВ-5</h3><p>Патент действителен при непрерывной уплате НДФЛ.</p></div></td>
+      <td><div class="card"><h3>ИНВ-6</h3><p>Не более одного действующего патента, срок — до 12 месяцев.</p></div></td>
+    </tr>
+    <tr>
+      <td><div class="card"><h3>ИНВ-7</h3><p>Сумма платежа равна стоимости патента в регионе на дату платежа.</p></div></td>
+      <td><div class="card"><h3>ИНВ-8</h3><p>Уведомление и доказательства отправки хранятся бессрочно.</p></div></td>
+      <td><div class="card"><h3>ИНВ-9</h3><p>Точки и напоминания не существуют без патента.</p></div></td>
+    </tr>
+  </table>
+
+  <div class="s-foot"><span>Лаб. 2 · 9 инвариантов</span><span>8</span></div>
+</section>
+
+<!-- ============ 9. ОПЕРАЦИИ ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Лабораторная 3 · системные операции</div>
+      <h2>16 операций и их инварианты</h2>
+    </div>
+    <div class="hint">Отдельная операция на каждое изменение состояния: без неё ветвь сценария меняла бы состояние в обход спецификации.</div>
+  </div>
+  <div class="rule"></div>
+
+  <table class="ops">
+    <tr><th style="width:7mm">№</th><th style="width:88mm">Операция</th><th style="width:70mm">Класс (лаб. 5)</th><th>Инварианты</th></tr>
+    <tr><td class="idx">1</td><td class="mono">зарегистрироватьПатент</td><td class="code">СервисПатентов</td><td class="code">ИНВ-4, 6, 9</td></tr>
+    <tr><td class="idx">2</td><td class="mono">пометитьПатентАрхивным</td><td class="code">СервисПатентов</td><td class="code">ИНВ-6, 9</td></tr>
+    <tr><td class="idx">3</td><td class="mono">получитьСведенияОпатенте</td><td class="code">СервисПатентов</td><td class="code">ИНВ-4, 6</td></tr>
+    <tr><td class="idx">4</td><td class="mono">заключитьДоговор</td><td class="code">СервисДоговоров</td><td class="code">ИНВ-1, 3, 4</td></tr>
+    <tr><td class="idx">5</td><td class="mono">отменитьДоговор</td><td class="code">СервисДоговоров</td><td class="code">ИНВ-1</td></tr>
+    <tr><td class="idx">6</td><td class="mono">направитьУведомлениеМВД</td><td class="code">СервисУведомлений</td><td class="code">ИНВ-2, 8</td></tr>
+    <tr><td class="idx">7</td><td class="mono">зафиксироватьВозвратУведомления</td><td class="code">СервисУведомлений</td><td class="code">ИНВ-2, 8</td></tr>
+    <tr><td class="idx">8</td><td class="mono">настроитьНапоминания</td><td class="code">СервисНапоминаний</td><td class="code">ИНВ-9</td></tr>
+    <tr><td class="idx">9</td><td class="mono">пересчитатьСрокиПатента</td><td class="code">МодульКонтроляСроков</td><td class="code">ИНВ-2, 3, 9</td></tr>
+    <tr><td class="idx">10</td><td class="mono">зафиксироватьНарушениеСрока</td><td class="code">МодульКонтроляСроков</td><td class="code">ИНВ-2, 3</td></tr>
+    <tr><td class="idx">11</td><td class="mono">зарегистрироватьПлатёжНДФЛ</td><td class="code">СервисНДФЛ</td><td class="code">ИНВ-5, 7</td></tr>
+    <tr><td class="idx">12</td><td class="mono">подтвердитьПлатёж</td><td class="code">СервисНДФЛ</td><td class="code">ИНВ-5, 7</td></tr>
+    <tr><td class="idx">13</td><td class="mono">зафиксироватьПрекращениеПатентаНеуплата</td><td class="code">СервисНДФЛ</td><td class="code">ИНВ-5, 9</td></tr>
+    <tr><td class="idx">14</td><td class="mono">прекратитьДоговор</td><td class="code">СервисДоговоров</td><td class="code">ИНВ-1, 8</td></tr>
+    <tr><td class="idx">15</td><td class="mono">сформироватьРеестр</td><td class="code">МодульОтчётности</td><td class="code">ИНВ-2, 3</td></tr>
+    <tr><td class="idx">16</td><td class="mono">выгрузитьРеестр</td><td class="code">МодульОтчётности</td><td class="code">ИНВ-8</td></tr>
+  </table>
+
+  <div class="s-foot"><span>Лаб. 3 · 19 сценариев: 7 основных + 12 альтернатив</span><span>9</span></div>
+</section>
+
+<!-- ============ 10. SSD 1 ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Лабораторная 3 · операция 1</div>
+      <h2>Регистрация патента — вход в подсистему</h2>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="cols">
+    <div class="col-img"><img src="../книга/img/l3-ssd-patent.png" style="width:232mm"></div>
+    <div class="col-side">
+      <div class="side-t">Что видно</div>
+      <ul class="clean tight">
+        <li>Система — чёрный ящик: только вызов операции и возврат результата.</li>
+        <li>Внутри: ИНВ-4 (профессия есть в патенте), ИНВ-6 (один действующий патент), ИНВ-9 (создание точек).</li>
+        <li>Срок считается <b>от даты выдачи</b> и сразу превращается в контрольные точки.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="s-foot"><span>Лаб. 3 · SSD операции 1</span><span>10</span></div>
+</section>
+
+<!-- ============ 11. SSD 4 ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Лабораторная 3 · операция 4 · пункт 7.1</div>
+      <h2>Заключение договора</h2>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="cols">
+    <div class="col-img"><img src="../книга/img/l3-ssd-dogovor.png" style="width:232mm"></div>
+    <div class="col-side">
+      <div class="side-t">Что видно</div>
+      <ul class="clean tight">
+        <li>Проверяются ИНВ-1 (один действующий договор), ИНВ-3 (срок), ИНВ-4 (профессия).</li>
+        <li>Постусловие — контрольная точка <b>«направить уведомление МВД»</b>: договор порождает обязанность п. 7.2.</li>
+        <li>Просрочку не блокируем: помечаем <b>overdue</b> и фиксируем нарушение операцией 10.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="s-foot"><span>Лаб. 3 · SSD операции 4</span><span>11</span></div>
+</section>
+
+<!-- ============ 12. SSD 6 ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Лабораторная 3 · операция 6 · пункт 7.2</div>
+      <h2>Уведомление МВД</h2>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="cols">
+    <div class="col-img"><img src="../книга/img/l3-ssd-uvedomlenie.png" style="width:236mm"></div>
+    <div class="col-side">
+      <div class="side-t">Что видно</div>
+      <ul class="clean tight">
+        <li><b>Два канала:</b> ЕПГУ — подпись и дата; Почта — трек-номер и опись вложения.</li>
+        <li><b>ИНВ-2:</b> не раньше договора и не позднее 2 месяцев с даты выдачи.</li>
+        <li><b>Просрочка:</b> по умолчанию 422, отправка только с явным <span class="mono">allow_overdue</span>.</li>
+        <li><b>ИНВ-8:</b> квитанция и копия договора сохраняются бессрочно; повтор даёт 409.</li>
+        <li><b>Постусловие:</b> точка «направить уведомление» закрыта, договор переведён
+            в состояние «уведомление направлено».</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="s-foot"><span>Лаб. 3 · SSD операции 6</span><span>12</span></div>
+</section>
+
+<!-- ============ 13. SSD 11 ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Лабораторная 3 · операции 11–12</div>
+      <h2>Платёж НДФЛ: условие жизни патента</h2>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="cols">
+    <div class="col-img"><img src="../книга/img/l3-ssd-ndfl.png" style="width:232mm"></div>
+    <div class="col-side">
+      <div class="side-t">Что видно</div>
+      <ul class="clean tight">
+        <li><b>ИНВ-7:</b> сумма сверяется со стоимостью патента в регионе на дату платежа.</li>
+        <li><b>ИНВ-5:</b> проверяется непрерывность периодов; пропуск — 409, и операцией 13 патент прекращается.</li>
+        <li>Платёж <b>идемпотентен</b>: тот же период и сумма возвращают существующий платёж, дубль не создаётся.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="s-foot"><span>Лаб. 3 · SSD операций 11–12</span><span>13</span></div>
+</section>
+
+<!-- ============ 14. ЛАБ 4 ОП 6 ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Лабораторная 4 · взаимодействие объектов</div>
+      <h2>Тот же сценарий, раскрытый внутрь</h2>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="cols">
+    <div class="col-img"><img src="../книга/img/l4-op6.png" style="width:236mm"></div>
+    <div class="col-side">
+      <div class="side-t">Что видно</div>
+      <ul class="clean tight">
+        <li>16 диаграмм — по одной на операцию: <b>144 объекта, 196 сообщений</b>.</li>
+        <li>Запрос идёт по слоям: экран → сервис → проверка срока → шлюз ЕПГУ → сохранение доказательств.</li>
+        <li>Ни один объект, кроме сервиса, не решает, можно ли отправлять уведомление.</li>
+        <li>Каждая операция пишет событие в <b>журнал аудита</b>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="s-foot"><span>Лаб. 4 · операция 6 внутри</span><span>14</span></div>
+</section>
+
+<!-- ============ 15. ЛАБ 4 ОП 1 ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Лабораторная 4 · операция 1</div>
+      <h2>Создание агрегата «патент + точки»</h2>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="cols">
+    <div class="col-img"><img src="../книга/img/l4-op1.png" style="width:236mm"></div>
+    <div class="col-side">
+      <div class="side-t">Что видно</div>
+      <ul class="clean tight">
+        <li>11 объектов, 14 сообщений: патент и его точки создаются вместе.</li>
+        <li>Порядок одинаков во всех 16 сценариях: экран → сервис → проверки → шлюз → сохранение → журнал.</li>
+        <li>Поэтому любую операцию можно показать сверху вниз и объяснить за минуту.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="s-foot"><span>Лаб. 4 · операция 1 внутри</span><span>15</span></div>
+</section>
+
+<!-- ============ 16. ЛАБ 5 СЛОИ ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Лабораторная 5 · классы проектирования</div>
+      <h2>BCE: 46 классов, зависимости только вниз</h2>
+    </div>
+    <div class="hint">BCE описывает обязанности — «показать», «проверить», «сохранить», — а не структуру фреймворка.</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="layers">
+    <div class="layer">
+      <div class="name">Граничный слой</div>
+      <div class="cnt">7 экранов</div>
+      <div class="what">патент · договор · уведомление · напоминания · платёж · реестр · администрирование</div>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="layer">
+      <div class="name">Управляющий слой</div>
+      <div class="cnt">10 классов</div>
+      <div class="what">патенты · договоры · уведомления · НДФЛ · контроль сроков · напоминания · отчётность · права доступа · планировщик · журнал аудита</div>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="layer">
+      <div class="name">Сущности</div>
+      <div class="cnt">19 классов</div>
+      <div class="what">патент · гражданин · работодатель · договор · уведомление · платёж · контрольная точка · напоминание · документ · справочники · отчёт-реестр</div>
+    </div>
+    <div class="arrow-down">↓</div>
+    <div class="layer">
+      <div class="name">Хранилища и шлюзы</div>
+      <div class="cnt">7 + 3</div>
+      <div class="what">реестры патентов, договоров, уведомлений, платежей · документы · справочники · шлюзы ЕПГУ, Почты, ФНС</div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:6mm">
+    Экран знает управляющий слой, управляющий — сущности и хранилища, сущность не знает ничего внешнего.
+    Поэтому правило «два месяца» живёт <b>в одном классе</b> — «Модуль контроля сроков»
+    (<span class="mono">app/control/deadline_service.py</span>).
+  </div>
+
+  <div class="s-foot"><span>Лаб. 5 · 46 классов: 7 + 10 + 19 + 7 + 3</span><span>16</span></div>
+</section>
+
+<!-- ============ 17. ЛАБ 5 КЛАССЫ ОП 1 ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Лабораторная 5 · фрагмент</div>
+      <h2>Операция 1 в классах</h2>
+    </div>
+    <div class="hint">Каждая из 16 операций — свой метод управляющего класса. Это и есть трассировка.</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="cols">
+    <div class="col-img"><img src="../книга/img/l5-classes.png" style="height:122mm" class="full-img"></div>
+    <div class="col-text">
+      <table class="trace-sm">
+        <tr><th>Операция</th><th>Метод</th></tr>
+        <tr><td class="code">1 зарегистрироватьПатент</td><td class="mono">СервисПатентов.зарегистрироватьПатент()</td></tr>
+        <tr><td class="code">4 заключитьДоговор</td><td class="mono">СервисДоговоров.заключить()</td></tr>
+        <tr><td class="code">6 направитьУведомлениеМВД</td><td class="mono">СервисУведомлений.направить()</td></tr>
+        <tr><td class="code">9 пересчитатьСроки</td><td class="mono">МодульКонтроляСроков.пересчитатьСроки()</td></tr>
+        <tr><td class="code">11 платёж НДФЛ</td><td class="mono">СервисНДФЛ.зарегистрироватьПлатёж()</td></tr>
+        <tr><td class="code">15 сформироватьРеестр</td><td class="mono">МодульОтчётности.сформировать()</td></tr>
+      </table>
+      <p style="margin-top:5mm; font-size:11pt">Типы — предметные: <b>дата, сумма, идентификатор</b>
+         вместо строк и чисел. Поэтому модель не привязана ни к языку, ни к базе данных.</p>
+    </div>
+  </div>
+
+  <div class="s-foot"><span>Лаб. 5 · операция → класс → метод</span><span>17</span></div>
+</section>
+
+<!-- ============ 18. ЛАБ 6 КОД ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Лабораторная 6 · реализация</div>
+      <h2>Код повторяет модель, а не наоборот</h2>
+    </div>
+    <div class="hint">Python + FastAPI. 16/16 операций, 28 маршрутов, 84 теста — все проходят.</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="cols">
+    <div class="col-text">
+      <table style="font-size:11pt">
+        <tr><th style="width:52mm">Слой лаб. 5</th><th>В коде</th></tr>
+        <tr><td class="code">граничный (7)</td><td class="mono">app/boundary/ — роутеры и схемы</td></tr>
+        <tr><td class="code">управляющий (10)</td><td class="mono">app/control/ — сервисы, invariants.py</td></tr>
+        <tr><td class="code">сущности (19)</td><td class="mono">app/entity/ — патент, договор, деньги, часы</td></tr>
+        <tr><td class="code">хранилища (7)</td><td class="mono">app/repository/ — в памяти, без delete</td></tr>
+        <tr><td class="code">шлюзы (3)</td><td class="mono">app/gateway/ — ЕПГУ, Почта, ФНС</td></tr>
+      </table>
+      <p style="margin-top:4mm; font-size:11pt">84 теста: <span class="mono">test_invariants.py</span>
+         — по тесту на каждый ИНВ, плюс 5 файлов по операциям.</p>
+    </div>
+    <div class="col-text">
+      <div class="note" style="font-size:11pt">
+        <b>Инварианты — в сервисах, а не в роутерах.</b> Роутер можно обойти, вызвав сервис напрямую;
+        сервис — нет. Все девять правил лежат в одном файле и вызываются из методов операций.
+      </div>
+      <p style="margin-top:4mm; font-size:11pt"><b>Время — через Clock.</b> Тесты задают дату явно,
+         в коде нет обращений к «сегодня»; поэтому сроки тестируются без <span class="mono">freezegun</span>.</p>
+      <p style="margin-top:2.5mm; font-size:11pt"><b>Деньги — Decimal</b>, в JSON строкой
+         (<span class="mono">"6000.00"</span>), чтобы не терять копейки.</p>
+      <p style="margin-top:2.5mm; font-size:11pt"><b>Сквозная трассировка:</b> прецедент → операция →
+         класс → метод → эндпоинт → тест.</p>
+    </div>
+  </div>
+
+  <div class="code-block">
+<pre># app/control/invariants.py — правила в одном месте
+ИНВ_3: договор не позднее 2 месяцев с даты выдачи патента
+СервисДоговоров.заключить()  →  проверитьСрок(патент.датаВыдачи, договор.дата)
+                             →  иначе overdue = true и контрольная точка «нарушение»</pre>
+  </div>
+
+  <div class="s-foot"><span>Лаб. 6 · 84 теста · 28 маршрутов</span><span>18</span></div>
+</section>
+
+<!-- ============ 19. ОГРАНИЧЕНИЯ ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Лабораторная 6 · честные границы</div>
+      <h2>Что здесь учебное и что дальше</h2>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="cards">
+    <div class="card accent">
+      <h3>Три ограничения</h3>
+      <p>Данные теряются при перезапуске — хранилища в памяти.</p>
+      <p style="margin-top:2mm">Реальные ЕПГУ, Почта и ФНС не подключены — шлюзы-заглушки с детерминированными ответами.</p>
+      <p style="margin-top:2mm">Электронная подпись не проверяется, файлы хранятся как метаданные и хэш.</p>
+    </div>
+    <div class="card">
+      <h3>Почему так</h3>
+      <p>Учебная модель доказывает инварианты и слои, а не инфраструктуру. Интерфейсы репозиториев
+         готовы к замене: менять пришлось бы только реализацию, а не модель.</p>
+    </div>
+    <div class="card">
+      <h3>Что дальше</h3>
+      <p>PostgreSQL + SQLAlchemy/Alembic — инварианты закрепить индексами и ограничениями.</p>
+      <p style="margin-top:2mm">Реальные шлюзы ЕПГУ/СМЭВ/Почты/ФНС.</p>
+      <p style="margin-top:2mm">Фоновый планировщик: APScheduler или Celery вместо ручного запуска.</p>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:8mm">
+    <b>Итог:</b> модель доведена до работающего кода, ограничения названы явно и не мешают проверке
+    инвариантов — именно инварианты и слои были предметом работы, а не инфраструктура.
+  </div>
+
+  <div class="s-foot"><span>Лаб. 6 · ограничения</span><span>19</span></div>
+</section>
+
+<!-- ============ 20. ДЕМО ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Демонстрация</div>
+      <h2>Семь шагов одного прогона</h2>
+    </div>
+    <div class="hint">Скрипт <span class="mono">scripts/demo.sh</span> против запущенного uvicorn.</div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="chain" style="margin-bottom:6mm">
+    <div class="step"><div class="n">1</div><div class="q">Патент</div><div class="r">регистрация, точки</div></div>
+    <div class="step"><div class="n">2</div><div class="q">Договор</div><div class="r">п. 7.1</div></div>
+    <div class="step"><div class="n">3</div><div class="q">Уведомление</div><div class="r">п. 7.2, ЕПГУ</div></div>
+    <div class="step"><div class="n">4</div><div class="q">Платёж НДФЛ</div><div class="r">аванс за период</div></div>
+    <div class="step"><div class="n">5</div><div class="q">Напоминания</div><div class="r">30/14/7/3/1</div></div>
+    <div class="step"><div class="n">6</div><div class="q">Реестр</div><div class="r">сформировать</div></div>
+    <div class="step"><div class="n">7</div><div class="q">Выгрузка</div><div class="r">CSV</div></div>
+  </div>
+
+  <div class="cards">
+    <div class="card"><h3>Финал демо</h3><p>Повторное уведомление по тому же договору даёт <b>409</b> — это ИНВ-8 в действии.</p></div>
+    <div class="card"><h3>Ошибки показываем тоже</h3><p>Второй действующий патент — 409 (ИНВ-6); просрочка договора — <b>overdue</b>, а не отказ.</p></div>
+    <div class="card"><h3>Если что-то не идёт</h3><p>Открываем Swagger <span class="mono">/docs</span> и выполняем 2–3 запроса вручную.</p></div>
+  </div>
+
+  <div class="note" style="margin-top:8mm">
+    <b>Что говорю по ходу:</b> «вот патент и его контрольные точки» → «вот договор, он создал точку
+    уведомления» → «вот уведомление через ЕПГУ с квитанцией» → «вот отказ 409: доказательства
+    не переписываются».
+  </div>
+
+  <div class="s-foot"><span>Демо · 7 шагов</span><span>20</span></div>
+</section>
+
+<!-- ============ 21. ТРАССИРОВКА ============ -->
+<section class="slide">
+  <div class="s-head">
+    <div>
+      <div class="kicker">Сквозная трассировка</div>
+      <h2>Одна обязанность на всех шести уровнях</h2>
+    </div>
+    <div class="hint">Операция 4 «заключить договор» — от прецедента до теста.</div>
+  </div>
+  <div class="rule"></div>
+
+  <table class="trace">
+    <tr><th style="width:44mm">Уровень</th><th>Что должно сойтись</th></tr>
+    <tr><td><b>Прецедент</b></td><td>П02 «Трудоустройство», основной исполнитель — иностранный гражданин (п. 7.1)</td></tr>
+    <tr><td><b>Понятия</b></td><td>Патент, Договор (трудовой / ГПХ), Работодатель, КонтрольнаяТочка; ИНВ-1, ИНВ-3, ИНВ-4</td></tr>
+    <tr><td><b>Операция</b></td><td>параметры — патент, работодатель, вид, дата, профессия, файл; постусловие — точка «направить уведомление»</td></tr>
+    <tr><td><b>SSD</b></td><td>актор → система → возврат; внутренние проверки — в примечании</td></tr>
+    <tr><td><b>Взаимодействие</b></td><td>экран → сервис договоров → реестры и справочники → проверки → сохранение</td></tr>
+    <tr><td><b>Класс и код</b></td><td class="mono">СервисДоговоров.заключить() → POST /contracts → test_contracts.py</td></tr>
+  </table>
+
+  <div class="note" style="margin-top:6mm">
+    Если меняется требование, я знаю, какие править файлы: прецедент, модель, контракт, диаграмму,
+    класс и тест. Второй пример — операция 1: П01 → <span class="mono">POST /patents</span> →
+    <span class="mono">СервисПатентов.зарегистрироватьПатент()</span> → <span class="mono">test_patents.py</span>.
+  </div>
+
+  <div class="s-foot"><span>Трассировка · операция 4</span><span>21</span></div>
+</section>
+
+<!-- ============ 22. ФИНАЛ ============ -->
+<section class="slide final">
+  <div class="kicker">Спасибо · готовы к вопросам</div>
+  <h2 style="margin-top:4mm">Три формулировки, которые<br>стоит запомнить</h2>
+  <div class="rule"></div>
+
+  <ul class="clean" style="font-size:14pt; margin-top:4mm">
+    <li>Срок считается <b>от даты выдачи патента</b>; поздний ввод в систему его не сдвигает.</li>
+    <li>Правило «два месяца» живёт <b>в одном классе</b> — модуле контроля сроков; инварианты
+        проверяются <b>в сервисах</b>, а не в роутерах.</li>
+    <li>Каждый следующий шаг <b>не переделывает предыдущий, а уточняет</b>: прецедент → модель →
+        операция → взаимодействие → класс → метод → тест.</li>
+  </ul>
+
+  <div class="cards" style="margin-top:10mm">
+    <div class="card" style="background:#243f63; border-color:#3d5a7d; border-top-color:#f0c9a8">
+      <h3 style="color:#fff">Репозиторий</h3>
+      <p style="color:#c9d6e6">Все 42 диаграммы, исходники PlantUML, README по каждой работе.</p>
+    </div>
+    <div class="card" style="background:#243f63; border-color:#3d5a7d; border-top-color:#f0c9a8">
+      <h3 style="color:#fff">Работающее приложение</h3>
+      <p style="color:#c9d6e6">16 операций, 28 маршрутов, Swagger на <span class="mono">/docs</span>.</p>
+    </div>
+    <div class="card" style="background:#243f63; border-color:#3d5a7d; border-top-color:#f0c9a8">
+      <h3 style="color:#fff">Тесты</h3>
+      <p style="color:#c9d6e6">84 теста, включая отдельный файл на каждый из 9 инвариантов.</p>
+    </div>
+  </div>
+
+  <div class="cover-repo" style="color:#9fb0c6">github.com/mflkee/fms-course</div>
+  <div class="s-foot"><span>ФМС · тема 7 · Малышева Елена, Макеев Глеб</span><span>22</span></div>
+</section>
+
+</body>
+</html>
