@@ -1,0 +1,24 @@
+@startuml
+' SSD: основной сценарий П01 «зарегистрировать патент» (лаб. 3)
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+skinparam defaultFontSize 19
+skinparam sequenceMessageAlign center
+skinparam ArrowColor #333333
+skinparam ParticipantBackgroundColor #F4F8FF
+skinparam ParticipantBorderColor #4A6FA5
+hide footbox
+
+actor "Иностранный\nгражданин" as IG
+participant "Система\n«Действия после\nполучения патента»" as S
+
+IG -> S : зарегистрироватьПатент(серия, номер,\nдата выдачи, регион, профессия, скан)
+S --> IG : идПатента, срок действия,\nдата «трудоустроиться не позднее», точки
+note right of S
+  Внутри: проверки ИНВ-4 (профессия),
+  ИНВ-6 (один действующий патент),
+  ИНВ-9 (создание контрольных точек)
+end note
+IG -> S : получитьСведенияОпатенте(идПатента)
+S --> IG : регион, профессия, срок, статус
+@enduml

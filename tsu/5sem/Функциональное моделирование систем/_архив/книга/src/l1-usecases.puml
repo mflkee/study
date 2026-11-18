@@ -1,0 +1,48 @@
+@startuml
+' Упрощённая диаграмма прецедентов для печатной книжки (лаб. 1)
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+skinparam defaultFontSize 20
+skinparam nodesep 14
+skinparam ranksep 30
+skinparam ArrowColor #333333
+left to right direction
+skinparam usecase {
+  BackgroundColor #F4F8FF
+  BorderColor #4A6FA5
+}
+
+actor "Иностранный\nгражданин" as IG
+actor "Работодатель" as RAB
+actor "Админ" as ADM
+
+rectangle "Подсистема «Действия после получения патента»" {
+  usecase "П01  Учёт патента" as P01
+  usecase "П02  Трудоустройство" as P02
+  usecase "П03  Уведомление МВД" as P03
+  usecase "П04  Контроль срока" as P04
+  usecase "П05  НДФЛ" as P05
+  usecase "П06  Прекращение договора" as P06
+  usecase "П07  Реестр и отчёт" as P07
+}
+
+actor "МВД" as MVD
+actor "ЕПГУ" as EPGU
+actor "Почта" as POST
+actor "ФНС" as FNS
+actor "Банк" as BANK
+
+IG -- P01
+IG -- P02
+IG -- P04
+IG -- P05
+RAB -- P02
+RAB -- P03
+RAB -- P06
+ADM -- P07
+P03 -- MVD
+P03 -- EPGU
+P03 -- POST
+P05 -- FNS
+P05 -- BANK
+@enduml

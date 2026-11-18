@@ -1,0 +1,40 @@
+@startuml
+' Фрагмент модели: сроки и напоминания (лаб. 2)
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+skinparam defaultFontSize 20
+skinparam nodesep 24
+skinparam ranksep 40
+skinparam ArrowColor #333333
+left to right direction
+skinparam class {
+  BackgroundColor #F4F8FF
+  BorderColor #4A6FA5
+}
+skinparam classAttributeIconSize 0
+
+class "Патент" as PAT {
+  дата выдачи
+  срок действия
+  статус
+}
+class "Контрольная\nточка" as KT {
+  вид
+  плановая дата
+  фактическая дата
+  статус
+}
+class "Напоминание" as NAP {
+  дата отправки
+  канал
+  статус
+}
+
+PAT "1" *-- "2..*" KT : сроки
+KT "1" -- "0..*" NAP : предупреждения
+
+note bottom of NAP
+  За 30, 14, 7, 3 и 1 день
+  до плановой даты
+end note
+@enduml

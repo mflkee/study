@@ -1,0 +1,23 @@
+@startuml
+' SSD: основной сценарий П03 «направить уведомление МВД» (лаб. 3)
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+skinparam defaultFontSize 19
+skinparam sequenceMessageAlign center
+skinparam ArrowColor #333333
+skinparam ParticipantBackgroundColor #F4F8FF
+skinparam ParticipantBorderColor #4A6FA5
+hide footbox
+
+actor "Работодатель" as RAB
+participant "Система\n«Действия после\nполучения патента»" as S
+
+RAB -> S : направитьУведомлениеМВД(идДоговора,\nканал = ЕПГУ, подтверждение)
+S --> RAB : проект формы + остаток срока
+RAB -> S : подтвердить отправку
+S --> RAB : уведомление «направлено»,\nквитанция, трек-номер
+note right of S
+  Внутри: проверка ИНВ-2 (не раньше договора
+  и не позже 2 месяцев), сохранение доказательств
+end note
+@enduml

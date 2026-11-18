@@ -1,0 +1,296 @@
+/* Печатная книжка ФМС: A4, книжные поля, колонтитулы, номера страниц */
+
+@page {
+  size: A4;
+  margin: 18mm 18mm 20mm 25mm;
+
+  @bottom-center {
+    content: counter(page);
+    font: 8.5pt "Liberation Sans", sans-serif;
+    color: #666;
+  }
+}
+
+/* правая страница (нечётная): корешок слева */
+@page :right {
+  margin-left: 25mm;
+  margin-right: 18mm;
+
+  @top-right {
+    content: string(chapter);
+    font: 8pt "Liberation Sans", sans-serif;
+    color: #777;
+    letter-spacing: 0.02em;
+    padding-right: 9mm;
+  }
+  @bottom-right {
+    content: counter(page);
+    padding-right: 9mm;
+  }
+  @bottom-center {
+    content: none;
+  }
+}
+
+/* левая страница (чётная): корешок справа */
+@page :left {
+  margin-left: 18mm;
+  margin-right: 25mm;
+
+  @top-left {
+    content: string(chapter);
+    font: 8pt "Liberation Sans", sans-serif;
+    color: #777;
+    letter-spacing: 0.02em;
+    padding-left: 9mm;
+  }
+  @bottom-left {
+    content: counter(page);
+    padding-left: 9mm;
+  }
+  @bottom-center {
+    content: none;
+  }
+}
+
+/* титул без колонтитулов */
+@page :first {
+  margin: 0;
+  @top-right { content: none; }
+  @top-left { content: none; }
+  @bottom-right { content: none; }
+  @bottom-left { content: none; }
+  @bottom-center { content: none; }
+}
+
+html {
+  font-family: "Liberation Serif", serif;
+  font-size: 10.5pt;
+  line-height: 1.38;
+  color: #111;
+  hyphens: auto;
+}
+
+body { margin: 0; }
+
+p { margin: 0 0 2.6mm; text-align: justify; }
+
+h1, h2, h3, h4 {
+  font-family: "Liberation Sans", sans-serif;
+  font-weight: 700;
+  color: #1c3554;
+  break-after: avoid;
+  break-inside: avoid;
+}
+
+h2.chapter {
+  string-set: chapter content();
+  font-size: 16pt;
+  margin: 0 0 3mm;
+  padding-bottom: 1.6mm;
+  border-bottom: 0.5pt solid #b9c7d8;
+}
+
+h3 {
+  font-size: 11pt;
+  margin: 4mm 0 1.6mm;
+}
+
+.lead {
+  font-style: italic;
+  color: #333;
+  margin-bottom: 3mm;
+}
+
+section.chapter {
+  break-before: page;
+}
+
+/* ---------- титул ---------- */
+
+.cover {
+  height: 297mm;
+  padding: 45mm 26mm 20mm 26mm;
+  box-sizing: border-box;
+  break-after: page;
+}
+
+.cover-kicker {
+  font-family: "Liberation Sans", sans-serif;
+  font-size: 9.5pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6b7c93;
+  margin-bottom: 18mm;
+}
+
+.cover h1 {
+  font-size: 24pt;
+  line-height: 1.2;
+  margin: 0 0 6mm;
+}
+
+.cover-topic {
+  font-family: "Liberation Sans", sans-serif;
+  font-size: 15pt;
+  font-weight: 700;
+  color: #2f5d8f;
+  margin-bottom: 4mm;
+}
+
+.cover-sub {
+  font-size: 12.5pt;
+  margin-bottom: 30mm;
+}
+
+.cover-authors {
+  font-family: "Liberation Sans", sans-serif;
+  font-size: 10.5pt;
+  margin-bottom: 3mm;
+}
+
+.cover-note {
+  font-size: 9.5pt;
+  color: #666;
+  padding-top: 4mm;
+  border-top: 0.5pt solid #ccd6e2;
+}
+
+/* ---------- текст ---------- */
+
+ol, ul { margin: 0 0 3mm 0; padding-left: 6mm; }
+li { margin-bottom: 1.2mm; text-align: justify; }
+
+.five { counter-reset: none; }
+.five li { margin-bottom: 2.2mm; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Liberation Sans", sans-serif;
+  font-size: 9pt;
+  margin: 2mm 0 3.5mm;
+  break-inside: avoid;
+}
+
+th, td {
+  border-bottom: 0.4pt solid #ccd6e2;
+  padding: 1.4mm 2mm;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  color: #1c3554;
+  border-bottom: 0.8pt solid #8fa6bf;
+  font-weight: 700;
+}
+
+td.num { text-align: right; white-space: nowrap; }
+
+figure {
+  margin: 2mm 0 4mm;
+  break-inside: avoid;
+  text-align: center;
+}
+
+figure img {
+  max-width: 100%;
+  height: auto;
+}
+
+figure img.wide { width: 100%; }
+figure img.medium { width: 88%; }
+figure img.small { width: 72%; }
+figure img.xsmall { width: 64%; }
+
+figcaption {
+  font-family: "Liberation Sans", sans-serif;
+  font-size: 8.5pt;
+  color: #555;
+  margin-top: 1.8mm;
+  text-align: center;
+}
+
+.note {
+  font-size: 9pt;
+  color: #444;
+  background: #f4f7fb;
+  border-left: 1.6pt solid #8fa6bf;
+  padding: 2mm 3mm;
+  margin: 2mm 0 4mm;
+}
+
+.say {
+  border: 0.5pt solid #c8d5e3;
+  background: #fbfcfe;
+  padding: 2.4mm 3mm;
+  margin: 0 0 3.5mm;
+  font-size: 9.8pt;
+}
+
+.say b { color: #1c3554; }
+
+.qa dt {
+  font-family: "Liberation Sans", sans-serif;
+  font-weight: 700;
+  font-size: 9.5pt;
+  margin-top: 2.6mm;
+  break-after: avoid;
+}
+
+.qa dd {
+  margin: 0.8mm 0 0 0;
+  text-align: justify;
+}
+
+/* схема слоёв, нарисованная блоками */
+
+.layers { margin: 3mm 0 3mm; }
+
+.layer {
+  border: 0.7pt solid #4a6fa5;
+  background: #f4f8ff;
+  padding: 2.2mm 3mm;
+  margin-bottom: 5mm;
+  position: relative;
+  break-inside: avoid;
+}
+
+.layer .title {
+  font-family: "Liberation Sans", sans-serif;
+  font-weight: 700;
+  font-size: 10pt;
+  color: #1c3554;
+}
+
+.layer .items {
+  font-family: "Liberation Sans", sans-serif;
+  font-size: 9pt;
+  color: #333;
+  margin-top: 1mm;
+}
+
+.arrow {
+  text-align: center;
+  font-family: "Liberation Sans", sans-serif;
+  font-size: 8.5pt;
+  color: #6b7c93;
+  margin: -3mm 0 -1mm;
+}
+
+.down { text-align: center; color: #6b7c93; font-size: 10pt; margin: -2mm 0 2mm; }
+
+.checklist { list-style: none; padding-left: 0; }
+.checklist li::before { content: "☐  "; }
+
+.tight p { margin-bottom: 1.6mm; }
+
+figure img.tiny { width: 55%; }
+
+/* продолжение внутри той же лабораторной — без разрыва страницы */
+.chapter.flow { break-before: auto; }
+
+
+/* заголовок раздела не отрывается от первого блока */
+.chapter.flow .lead { break-after: avoid; }

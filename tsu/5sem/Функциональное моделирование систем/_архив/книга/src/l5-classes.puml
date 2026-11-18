@@ -1,0 +1,37 @@
+@startuml
+' Фрагмент диаграммы классов проектирования: операция 1 (лаб. 5)
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+skinparam defaultFontSize 18
+skinparam nodesep 22
+skinparam ranksep 38
+skinparam ArrowColor #333333
+skinparam class {
+  BackgroundColor #F4F8FF
+  BorderColor #4A6FA5
+}
+skinparam classAttributeIconSize 0
+
+class "ЭкранПатента" as UI <<boundary>>
+class "СервисПатентов" as SVC <<control>> {
+  + зарегистрироватьПатент()
+  + пометитьАрхивным()
+  + сведенияОпатенте()
+}
+class "МодульКонтроляСроков" as DEAD <<control>> {
+  + рассчитатьСроки()
+  + пересчитатьСроки()
+}
+class "Патент" as PAT <<entity>>
+class "КонтрольнаяТочка" as KT <<entity>>
+class "РеестрПатентов" as REPO <<repository>>
+class "СправочникРегионов" as REG <<repository>>
+
+UI --> SVC
+SVC --> PAT
+SVC --> DEAD
+SVC --> REG
+SVC --> REPO
+PAT "1" *-- "2..*" KT
+REPO ..> PAT
+@enduml

@@ -1,0 +1,33 @@
+@startuml
+' Внутреннее взаимодействие для операции 6 (лаб. 4) — вместо плотной диаграммы коммуникаций
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+skinparam defaultFontSize 18
+skinparam sequenceMessageAlign center
+skinparam ArrowColor #333333
+skinparam ParticipantBackgroundColor #F4F8FF
+skinparam ParticipantBorderColor #4A6FA5
+skinparam maxMessageSize 240
+hide footbox
+
+actor "Работодатель" as RAB
+participant "Экран" as UI
+participant "Сервис\nуведомлений" as SVC
+participant "Контроль\nсроков" as DEAD
+participant "Шлюз\nЕПГУ" as GW
+participant "Документы" as DOC
+
+RAB -> UI : направитьУведомлениеМВД(идДоговора)
+UI -> SVC : направить(идДоговора, канал)
+SVC -> DEAD : проверитьСрок(датаВыдачи)
+DEAD --> SVC : в срок / просрочено
+SVC -> GW : отправить(форма, копия договора)
+GW --> SVC : квитанция, трек-номер
+SVC -> DOC : сохранить(квитанция, копия)
+SVC --> UI : статус «направлено»
+UI --> RAB : результат
+note right of SVC
+  каждая операция пишет событие
+  в журнал аудита
+end note
+@enduml

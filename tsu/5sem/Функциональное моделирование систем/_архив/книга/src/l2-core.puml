@@ -1,0 +1,57 @@
+@startuml
+' Ядро модели предметной области для печатной книжки (лаб. 2)
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+skinparam defaultFontSize 20
+skinparam nodesep 20
+skinparam ranksep 40
+skinparam ArrowColor #333333
+skinparam class {
+  BackgroundColor #F4F8FF
+  BorderColor #4A6FA5
+}
+skinparam classAttributeIconSize 0
+
+class "Иностранный\nгражданин" as IG {
+  ФИО
+  ИНН
+}
+class "Патент" as PAT {
+  номер
+  дата выдачи
+  срок
+  статус
+}
+class "Работодатель" as RAB {
+  наименование
+  ИНН
+}
+class "Договор\n(трудовой / ГПХ)" as DOG {
+  дата
+  статус
+}
+class "Уведомление\nМВД" as UVD {
+  дата
+  канал
+  трек-номер
+}
+class "Контрольная\nточка" as KT {
+  вид
+  план / факт
+  статус
+}
+
+IG "1" -- "0..*" PAT : имеет
+PAT "1" -- "0..1" DOG : действующий договор
+RAB "1" -- "0..*" DOG : заключает
+DOG "1" -- "0..1" UVD : по договору
+PAT "1" *-- "2..*" KT : сроки
+
+note right of PAT
+  ИНВ-1: один действующий договор
+  ИНВ-6: один действующий патент
+end note
+note bottom of KT
+  ИНВ-9: без патента не существуют
+end note
+@enduml

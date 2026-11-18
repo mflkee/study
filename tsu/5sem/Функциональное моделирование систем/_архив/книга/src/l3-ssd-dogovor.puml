@@ -1,0 +1,24 @@
+@startuml
+' SSD: основной сценарий П02 «заключить договор» (лаб. 3)
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+skinparam defaultFontSize 19
+skinparam sequenceMessageAlign center
+skinparam ArrowColor #333333
+skinparam ParticipantBackgroundColor #F4F8FF
+skinparam ParticipantBorderColor #4A6FA5
+hide footbox
+
+actor "Иностранный\nгражданин" as IG
+participant "Система\n«Действия после\nполучения патента»" as S
+
+IG -> S : заключитьДоговор(идПатента, вид,\nдата, профессия, файл договора)
+S --> IG : идДоговора, статус,\nточка «уведомить МВД»
+note right of S
+  Внутри системы (на этой схеме не видно):
+  проверки ИНВ-1, ИНВ-3, ИНВ-4
+  и создание контрольной точки
+end note
+IG -> S : получитьСведенияОпатенте(идПатента)
+S --> IG : профессия, срок, статус
+@enduml

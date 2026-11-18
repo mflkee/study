@@ -1,0 +1,29 @@
+@startuml
+' Внутреннее взаимодействие для операции 1 «зарегистрировать патент» (лаб. 4)
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+skinparam defaultFontSize 18
+skinparam sequenceMessageAlign center
+skinparam ArrowColor #333333
+skinparam ParticipantBackgroundColor #F4F8FF
+skinparam ParticipantBorderColor #4A6FA5
+skinparam maxMessageSize 200
+hide footbox
+
+actor "Гражданин" as IG
+participant "Экран\nпатента" as UI
+participant "Сервис\nпатентов" as SVC
+participant "Контроль\nсроков" as DEAD
+participant "Справочник\nрегионов" as REG
+participant "Реестр\nпатентов" as REPO
+
+IG -> UI : зарегистрироватьПатент(данные)
+UI -> SVC : зарегистрироватьПатент(данные)
+SVC -> REG : стоимость и профессии региона
+REG --> SVC : тариф, допустимые виды
+SVC -> DEAD : рассчитатьСроки(датаВыдачи)
+DEAD --> SVC : дедлайн, контрольные точки
+SVC -> REPO : сохранить(патент, точки)
+SVC --> UI : идПатента, сроки, точки
+UI --> IG : результат
+@enduml
