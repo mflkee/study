@@ -1,23 +1,30 @@
 @startuml
-' SSD: основной сценарий П03 «направить уведомление МВД» (лаб. 3)
+' Упрощённая системная диаграмма последовательностей (SSD, «чёрный ящик») для книжки
 skinparam defaultFontName "DejaVu Sans"
 skinparam shadowing false
-skinparam defaultFontSize 19
-skinparam sequenceMessageAlign center
-skinparam ArrowColor #333333
+skinparam defaultFontSize 20
+skinparam sequenceMessageAlign left
+skinparam maxMessageSize 300
 skinparam ParticipantBackgroundColor #F4F8FF
 skinparam ParticipantBorderColor #4A6FA5
+skinparam ArrowColor #333333
+skinparam NoteBackgroundColor #FFFDF0
+skinparam NoteBorderColor #C9B458
 hide footbox
 
-actor "Работодатель" as RAB
-participant "Система\n«Действия после\nполучения патента»" as S
+actor "Работодатель /\nзаказчик по ГПХ" as RAB
+participant "Система «Действия\nпосле получения патента»" as SYS
 
-RAB -> S : направитьУведомлениеМВД(идДоговора,\nканал = ЕПГУ, подтверждение)
-S --> RAB : проект формы + остаток срока
-RAB -> S : подтвердить отправку
-S --> RAB : уведомление «направлено»,\nквитанция, трек-номер
-note right of S
-  Внутри: проверка ИНВ-2 (не раньше договора
-  и не позже 2 месяцев), сохранение доказательств
+RAB -> SYS : 1. направитьУведомлениеМВД(номер договора, канал, квитанция/трек)
+note over SYS
+  Система не отправляет уведомление и ни с кем не интегрируется.
+  Она формирует комплект (уведомление + копия договора),
+  проверяет окно «не раньше договора и не позднее 2 месяцев
+  с даты выдачи патента» (ИНВ-2 и ИНВ-7)
+  и сохраняет доказательства: квитанцию ЕПГУ или опись и трек.
 end note
+SYS --> RAB : 2. уведомление зарегистрировано, доказательства сохранены
+
+RAB -> SYS : 3. зафиксироватьВозвратУведомления(трек, документ возврата)
+SYS --> RAB : 4. возврат зафиксирован, точка остаётся открытой
 @enduml

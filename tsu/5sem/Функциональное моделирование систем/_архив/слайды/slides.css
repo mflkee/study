@@ -1,4 +1,4 @@
-/* Слайды ФМС: 16:9, один слайд = одна страница PDF */
+/* Слайды ФМС: 960×540 pt (338.667×190.5 мм), один слайд = одна страница PDF */
 
 @page {
   size: 338.667mm 190.5mm;
@@ -21,7 +21,6 @@ section.slide {
   position: relative;
   width: 338.667mm;
   height: 190.5mm;
-  box-sizing: border-box;
   padding: 14mm 16mm 12mm 16mm;
   break-after: page;
   overflow: hidden;
@@ -49,12 +48,6 @@ h2 {
   letter-spacing: -0.01em;
 }
 
-h2 + .sub {
-  font-size: 13pt;
-  color: #55606f;
-  margin: -1mm 0 4mm;
-}
-
 .rule {
   height: 0.9mm;
   width: 26mm;
@@ -66,7 +59,7 @@ h2 + .sub {
 .s-head > div:first-child { flex: 1 1 auto; min-width: 0; }
 
 .hint {
-  flex: 0 0 88mm;
+  flex: 0 0 86mm;
   font-size: 10.5pt;
   color: #55606f;
   border-left: 0.9mm solid #c8611f;
@@ -74,8 +67,6 @@ h2 + .sub {
   margin-bottom: 4mm;
   line-height: 1.3;
 }
-
-.hint .mono { font-size: 9.5pt; }
 
 /* ---------- подвал ---------- */
 
@@ -124,25 +115,7 @@ ul.clean > li::before {
 .col-text { flex: 1 1 0; min-width: 0; }
 .col-img { flex: 0 0 auto; }
 
-.col-side { flex: 1 1 0; min-width: 0; padding-top: 2mm; }
-
-.side-t {
-  font-size: 9.5pt;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #7d8798;
-  margin-bottom: 3mm;
-}
-
-ul.tight > li { margin-bottom: 2.2mm; font-size: 10.5pt; line-height: 1.32; }
-ul.tight > li::before { top: 0.38em; width: 1.8mm; height: 1.8mm; }
-ul.tight .mono { font-size: 9.5pt; }
-
-.full-img {
-  display: block;
-  margin: 0 auto;
-  max-width: 100%;
-}
+.full-img { display: block; margin: 0 auto; max-width: 100%; max-height: 96mm; }
 
 figure { margin: 0; }
 figcaption {
@@ -154,7 +127,8 @@ figcaption {
 
 /* ---------- карточки ---------- */
 
-.cards { display: flex; gap: 5mm; flex-wrap: wrap; }
+.cards { display: flex; gap: 5mm; }
+.cards.wrap { flex-wrap: wrap; }
 
 .card {
   flex: 1 1 0;
@@ -166,16 +140,29 @@ figcaption {
 }
 
 .card.accent { border-top-color: #c8611f; }
+.card.muted { border-top-color: #7d8798; }
 
 .card h3 {
-  font-size: 12.5pt;
+  font-size: 12pt;
   margin: 0 0 2mm;
   color: #1c3554;
 }
 
-.card p { font-size: 11.5pt; margin: 0; color: #3a4552; }
+.card p { font-size: 11pt; margin: 0; color: #3a4552; }
+.card p + p { margin-top: 1.8mm; }
 
-/* цифры и сетки — таблицами: предсказуемо в WeasyPrint */
+.cards.loose .card { padding: 7mm 6mm; }
+.cards.loose .card p { font-size: 12pt; }
+
+.side-t {
+  font-size: 9.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7d8798;
+  margin-bottom: 4mm;
+}
+
+/* ---------- числа ---------- */
 
 table.grid {
   width: 100%;
@@ -191,6 +178,7 @@ table.grid td {
   width: 20%;
 }
 
+table.grid.six td { width: 16.66%; }
 table.grid.three td { width: 33.33%; }
 
 .num-box {
@@ -199,13 +187,13 @@ table.grid.three td { width: 33.33%; }
 }
 
 .num-box .v {
-  font-size: 34pt;
+  font-size: 32pt;
   font-weight: 700;
   color: #1c3554;
   line-height: 1;
 }
 
-.num-box .k { font-size: 10.5pt; color: #5b6572; margin-top: 1.5mm; line-height: 1.25; }
+.num-box .k { font-size: 10pt; color: #5b6572; margin-top: 1.5mm; line-height: 1.25; }
 
 /* ---------- таблицы ---------- */
 
@@ -234,13 +222,18 @@ td {
 
 tr:last-child td { border-bottom: none; }
 
-td.idx { color: #9aa3b0; width: 8mm; font-variant-numeric: tabular-nums; }
-td.code { font-size: 10.5pt; color: #3f4a58; }
 td.mono, .mono { font-family: "DejaVu Sans Mono", monospace; font-size: 10pt; }
 
-/* ---------- сроки (слайд 2) ---------- */
+table.trace { font-size: 12.5pt; }
+table.trace th { font-size: 10pt; padding-bottom: 2.4mm; }
+table.trace td { padding: 2.8mm 4mm 2.8mm 0; }
 
-.timeline { margin: 3mm 0 6mm; position: relative; height: 26mm; }
+table.trace-sm { font-size: 11pt; }
+table.trace-sm td { padding: 1.9mm 3mm 1.9mm 0; }
+
+/* ---------- сроки ---------- */
+
+.timeline { margin: 2mm 0 5mm; position: relative; height: 27mm; }
 
 .tl-line {
   position: absolute;
@@ -285,23 +278,23 @@ td.mono, .mono { font-family: "DejaVu Sans Mono", monospace; font-size: 10pt; }
 
 /* ---------- слои BCE ---------- */
 
-.layers { display: flex; flex-direction: column; gap: 0; }
+.layers { display: flex; flex-direction: column; gap: 1.6mm; }
 
 .layer {
   border: 0.3mm solid #cfd8e3;
-  border-radius: 1.5mm;
-  padding: 3mm 4mm;
+  border-radius: 1.2mm;
+  padding: 2mm 3.5mm;
   background: #f7fafe;
   display: flex;
   align-items: baseline;
-  gap: 4mm;
+  gap: 3mm;
 }
 
 .layer .name {
-  font-size: 12pt;
+  font-size: 11pt;
   font-weight: 700;
   color: #1c3554;
-  width: 54mm;
+  width: 32mm;
   flex: 0 0 auto;
 }
 
@@ -309,19 +302,15 @@ td.mono, .mono { font-family: "DejaVu Sans Mono", monospace; font-size: 10pt; }
   font-size: 11pt;
   color: #c8611f;
   font-weight: 700;
-  width: 26mm;
+  width: 9mm;
   flex: 0 0 auto;
 }
 
-.layer .what { font-size: 10.5pt; color: #46515f; }
+.layer .what { font-size: 10pt; color: #46515f; }
 
-.arrow-down {
-  text-align: center;
-  color: #9aa3b0;
-  font-size: 13pt;
-  line-height: 1;
-  margin: 1.2mm 0;
-}
+.layer.total { background: #1c3554; border-color: #1c3554; }
+.layer.total .name, .layer.total .cnt { color: #fff; }
+.layer.total .what { color: #c9d6e6; }
 
 /* ---------- шаги / цепочка ---------- */
 
@@ -333,7 +322,6 @@ td.mono, .mono { font-family: "DejaVu Sans Mono", monospace; font-size: 10pt; }
   border-radius: 1.5mm;
   padding: 3.5mm;
   background: #fbfcfe;
-  position: relative;
 }
 
 .chain .step .n {
@@ -364,14 +352,54 @@ td.mono, .mono { font-family: "DejaVu Sans Mono", monospace; font-size: 10pt; }
 
 .note b { color: #8f4a12; }
 
+/* ---------- вопрос-ответ ---------- */
+
+.qa { display: flex; gap: 6mm; align-items: stretch; }
+
+.qa .item {
+  flex: 1 1 0;
+  border: 0.3mm solid #d6dde6;
+  border-top: 1.6mm solid #c8611f;
+  border-radius: 1.5mm;
+  padding: 8mm 6mm;
+  background: #fbfcfe;
+}
+
+.qa .q {
+  font-size: 15pt;
+  font-weight: 700;
+  color: #1c3554;
+  margin: 0 0 3.5mm;
+  line-height: 1.2;
+}
+
+.qa .a { font-size: 12.5pt; color: #3a4552; margin: 0; }
+.qa .a b { color: #1c3554; }
+
+/* ---------- блок кода ---------- */
+
+.code-block {
+  background: #f4f6f9;
+  border-left: 1.2mm solid #1c3554;
+  padding: 3mm 4.5mm;
+}
+
+.code-block pre {
+  margin: 0;
+  font-family: "DejaVu Sans Mono", monospace;
+  font-size: 9.5pt;
+  line-height: 1.42;
+  color: #2b3644;
+  white-space: pre-wrap;
+}
+
 /* ---------- титул ---------- */
 
 section.cover { padding: 0; }
 
 .cover-inner {
   height: 100%;
-  padding: 30mm 22mm 18mm 22mm;
-  box-sizing: border-box;
+  padding: 28mm 22mm 18mm 22mm;
   background: #1c3554;
   color: #fff;
 }
@@ -379,7 +407,7 @@ section.cover { padding: 0; }
 .cover-inner .kicker { color: #9fb0c6; }
 
 h1 {
-  font-size: 40pt;
+  font-size: 38pt;
   line-height: 1.08;
   margin: 6mm 0 0;
   color: #fff;
@@ -395,7 +423,7 @@ h1 {
 }
 
 .cover-line {
-  margin-top: 24mm;
+  margin-top: 22mm;
   font-size: 13pt;
   color: #c9d6e6;
 }
@@ -421,46 +449,7 @@ section.final .rule { background: #f0c9a8; }
 section.final ul.clean > li::before { background: #f0c9a8; }
 section.final b { color: #fff; }
 section.final .s-foot { color: #7d92ad; border-top-color: #3d5a7d; }
-
-/* таблица операций — 16 строк на один слайд */
-
-table.ops { font-size: 10pt; }
-table.ops th { font-size: 9pt; padding: 0 3mm 1.2mm 0; }
-table.ops td { padding: 0.85mm 3mm 0.85mm 0; }
-table.ops td.mono { font-size: 9pt; }
-table.ops td.code { font-size: 9.5pt; }
-
-/* трассировка: просторные строки */
-
-table.trace { font-size: 12.5pt; }
-table.trace th { font-size: 10pt; padding-bottom: 2.4mm; }
-table.trace td { padding: 2.8mm 4mm 2.8mm 0; }
-
-/* трассировка на слайде 17 */
-
-table.trace-sm { font-size: 11pt; }
-table.trace-sm td { padding: 2mm 3mm 2mm 0; }
-
-/* блок кода */
-
-.code-block {
-  margin-top: 5mm;
-  background: #f4f6f9;
-  border-left: 1.2mm solid #1c3554;
-  padding: 3.5mm 4.5mm;
-}
-
-.code-block pre {
-  margin: 0;
-  font-family: "DejaVu Sans Mono", monospace;
-  font-size: 9.5pt;
-  line-height: 1.42;
-  color: #2b3644;
-  white-space: pre-wrap;
-}
-
-/* итоговый слайд: карточки на тёмном */
-
+section.final .card { background: #243f63; border-color: #3d5a7d; border-top-color: #f0c9a8; }
 section.final .card h3 { color: #fff; }
 section.final .card p { color: #c9d6e6; }
 section.final .card .mono { color: #f0c9a8; }

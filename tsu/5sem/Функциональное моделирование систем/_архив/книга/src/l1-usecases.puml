@@ -1,48 +1,51 @@
 @startuml
-' Упрощённая диаграмма прецедентов для печатной книжки (лаб. 1)
-skinparam defaultFontName "DejaVu Sans"
+' Диаграмма прецедентов: подсистема «Действия после получения патента» (тема 7 дорожной карты)
+' 4 прецедента (П01–П04), 4 актора (A1–A4). Отношений include/extend нет:
+' прецеденты независимы, связь между ними — только через предусловия (см. usecase-diagram.md).
+' Рендер: plantuml usecase-diagram.puml   (или расширение PlantUML в IDE)
+' Проверка: plantuml -checkonly usecase-diagram.puml
+
+left to right direction
+skinparam packageStyle rectangle
 skinparam shadowing false
 skinparam defaultFontSize 20
-skinparam nodesep 14
-skinparam ranksep 30
-skinparam ArrowColor #333333
-left to right direction
+skinparam defaultFontName "DejaVu Sans"
+skinparam nodesep 34
+skinparam ranksep 70
 skinparam usecase {
-  BackgroundColor #F4F8FF
+  BackgroundColor #F7FBFF
   BorderColor #4A6FA5
 }
-
-actor "Иностранный\nгражданин" as IG
-actor "Работодатель" as RAB
-actor "Админ" as ADM
-
-rectangle "Подсистема «Действия после получения патента»" {
-  usecase "П01  Учёт патента" as P01
-  usecase "П02  Трудоустройство" as P02
-  usecase "П03  Уведомление МВД" as P03
-  usecase "П04  Контроль срока" as P04
-  usecase "П05  НДФЛ" as P05
-  usecase "П06  Прекращение договора" as P06
-  usecase "П07  Реестр и отчёт" as P07
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #333333
 }
 
-actor "МВД" as MVD
-actor "ЕПГУ" as EPGU
-actor "Почта" as POST
-actor "ФНС" as FNS
-actor "Банк" as BANK
+' --- Основные исполнители ---
+actor "Иностранный\nгражданин (ИГ)" as CIT
+actor "Работодатель /\nзаказчик по ГПХ" as EMP
 
-IG -- P01
-IG -- P02
-IG -- P04
-IG -- P05
-RAB -- P02
-RAB -- P03
-RAB -- P06
-ADM -- P07
-P03 -- MVD
-P03 -- EPGU
-P03 -- POST
-P05 -- FNS
-P05 -- BANK
+' --- Вспомогательные исполнители ---
+actor "Сотрудник ОВМ МВД\n(территориальный орган)" as MVD
+actor "ЕПГУ /\nПочта России" as CHANNEL
+
+rectangle "Подсистема «Действия после получения патента»" as SYS {
+  usecase "П01. Учесть\nвыданный патент" as UC01
+  usecase "П02. Заключить трудовой договор\nили договор ГПХ (7.1)" as UC02
+  usecase "П03. Уведомить МВД\nоб осуществлении\nтрудовой деятельности (7.2)" as UC03
+  usecase "П04. Контролировать срок\nтрудоустройства\nи напоминать" as UC04
+}
+
+' --- ассоциации ---
+CIT --> UC01
+CIT --> UC02
+CIT --> UC04
+
+EMP --> UC02
+EMP --> UC03
+EMP --> UC04
+
+MVD --> UC03
+CHANNEL --> UC03
+
 @enduml

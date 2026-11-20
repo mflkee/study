@@ -14,3 +14,10 @@ apcs/
 tsu/5sem/АСД/
 *.epub
 *.djvu
+
+# Jupyter
+**/.ipynb_checkpoints/
+
+# ФМС: рабочая копия отдельного репозитория (github.com/mflkee/fms-course),
+# живёт внутри study, но ведётся своим git — см. README.md рядом
+tsu/5sem/Функциональное моделирование систем/fms-course/

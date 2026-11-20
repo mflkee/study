@@ -1,0 +1,32 @@
+@startuml
+' Упрощённая системная диаграмма последовательностей (SSD, «чёрный ящик») для книжки
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+skinparam defaultFontSize 20
+skinparam sequenceMessageAlign left
+skinparam maxMessageSize 300
+skinparam ParticipantBackgroundColor #F4F8FF
+skinparam ParticipantBorderColor #4A6FA5
+skinparam ArrowColor #333333
+skinparam NoteBackgroundColor #FFFDF0
+skinparam NoteBorderColor #C9B458
+hide footbox
+
+actor "Иностранный\nгражданин" as IG
+participant "Система «Действия\nпосле получения патента»" as SYS
+
+IG -> SYS : 1. пересчитатьСрокиПатента(серия, номер)
+note over SYS
+  Плановые даты считаются от даты выдачи патента:
+  «заключить договор» и «направить уведомление» — не позднее 2 месяцев (ИНВ-3).
+  Точка становится критической за 7 дней до плановой даты.
+end note
+SYS --> IG : 2. сроки и статусы точек
+
+IG -> SYS : 3. настроитьНапоминания(серия, номер)
+note over SYS
+  Напоминания за 14, 7 и 1 день не рассылаются:
+  они отображаются в личном кабинете и попадают в план (ИНВ-6).
+end note
+SYS --> IG : 4. напоминания запланированы
+@enduml

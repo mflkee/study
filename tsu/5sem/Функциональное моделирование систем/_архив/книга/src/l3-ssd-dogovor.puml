@@ -1,24 +1,28 @@
 @startuml
-' SSD: основной сценарий П02 «заключить договор» (лаб. 3)
+' Упрощённая системная диаграмма последовательностей (SSD, «чёрный ящик») для книжки
 skinparam defaultFontName "DejaVu Sans"
 skinparam shadowing false
-skinparam defaultFontSize 19
-skinparam sequenceMessageAlign center
-skinparam ArrowColor #333333
+skinparam defaultFontSize 20
+skinparam sequenceMessageAlign left
+skinparam maxMessageSize 300
 skinparam ParticipantBackgroundColor #F4F8FF
 skinparam ParticipantBorderColor #4A6FA5
+skinparam ArrowColor #333333
+skinparam NoteBackgroundColor #FFFDF0
+skinparam NoteBorderColor #C9B458
 hide footbox
 
 actor "Иностранный\nгражданин" as IG
-participant "Система\n«Действия после\nполучения патента»" as S
+participant "Система «Действия\nпосле получения патента»" as SYS
 
-IG -> S : заключитьДоговор(идПатента, вид,\nдата, профессия, файл договора)
-S --> IG : идДоговора, статус,\nточка «уведомить МВД»
-note right of S
-  Внутри системы (на этой схеме не видно):
-  проверки ИНВ-1, ИНВ-3, ИНВ-4
-  и создание контрольной точки
+IG -> SYS : 1. получитьСведенияОпатенте(серия, номер)
+SYS --> IG : 2. срок действия, регион, профессия
+IG -> SYS : 3. заключитьДоговор(данные договора, файл)
+note over SYS
+  Проверки: другого действующего договора нет (ИНВ-1);
+  договор не позднее 2 месяцев с даты выдачи патента (ИНВ-3);
+  профессия входит в указанные в патенте (ИНВ-4).
+  Создаётся контрольная точка «направить уведомление МВД».
 end note
-IG -> S : получитьСведенияОпатенте(идПатента)
-S --> IG : профессия, срок, статус
+SYS --> IG : 4. договор заключён
 @enduml

@@ -1,10 +1,11 @@
 @startuml
 ' Ядро модели предметной области для печатной книжки (лаб. 2)
+' Только атрибуты, без id, без модификаторов и методов (DESIGN.md §5).
 skinparam defaultFontName "DejaVu Sans"
 skinparam shadowing false
 skinparam defaultFontSize 20
-skinparam nodesep 20
-skinparam ranksep 40
+skinparam nodesep 26
+skinparam ranksep 46
 skinparam ArrowColor #333333
 skinparam class {
   BackgroundColor #F4F8FF
@@ -14,44 +15,57 @@ skinparam classAttributeIconSize 0
 
 class "Иностранный\nгражданин" as IG {
   ФИО
-  ИНН
+  гражданство
+  документ личности
+  телефон
 }
 class "Патент" as PAT {
+  серия
   номер
   дата выдачи
-  срок
+  срок действия
   статус
+}
+class "Регион" as REG {
+  код
+  наименование
+}
+class "Вид\nдеятельности" as VID {
+  код
+  наименование
 }
 class "Работодатель" as RAB {
   наименование
   ИНН
+  тип
 }
-class "Договор\n(трудовой / ГПХ)" as DOG {
-  дата
+abstract class "Договор" as DOG {
+  номер
+  дата заключения
   статус
 }
-class "Уведомление\nМВД" as UVD {
-  дата
-  канал
-  трек-номер
+class "Трудовой\nдоговор" as TD {
+  должность
+  режим
 }
-class "Контрольная\nточка" as KT {
-  вид
-  план / факт
-  статус
+class "Договор ГПХ" as GPX {
+  предмет
+  срок работ
+}
+class "Документ" as DOC {
+  тип
+  имя файла
+  дата загрузки
 }
 
 IG "1" -- "0..*" PAT : имеет
-PAT "1" -- "0..1" DOG : действующий договор
+REG "1" -- "0..*" PAT
+VID "1" -- "0..*" PAT
+PAT "1" -- "0..1" DOG : действующий\nдоговор
 RAB "1" -- "0..*" DOG : заключает
-DOG "1" -- "0..1" UVD : по договору
-PAT "1" *-- "2..*" KT : сроки
-
-note right of PAT
-  ИНВ-1: один действующий договор
-  ИНВ-6: один действующий патент
-end note
-note bottom of KT
-  ИНВ-9: без патента не существуют
-end note
+DOG "0..*" -- "0..1" VID : профессия
+DOG <|-- TD
+DOG <|-- GPX
+PAT "1" o-- "0..*" DOC
+DOG "1" o-- "0..*" DOC
 @enduml

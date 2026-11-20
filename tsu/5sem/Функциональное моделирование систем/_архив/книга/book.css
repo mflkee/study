@@ -288,6 +288,19 @@ figcaption {
 
 figure img.tiny { width: 55%; }
 
+pre {
+  font-family: "Liberation Mono", monospace;
+  font-size: 8.3pt;
+  line-height: 1.3;
+  background: #f4f7fb;
+  border-left: 1.6pt solid #8fa6bf;
+  padding: 2mm 3mm;
+  margin: 2mm 0 4mm;
+  white-space: pre;
+}
+
+code { font-family: "Liberation Mono", monospace; font-size: 0.9em; }
+
 /* продолжение внутри той же лабораторной — без разрыва страницы */
 .chapter.flow { break-before: auto; }
 

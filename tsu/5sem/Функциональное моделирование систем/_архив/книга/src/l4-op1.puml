@@ -1,29 +1,31 @@
 @startuml
-' Внутреннее взаимодействие для операции 1 «зарегистрировать патент» (лаб. 4)
+' Диаграмма коммуникаций: операция 1 «зарегистрироватьПатент» (лаб. 4)
+' Актёр показан объектом со стереотипом <<actor>> — PlantUML не смешивает actor и object.
 skinparam defaultFontName "DejaVu Sans"
 skinparam shadowing false
-skinparam defaultFontSize 18
-skinparam sequenceMessageAlign center
+skinparam defaultFontSize 19
 skinparam ArrowColor #333333
-skinparam ParticipantBackgroundColor #F4F8FF
-skinparam ParticipantBorderColor #4A6FA5
-skinparam maxMessageSize 200
-hide footbox
+skinparam nodesep 24
+skinparam ranksep 30
+skinparam object {
+  BackgroundColor #F4F8FF
+  BorderColor #4A6FA5
+}
+hide empty members
+top to bottom direction
 
-actor "Гражданин" as IG
-participant "Экран\nпатента" as UI
-participant "Сервис\nпатентов" as SVC
-participant "Контроль\nсроков" as DEAD
-participant "Справочник\nрегионов" as REG
-participant "Реестр\nпатентов" as REPO
+object "Иностранный\nгражданин" as IG <<actor>>
+object "ЭкранПатента" as UI <<boundary>>
+object "СервисПатентов" as SVC <<control>>
+object "Репозиторий\nПатентов" as REPO <<repository>>
+object "Патент" as PAT <<entity>>
+object "Контрольная\nТочка" as KT <<entity>>
 
-IG -> UI : зарегистрироватьПатент(данные)
-UI -> SVC : зарегистрироватьПатент(данные)
-SVC -> REG : стоимость и профессии региона
-REG --> SVC : тариф, допустимые виды
-SVC -> DEAD : рассчитатьСроки(датаВыдачи)
-DEAD --> SVC : дедлайн, контрольные точки
-SVC -> REPO : сохранить(патент, точки)
-SVC --> UI : идПатента, сроки, точки
-UI --> IG : результат
+IG -right-> UI : 1 зарегистрироватьПатент(\nданные, скан)
+UI --> SVC : 2 зарегистрироватьПатент(\nданные, скан)
+SVC --> PAT : 3 создать(серия,\nномер, дата, срок)
+SVC --> KT : 4 создать «заключить\nдоговор» (+2 месяца)
+SVC --> REPO : 5 сохранить(патент,\nточки)
+SVC ..> UI : 6 срок и точки
+UI ..> IG : 7 результат
 @enduml
