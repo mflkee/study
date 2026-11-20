@@ -1,71 +1,52 @@
 @startuml
-' Ядро модели предметной области для печатной книжки (лаб. 2)
-' Только атрибуты, без id, без модификаторов и методов (DESIGN.md §5).
+' Ядро модели предметной области — только связи, важные для темы 7
 skinparam defaultFontName "DejaVu Sans"
 skinparam shadowing false
-skinparam defaultFontSize 20
-skinparam nodesep 26
-skinparam ranksep 46
+skinparam defaultFontSize 26
+skinparam classAttributeIconSize 0
 skinparam ArrowColor #333333
 skinparam class {
-  BackgroundColor #F4F8FF
+  BackgroundColor #F7FBFF
   BorderColor #4A6FA5
 }
-skinparam classAttributeIconSize 0
+skinparam note {
+  BackgroundColor #FFFDF0
+  BorderColor #C9B458
+}
 
 class "Иностранный\nгражданин" as IG {
-  ФИО
+  фио
   гражданство
-  документ личности
   телефон
 }
 class "Патент" as PAT {
-  серия
-  номер
+  серия, номер
   дата выдачи
   срок действия
-  статус
 }
-class "Регион" as REG {
-  код
-  наименование
+class "Договор" as DOG {
+  номер
+  вид
+  дата заключения
 }
-class "Вид\nдеятельности" as VID {
-  код
-  наименование
+class "Уведомление\nМВД" as UVD {
+  канал
+  дата направления
+  номер квитанции
 }
 class "Работодатель" as RAB {
   наименование
   ИНН
-  тип
-}
-abstract class "Договор" as DOG {
-  номер
-  дата заключения
-  статус
-}
-class "Трудовой\nдоговор" as TD {
-  должность
-  режим
-}
-class "Договор ГПХ" as GPX {
-  предмет
-  срок работ
-}
-class "Документ" as DOC {
-  тип
-  имя файла
-  дата загрузки
 }
 
-IG "1" -- "0..*" PAT : имеет
-REG "1" -- "0..*" PAT
-VID "1" -- "0..*" PAT
-PAT "1" -- "0..1" DOG : действующий\nдоговор
-RAB "1" -- "0..*" DOG : заключает
-DOG "0..*" -- "0..1" VID : профессия
-DOG <|-- TD
-DOG <|-- GPX
-PAT "1" o-- "0..*" DOC
-DOG "1" o-- "0..*" DOC
+IG "1" --> "0..*" PAT : имеет
+PAT "1" --> "0..1" DOG : действующий договор
+DOG "1" --> "0..1" UVD : по договору
+RAB "1" --> "0..*" DOG : заключает
+
+note bottom of DOG
+  1 — ровно один объект;
+  0..1 — не более одного (может не быть);
+  0..* — сколько угодно, включая ноль.
+end note
 @enduml
