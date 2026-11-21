@@ -224,7 +224,7 @@ def setup(doc):
     st.font.name = "DejaVu Serif"
     st.font.size = Pt(10.5)
     st.paragraph_format.space_after = Pt(4)
-    st.paragraph_format.line_spacing = 1.15
+    st.paragraph_format.line_spacing = 1.12
 
 
 
@@ -284,6 +284,29 @@ def fix_column_widths(doc, total_cm=17.0, number_col_cm=1.7):
                 cell.width = Cm(widths[index])
 
 
+def drop_empty_before_images(doc):
+    """Убирает пустой абзац, который markdown ставит перед рисунком.
+
+    Иначе заголовок с keepNext «держится» за пустой абзац, а рисунок уезжает
+    на следующую страницу.
+    """
+    for paragraph in list(doc.paragraphs):
+        has_image = paragraph._p.findall(
+            ".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}drawing"
+        )
+        if not has_image:
+            continue
+        previous = paragraph._p.getprevious()
+        if previous is None:
+            continue
+        text = "".join(previous.itertext()).strip()
+        has_content = previous.findall(
+            ".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}drawing"
+        )
+        if not text and not has_content:
+            previous.getparent().remove(previous)
+
+
 def build(md_path, title, work):
     text = open(md_path, encoding="utf-8").read()
     html = markdown.markdown(text, extensions=["tables", "sane_lists"])
@@ -296,6 +319,7 @@ def build(md_path, title, work):
     builder.feed(html)
     builder._flush()
     fix_column_widths(doc)
+    drop_empty_before_images(doc)
     for paragraph in doc.paragraphs:
         if paragraph.style.name.startswith("Heading"):
             paragraph.paragraph_format.keep_with_next = True
