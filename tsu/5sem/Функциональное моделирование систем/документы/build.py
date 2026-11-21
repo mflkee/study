@@ -13,7 +13,8 @@ from html.parser import HTMLParser
 import markdown
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Cm, Pt
+from docx.shared import Cm, Pt, RGBColor
+import re as _re
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 
@@ -28,6 +29,34 @@ LABS = [
 ]
 
 INLINE = re.compile(r"(</?(?:strong|b|em|i|code)>)", re.I)
+
+
+
+COLORS = {
+    "g": RGBColor(0x1E, 0x7D, 0x32),  # зелёный: выполнено
+    "o": RGBColor(0xC0, 0x62, 0x00),  # оранжевый: требуется действие
+    "r": RGBColor(0xC0, 0x2B, 0x1F),  # красный: нарушение или ошибка
+    "b": RGBColor(0x1C, 0x35, 0x54),  # синий: служебное
+}
+COLOR_RE = _re.compile(r"\[\[([gorb]):(.+?)\]\]")
+
+
+def add_colored_text(paragraph, text, size=None):
+    pos = 0
+    for match in COLOR_RE.finditer(text):
+        if match.start() > pos:
+            run = paragraph.add_run(text[pos:match.start()])
+            if size:
+                run.font.size = size
+        run = paragraph.add_run(match.group(2))
+        run.font.color.rgb = COLORS[match.group(1)]
+        if size:
+            run.font.size = size
+        pos = match.end()
+    if pos < len(text):
+        run = paragraph.add_run(text[pos:])
+        if size:
+            run.font.size = size
 
 
 class DocBuilder(HTMLParser):
@@ -78,12 +107,16 @@ class DocBuilder(HTMLParser):
             if low == "</code>":
                 self.code = max(0, self.code - 1)
                 continue
-            run = para.add_run(part)
-            run.bold = self.bold > 0
-            run.italic = self.italic > 0
-            if self.code:
-                run.font.name = "DejaVu Sans Mono"
-                run.font.size = Pt(9)
+            add_colored_text(para, part)
+            if isinstance(para.runs[-1], object):
+                pass
+            last_runs = para.runs
+            for run in last_runs[-max(1, len(COLOR_RE.findall(part)) + 1):]:
+                run.bold = self.bold > 0 or run.bold
+                run.italic = self.italic > 0 or run.italic
+                if self.code:
+                    run.font.name = "DejaVu Sans Mono"
+                    run.font.size = Pt(9)
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
@@ -147,10 +180,11 @@ class DocBuilder(HTMLParser):
                 cells = self.table.add_row().cells
                 for i, value in enumerate(self.row[: len(cells)]):
                     cells[i].text = ""
-                    run = cells[i].paragraphs[0].add_run(value)
-                    run.font.size = Pt(9)
+                    paragraph = cells[i].paragraphs[0]
+                    add_colored_text(paragraph, value, size=Pt(9))
                     if self.first_row:
-                        run.bold = True
+                        for run in paragraph.runs:
+                            run.bold = True
                     self._mark_row(cells, header=self.first_row)
                 self.first_row = False
             self.row = []
