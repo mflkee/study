@@ -155,7 +155,7 @@ class DocBuilder(HTMLParser):
             self._flush()
             path = os.path.join(self.base_dir, a["src"])
             if os.path.exists(path):
-                self.doc.add_picture(path, width=Cm(16.4))
+                self.doc.add_picture(path, width=Cm(15.0))
                 self.doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
             return
 
@@ -190,7 +190,6 @@ class DocBuilder(HTMLParser):
             self.row = []
         elif tag == "table":
             self.table = None
-            self.doc.add_paragraph()
 
     @staticmethod
     def _mark_row(cells, header=False):
