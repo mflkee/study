@@ -14,6 +14,8 @@ import markdown
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Cm, Pt
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DOCS = HERE
@@ -148,11 +150,23 @@ class DocBuilder(HTMLParser):
                     run.font.size = Pt(9)
                     if self.first_row:
                         run.bold = True
+                    self._mark_row(cells, header=self.first_row)
                 self.first_row = False
             self.row = []
         elif tag == "table":
             self.table = None
             self.doc.add_paragraph()
+
+    @staticmethod
+    def _mark_row(cells, header=False):
+        tr = cells[0]._tc.getparent()
+        trPr = tr.get_or_add_trPr()
+        cant = OxmlElement("w:cantSplit")
+        trPr.append(cant)
+        if header:
+            tbl_header = OxmlElement("w:tblHeader")
+            tbl_header.set(qn("w:val"), "true")
+            trPr.append(tbl_header)
 
     def handle_data(self, data):
         if self.para is not None or self.cell is not None:
