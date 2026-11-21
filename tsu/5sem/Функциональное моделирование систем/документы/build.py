@@ -194,6 +194,32 @@ def setup(doc):
     st.paragraph_format.line_spacing = 1.15
 
 
+
+def fix_column_widths(doc, total_cm=17.0, number_col_cm=1.7):
+    """В таблицах со столбцом «№» первый столбец 10% ширины, остальные поровну."""
+    from docx.enum.table import WD_TABLE_ALIGNMENT  # noqa: F401
+    for table in doc.tables:
+        rows = table.rows
+        if not rows:
+            continue
+        header = [cell.text.strip() for cell in rows[0].cells]
+        if not header or header[0] not in ("№", "ID"):
+            continue
+        count = len(header)
+        if count < 2:
+            continue
+        rest = (total_cm - number_col_cm) / (count - 1)
+        widths = [number_col_cm] + [rest] * (count - 1)
+        table.autofit = False
+        tblPr = table._tbl.tblPr
+        layout = OxmlElement("w:tblLayout")
+        layout.set(qn("w:type"), "fixed")
+        tblPr.append(layout)
+        for row in rows:
+            for index, cell in enumerate(row.cells[:count]):
+                cell.width = Cm(widths[index])
+
+
 def build(md_path, title, work):
     text = open(md_path, encoding="utf-8").read()
     html = markdown.markdown(text, extensions=["tables", "sane_lists"])
@@ -205,6 +231,7 @@ def build(md_path, title, work):
     builder = DocBuilder(doc, os.path.dirname(md_path))
     builder.feed(html)
     builder._flush()
+    fix_column_widths(doc)
     out = os.path.join(OUT, title + ".docx")
     doc.save(out)
     return out
