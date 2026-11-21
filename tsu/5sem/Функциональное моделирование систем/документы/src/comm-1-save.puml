@@ -12,10 +12,10 @@ object "патент : Патент" as PAT
 object "договор : Договор" as DOG
 object ":РепозиторийПатентов" as REPO
 
-UI -> SVC : 1: сохранитьАнкету(данные)
-SVC -> PAT : 2: создать(серия, номер, датаВыдачи, регион, профессия)
-SVC -> DOG : 3: создать(вид, датаЗаключения)
-SVC -> PAT : 4: связать с договором
-SVC -> REPO : 5: сохранить(патент)
-SVC --> UI : 6: анкета сохранена
+UI -down-> SVC : 1
+SVC -down-> PAT : 2
+SVC -down-> DOG : 3
+PAT -right-> DOG : 4
+SVC -down-> REPO : 5
+SVC -up-> UI : 6
 @enduml
