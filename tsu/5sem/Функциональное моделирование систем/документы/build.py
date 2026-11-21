@@ -297,6 +297,9 @@ def build(md_path, title, work):
     builder.feed(html)
     builder._flush()
     fix_column_widths(doc)
+    for paragraph in doc.paragraphs:
+        if paragraph.style.name.startswith("Heading"):
+            paragraph.paragraph_format.keep_with_next = True
     out = os.path.join(OUT, title + ".docx")
     doc.save(out)
     return out
