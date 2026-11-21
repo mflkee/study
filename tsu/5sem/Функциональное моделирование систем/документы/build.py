@@ -168,6 +168,11 @@ class DocBuilder(HTMLParser):
             tbl_header.set(qn("w:val"), "true")
             trPr.append(tbl_header)
 
+    def handle_comment(self, data):
+        if "pagebreak" in data:
+            self._flush()
+            self.doc.add_page_break()
+
     def handle_data(self, data):
         if self.para is not None or self.cell is not None:
             self.buf.append(data)
