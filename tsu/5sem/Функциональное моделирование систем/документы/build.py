@@ -19,6 +19,7 @@ from docx.oxml.ns import qn
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DOCS = HERE
+OUT = os.path.normpath(os.path.join(HERE, "../защита"))
 
 LABS = [
     ("lab1.md", "Лабораторная 1. Прецеденты"),
@@ -204,7 +205,7 @@ def build(md_path, title, work):
     builder = DocBuilder(doc, os.path.dirname(md_path))
     builder.feed(html)
     builder._flush()
-    out = os.path.join(DOCS, title + ".docx")
+    out = os.path.join(OUT, title + ".docx")
     doc.save(out)
     return out
 
