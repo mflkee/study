@@ -228,7 +228,7 @@ class DocBuilder(HTMLParser):
 IMG_WIDTH = {
     "lab1.md": 15.0,
     "lab2.md": 12.0,
-    "lab3.md": 11.0,
+    "lab3.md": 10.5,
 }
 
 
