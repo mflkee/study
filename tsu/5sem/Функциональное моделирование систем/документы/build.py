@@ -152,6 +152,9 @@ class DocBuilder(HTMLParser):
             self.cell = tag
             self.buf = []
             return
+        if tag == "br":
+            self.buf.append("\n")
+            return
         if tag == "img" and a.get("src"):
             self._flush()
             path = os.path.join(self.base_dir, a["src"])
@@ -170,7 +173,10 @@ class DocBuilder(HTMLParser):
         elif tag == "li":
             self._flush()
         elif tag in ("td", "th"):
-            self.row.append(re.sub(r"\s+", " ", "".join(self.buf)).strip())
+            value = "".join(self.buf)
+            value = re.sub(r"[ \t]+", " ", value)
+            value = "\n".join(part.strip() for part in value.split("\n") if part.strip())
+            self.row.append(value)
             self.cell = None
             self.buf = []
         elif tag == "tr":
@@ -181,11 +187,17 @@ class DocBuilder(HTMLParser):
                 cells = self.table.add_row().cells
                 for i, value in enumerate(self.row[: len(cells)]):
                     cells[i].text = ""
+                    lines = value.split("\n")
                     paragraph = cells[i].paragraphs[0]
-                    add_colored_text(paragraph, value, size=Pt(9))
+                    add_colored_text(paragraph, lines[0], size=Pt(9))
+                    for line in lines[1:]:
+                        extra = cells[i].add_paragraph()
+                        extra.paragraph_format.space_after = Pt(0)
+                        add_colored_text(extra, "\u2022 " + line, size=Pt(9))
                     if self.first_row:
-                        for run in paragraph.runs:
-                            run.bold = True
+                        for cell_paragraph in cells[i].paragraphs:
+                            for run in cell_paragraph.runs:
+                                run.bold = True
                     self._mark_row(cells, header=self.first_row)
                 self.first_row = False
             self.row = []
