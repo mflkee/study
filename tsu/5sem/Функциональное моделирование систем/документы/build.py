@@ -196,25 +196,56 @@ def setup(doc):
 
 
 def fix_column_widths(doc, total_cm=17.0, number_col_cm=1.7):
-    """В таблицах со столбцом «№» первый столбец 10% ширины, остальные поровну."""
-    from docx.enum.table import WD_TABLE_ALIGNMENT  # noqa: F401
+    """Растягивает таблицы на всю ширину текста.
+
+    В таблицах со столбцом «№»/«ID» он занимает около 10%, остальные делятся поровну.
+    В остальных ширина колонок пропорциональна объёму текста, но не меньше 2 см.
+    """
     for table in doc.tables:
         rows = table.rows
         if not rows:
             continue
         header = [cell.text.strip() for cell in rows[0].cells]
-        if not header or header[0] not in ("№", "ID"):
-            continue
         count = len(header)
-        if count < 2:
+        if not count:
             continue
-        rest = (total_cm - number_col_cm) / (count - 1)
-        widths = [number_col_cm] + [rest] * (count - 1)
+
+        if header[0] in ("№", "ID") and count > 1:
+            rest = (total_cm - number_col_cm) / (count - 1)
+            widths = [number_col_cm] + [rest] * (count - 1)
+        else:
+            weights = []
+            body = rows[1:] if len(rows) > 1 else rows
+            for index in range(count):
+                lengths = [
+                    len(row.cells[index].text.strip())
+                    for row in body
+                    if index < len(row.cells)
+                ]
+                average = sum(lengths) / len(lengths) if lengths else 1
+                weights.append(max(5.0, min(average, 80.0)))
+            base = 3.2 if count <= 3 else 2.6
+            if base * count > total_cm:
+                base = total_cm / count
+            free = total_cm - base * count
+            weight_sum = sum(weights)
+            widths = [base + free * weight / weight_sum for weight in weights]
+
         table.autofit = False
-        tblPr = table._tbl.tblPr
+        tbl = table._tbl
+        tblPr = tbl.tblPr
         layout = OxmlElement("w:tblLayout")
         layout.set(qn("w:type"), "fixed")
         tblPr.append(layout)
+
+        tblW = OxmlElement("w:tblW")
+        tblW.set(qn("w:type"), "dxa")
+        tblW.set(qn("w:w"), str(int(Cm(sum(widths)).twips)))
+        tblPr.append(tblW)
+
+        for grid_col, width in zip(tbl.tblGrid.gridCol_lst, widths):
+            grid_col.set(qn("w:w"), str(int(Cm(width).twips)))
+
         for row in rows:
             for index, cell in enumerate(row.cells[:count]):
                 cell.width = Cm(widths[index])
