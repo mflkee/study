@@ -60,10 +60,11 @@ def add_colored_text(paragraph, text, size=None):
 
 
 class DocBuilder(HTMLParser):
-    def __init__(self, doc, base_dir):
+    def __init__(self, doc, base_dir, img_width=13.5):
         super().__init__(convert_charrefs=True)
         self.doc = doc
         self.base_dir = base_dir
+        self.img_width = img_width
         self.para = None
         self.buf = []
         self.list_depth = 0
@@ -155,7 +156,7 @@ class DocBuilder(HTMLParser):
             self._flush()
             path = os.path.join(self.base_dir, a["src"])
             if os.path.exists(path):
-                self.doc.add_picture(path, width=Cm(15.0))
+                self.doc.add_picture(path, width=Cm(self.img_width))
                 self.doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
             return
 
@@ -210,6 +211,13 @@ class DocBuilder(HTMLParser):
     def handle_data(self, data):
         if self.para is not None or self.cell is not None:
             self.buf.append(data)
+
+
+IMG_WIDTH = {
+    "lab1.md": 15.0,
+    "lab2.md": 12.0,
+    "lab3.md": 11.0,
+}
 
 
 def setup(doc):
@@ -314,8 +322,9 @@ def build(md_path, title, work):
 
     doc = Document()
     setup(doc)
+    img_width = IMG_WIDTH.get(os.path.basename(md_path), 13.5)
     doc.add_heading(title, level=0)
-    builder = DocBuilder(doc, os.path.dirname(md_path))
+    builder = DocBuilder(doc, os.path.dirname(md_path), img_width)
     builder.feed(html)
     builder._flush()
     fix_column_widths(doc)
@@ -323,6 +332,21 @@ def build(md_path, title, work):
     for paragraph in doc.paragraphs:
         if paragraph.style.name.startswith("Heading"):
             paragraph.paragraph_format.keep_with_next = True
+    # текст перед рисунком не должен отрываться от рисунка
+    paragraphs = doc.paragraphs
+    for index, paragraph in enumerate(paragraphs):
+        if not paragraph._p.findall(
+            ".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}drawing"
+        ):
+            continue
+        if index == 0:
+            continue
+        previous = paragraphs[index - 1]
+        if not previous.text.strip() or previous.style.name.startswith("Heading"):
+            continue
+        # держим с рисунком только подпись, которая идёт сразу после заголовка
+        if index >= 2 and paragraphs[index - 2].style.name.startswith("Heading"):
+            previous.paragraph_format.keep_with_next = True
     out = os.path.join(OUT, title + ".docx")
     doc.save(out)
     return out
