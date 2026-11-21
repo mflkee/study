@@ -1,0 +1,14 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 16
+skinparam sequenceMessageAlign left
+skinparam maxMessageSize 260
+hide footbox
+actor "Иностранный гражданин" as IG
+participant "Система" as SYS
+IG -> SYS : сохранитьАнкету(данные)
+SYS --> IG : ошибка, дата выдачи позже сегодняшней
+IG -> SYS : сохранитьАнкету(исправленные данные)
+SYS --> IG : анкета принята
+@enduml
