@@ -1,0 +1,23 @@
+@startuml
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 16
+skinparam shadowing false
+skinparam object {
+  BackgroundColor #F7FBFF
+  BorderColor #4A6FA5
+}
+object ":ЭкранКарты" as UI
+object ":СервисКарты" as SVC
+object ":РепозиторийПатентов" as REPO
+object "патент : Патент" as PAT
+object "пункт : ПунктКарты" as PT1
+object "пункт : ПунктКарты" as PT2
+
+UI -> SVC : 1: запроситьДорожнуюКарту()
+SVC -> REPO : 2: найтиПатент(серия, номер)
+REPO --> SVC : 3: патент
+SVC -> PT1 : 4: создать(«Трудоустройство», плановаяДата, статус)
+SVC -> PT2 : 5: создать(«Уведомление МВД», плановаяДата, статус)
+SVC -> PAT : 6: связать с пунктами
+SVC --> UI : 7: карта со сроками и статусами
+@enduml

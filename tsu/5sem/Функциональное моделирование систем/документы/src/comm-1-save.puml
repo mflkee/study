@@ -1,0 +1,21 @@
+@startuml
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 16
+skinparam shadowing false
+skinparam object {
+  BackgroundColor #F7FBFF
+  BorderColor #4A6FA5
+}
+object ":ЭкранАнкеты" as UI
+object ":СервисАнкет" as SVC
+object "патент : Патент" as PAT
+object "договор : Договор" as DOG
+object ":РепозиторийПатентов" as REPO
+
+UI -> SVC : 1: сохранитьАнкету(данные)
+SVC -> PAT : 2: создать(серия, номер, датаВыдачи, регион, профессия)
+SVC -> DOG : 3: создать(вид, датаЗаключения)
+SVC -> PAT : 4: связать с договором
+SVC -> REPO : 5: сохранить(патент)
+SVC --> UI : 6: анкета сохранена
+@enduml
